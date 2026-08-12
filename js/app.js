@@ -1,6 +1,12 @@
 // BYU Football Guess Game - Main Application Controller
 import { SupabaseAPI } from './supabase.js';
-import { computeLeaderboard, getPlayerColor } from './scoring.js';
+import { 
+  computeLeaderboard, 
+  computeWeeklyLeaderboard, 
+  getPlayerColor, 
+  savePlayerColor, 
+  PRESET_PLAYER_COLORS 
+} from './scoring.js';
 
 // Application State
 const state = {
@@ -10,6 +16,9 @@ const state = {
   guesses: [],
   currentAccount: null,
   activeView: 'leaderboardView',
+  leaderboardMode: 'overall', // 'overall' or 'weekly'
+  selectedWeeklyGameId: null,
+  selectedPlayerColor: PRESET_PLAYER_COLORS[0],
   countdownInterval: null
 };
 
@@ -39,7 +48,12 @@ const elements = {
   cdSecs: document.getElementById('cdSecs'),
   guessProgressIndicator: document.getElementById('guessProgressIndicator'),
 
-  // Leaderboard
+  // Leaderboard & Sub Tabs
+  btnOverallStandings: document.getElementById('btnOverallStandings'),
+  btnWeeklyLeaders: document.getElementById('btnWeeklyLeaders'),
+  weeklySelectorGroup: document.getElementById('weeklySelectorGroup'),
+  weeklyGameSelect: document.getElementById('weeklyGameSelect'),
+  standingsTitle: document.getElementById('standingsTitle'),
   leaderboardList: document.getElementById('leaderboardList'),
   dropRulesBadge: document.getElementById('dropRulesBadge'),
 
@@ -52,6 +66,7 @@ const elements = {
   addPlayerCard: document.getElementById('addPlayerCard'),
   addPlayerForm: document.getElementById('addPlayerForm'),
   newPlayerName: document.getElementById('newPlayerName'),
+  newPlayerColorPicker: document.getElementById('newPlayerColorPicker'),
 
   // Games & Admin
   gamesList: document.getElementById('gamesList'),
@@ -71,6 +86,7 @@ const elements = {
 // Initialize Application
 async function init() {
   setupEventListeners();
+  initColorPicker();
   await loadData();
   restoreSession();
   renderAccountsDropdown();
@@ -107,6 +123,20 @@ function setupEventListeners() {
     });
   });
 
+  // Leaderboard Sub Tabs & Weekly Game Select
+  if (elements.btnOverallStandings) {
+    elements.btnOverallStandings.addEventListener('click', () => setLeaderboardMode('overall'));
+  }
+  if (elements.btnWeeklyLeaders) {
+    elements.btnWeeklyLeaders.addEventListener('click', () => setLeaderboardMode('weekly'));
+  }
+  if (elements.weeklyGameSelect) {
+    elements.weeklyGameSelect.addEventListener('change', (e) => {
+      state.selectedWeeklyGameId = parseInt(e.target.value, 10);
+      renderLeaderboard();
+    });
+  }
+
   // Login
   elements.loginForm.addEventListener('submit', handleLogin);
   elements.logoutBtn.addEventListener('click', handleLogout);
@@ -125,6 +155,7 @@ function setupEventListeners() {
   elements.bulkGuessForm.addEventListener('submit', handleSaveGuesses);
   elements.showAddPlayerBtn.addEventListener('click', () => {
     elements.addPlayerCard.style.display = 'block';
+    initColorPicker();
   });
   elements.hideAddPlayerBtn.addEventListener('click', () => {
     elements.addPlayerCard.style.display = 'none';
@@ -149,6 +180,59 @@ function setupEventListeners() {
   elements.closeCosmoBtn.addEventListener('click', () => {
     elements.cosmoModal.classList.remove('active');
   });
+}
+
+// Color Picker Swatches Initializer
+function initColorPicker() {
+  if (!elements.newPlayerColorPicker) return;
+  state.selectedPlayerColor = PRESET_PLAYER_COLORS[0];
+  elements.newPlayerColorPicker.innerHTML = '';
+  PRESET_PLAYER_COLORS.forEach(color => {
+    const swatch = document.createElement('div');
+    swatch.className = 'color-option' + (color === state.selectedPlayerColor ? ' selected' : '');
+    swatch.style.backgroundColor = color;
+    swatch.addEventListener('click', () => {
+      elements.newPlayerColorPicker.querySelectorAll('.color-option').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
+      state.selectedPlayerColor = color;
+    });
+    elements.newPlayerColorPicker.appendChild(swatch);
+  });
+}
+
+// Leaderboard Mode Switcher
+function setLeaderboardMode(mode) {
+  state.leaderboardMode = mode;
+  if (mode === 'overall') {
+    elements.btnOverallStandings.classList.add('active');
+    elements.btnWeeklyLeaders.classList.remove('active');
+    elements.weeklySelectorGroup.style.display = 'none';
+  } else {
+    elements.btnWeeklyLeaders.classList.add('active');
+    elements.btnOverallStandings.classList.remove('active');
+    elements.weeklySelectorGroup.style.display = 'block';
+    populateWeeklySelector();
+  }
+  renderLeaderboard();
+}
+
+function populateWeeklySelector() {
+  elements.weeklyGameSelect.innerHTML = '';
+  state.games.forEach(game => {
+    const opt = document.createElement('option');
+    opt.value = game.id;
+    const isCompleted = game.home_score !== null && game.away_score !== null;
+    const dateFormatted = formatGameDateTime(game);
+    opt.textContent = `${game.home_team} vs ${game.away_team} (${dateFormatted})${isCompleted ? ' - Completed' : ''}`;
+    elements.weeklyGameSelect.appendChild(opt);
+  });
+  if (!state.selectedWeeklyGameId && state.games.length > 0) {
+    const firstCompleted = state.games.find(g => g.home_score !== null && g.away_score !== null);
+    state.selectedWeeklyGameId = firstCompleted ? firstCompleted.id : state.games[0].id;
+  }
+  if (state.selectedWeeklyGameId) {
+    elements.weeklyGameSelect.value = state.selectedWeeklyGameId;
+  }
 }
 
 // Switch Views
@@ -191,7 +275,6 @@ function setLoggedInUser(account) {
   elements.userInfo.style.display = 'flex';
   elements.currentAccountName.textContent = account.name;
 
-  // Admin Check ("J&J Smith's")
   if (account.name === "J&J Smith's") {
     elements.adminNavTab.style.display = 'flex';
   } else {
@@ -255,7 +338,7 @@ async function handleCreateAccount(e) {
   }
 }
 
-// Helper to format Game Date & Time string
+// Format Game Date & Time string
 function formatGameDateTime(game) {
   let dateFormatted = '';
   if (game.start_date) {
@@ -277,7 +360,7 @@ function formatGameDateTime(game) {
     if (game.start_time.includes('T')) {
       timeFormatted = new Date(game.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else {
-      const timePart = game.start_time.split('+')[0].split('-')[0];
+      const timePart = game.start_time.split('+')[0].split('-')[0].trim();
       const timeParts = timePart.split(':');
       if (timeParts.length >= 2) {
         let hours = parseInt(timeParts[0], 10);
@@ -294,18 +377,21 @@ function formatGameDateTime(game) {
   return `${dateFormatted} • ${timeFormatted === 'TBD' ? 'Kickoff TBD' : timeFormatted}`;
 }
 
+// Robust Game Timestamp Helper (Fixes NaN in Date parsing)
 function getGameStartTimestamp(game) {
-  if (game.start_date) {
-    if (game.start_time) {
-      if (game.start_time.includes('T')) return new Date(game.start_time).getTime();
-      return new Date(`${game.start_date}T${game.start_time}`).getTime();
-    }
-    return new Date(`${game.start_date}T00:00:00`).getTime();
-  }
+  if (!game) return null;
+  const dateStr = game.start_date || '2026-09-05';
+  const dateParts = dateStr.split('-').map(Number);
+  
+  let hours = 0, mins = 0;
   if (game.start_time) {
-    return new Date(game.start_time).getTime();
+    const timeClean = game.start_time.split('+')[0].split('-')[0].trim();
+    const timeParts = timeClean.split(':').map(Number);
+    hours = timeParts[0] || 0;
+    mins = timeParts[1] || 0;
   }
-  return null;
+  
+  return new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, mins, 0).getTime();
 }
 
 // Countdown & Upcoming Game Banner
@@ -373,39 +459,112 @@ function setupCountdown() {
   }, 1000);
 }
 
-// Render Leaderboard
+// Render Leaderboard (Overall or Weekly)
 function renderLeaderboard() {
-  const result = computeLeaderboard(state.players, state.games, state.guesses, state.accounts);
-  elements.dropRulesBadge.textContent = `Dropping ${result.dropsAllowed} lowest score(s)`;
+  if (state.leaderboardMode === 'overall') {
+    elements.standingsTitle.textContent = '🏆 Overall Standings';
+    elements.dropRulesBadge.style.display = 'inline-block';
+    
+    const result = computeLeaderboard(state.players, state.games, state.guesses, state.accounts);
+    elements.dropRulesBadge.textContent = `Dropping ${result.dropsAllowed} lowest score(s)`;
 
-  elements.leaderboardList.innerHTML = '';
-  if (result.standings.length === 0) {
-    elements.leaderboardList.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">No players registered yet! Add players in "My Guesses".</div>';
-    return;
-  }
+    elements.leaderboardList.innerHTML = '';
+    if (result.standings.length === 0) {
+      elements.leaderboardList.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">No players registered yet! Add players in "My Guesses".</div>';
+      return;
+    }
 
-  result.standings.forEach(player => {
-    const item = document.createElement('div');
-    item.className = 'leader-item';
+    result.standings.forEach(player => {
+      const item = document.createElement('div');
+      item.className = 'leader-item';
+      const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
+      const fireBadge = player.isOnFire ? ' 🔥' : '';
 
-    const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
-    const fireBadge = player.isOnFire ? ' 🔥' : '';
-
-    item.innerHTML = `
-      <div class="leader-left">
-        <div class="rank ${rankClass}">#${player.rank}</div>
-        <div class="player-dot" style="background:${player.color};"></div>
-        <div class="player-info">
-          <div class="player-name">${player.playerName} ${fireBadge}</div>
-          <div class="account-sub">${player.accountName}</div>
+      item.innerHTML = `
+        <div class="leader-left">
+          <div class="rank ${rankClass}">#${player.rank}</div>
+          <div class="player-dot" style="background:${player.color};"></div>
+          <div class="player-info">
+            <div class="player-name">${player.playerName} ${fireBadge}</div>
+            <div class="account-sub">${player.accountName}</div>
+          </div>
         </div>
-      </div>
-      <div class="leader-right">
-        <div class="score-tag">${player.totalScore} <span style="font-size:0.7rem; color:var(--text-muted);">pts</span></div>
-      </div>
-    `;
-    elements.leaderboardList.appendChild(item);
-  });
+        <div class="leader-right">
+          <div class="score-tag">${player.totalScore} <span style="font-size:0.7rem; color:var(--text-muted);">pts</span></div>
+        </div>
+      `;
+      elements.leaderboardList.appendChild(item);
+    });
+  } else {
+    // Weekly Leaders Mode
+    const gameId = state.selectedWeeklyGameId || (state.games[0] ? state.games[0].id : null);
+    if (!gameId) {
+      elements.leaderboardList.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">No games available.</div>';
+      return;
+    }
+
+    const { standings, game, isCompleted } = computeWeeklyLeaderboard(gameId, state.players, state.games, state.guesses, state.accounts);
+
+    elements.standingsTitle.textContent = `📅 ${game.home_team} vs ${game.away_team}`;
+    if (isCompleted) {
+      elements.dropRulesBadge.style.display = 'inline-block';
+      elements.dropRulesBadge.textContent = `Final Score: ${game.home_team} ${game.home_score} - ${game.away_score} ${game.away_team}`;
+    } else {
+      elements.dropRulesBadge.style.display = 'inline-block';
+      elements.dropRulesBadge.textContent = `Game Upcoming (${formatGameDateTime(game)})`;
+    }
+
+    elements.leaderboardList.innerHTML = '';
+    if (standings.length === 0) {
+      elements.leaderboardList.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">No players registered.</div>';
+      return;
+    }
+
+    // Highlight top winner card if completed
+    if (isCompleted && standings[0] && typeof standings[0].score === 'number') {
+      const topScore = standings[0].score;
+      const winners = standings.filter(s => s.score === topScore);
+      const winnerNames = winners.map(w => w.playerName).join(', ');
+      
+      const winnerCard = document.createElement('div');
+      winnerCard.className = 'card';
+      winnerCard.style.background = 'linear-gradient(135deg, rgba(255, 199, 44, 0.25) 0%, rgba(0, 98, 184, 0.3) 100%)';
+      winnerCard.style.border = '1px solid var(--byu-gold)';
+      winnerCard.style.textAlign = 'center';
+      winnerCard.style.padding = '14px';
+      winnerCard.style.marginBottom = '12px';
+      winnerCard.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight:800; color:var(--byu-gold);">🥇 WEEKLY WINNER(S) 🥇</div>
+        <div style="font-size: 1.2rem; font-weight: 900; color: white; margin-top: 4px;">${winnerNames}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">${topScore} points earned this week</div>
+      `;
+      elements.leaderboardList.appendChild(winnerCard);
+    }
+
+    standings.forEach(player => {
+      const item = document.createElement('div');
+      item.className = 'leader-item';
+      const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
+      const exactBadge = player.exactHit ? ' 🎯' : '';
+      const guessStr = player.hasGuess ? `${player.guessHome} - ${player.guessAway}` : 'No Guess';
+      const scoreStr = typeof player.score === 'number' ? `${player.score} pts` : player.score;
+
+      item.innerHTML = `
+        <div class="leader-left">
+          <div class="rank ${rankClass}">#${player.rank}</div>
+          <div class="player-dot" style="background:${player.color};"></div>
+          <div class="player-info">
+            <div class="player-name">${player.playerName}${exactBadge}</div>
+            <div class="account-sub">Guess: <strong>${guessStr}</strong> • ${player.accountName}</div>
+          </div>
+        </div>
+        <div class="leader-right">
+          <div class="score-tag">${scoreStr}</div>
+        </div>
+      `;
+      elements.leaderboardList.appendChild(item);
+    });
+  }
 }
 
 // Render Guesses View
@@ -448,6 +607,7 @@ function renderPlayerGuesses() {
     const existingGuess = state.guesses.find(g => g.game_id === selectedGameId && g.player_id === player.id);
     const homeVal = existingGuess ? (existingGuess.home !== null ? existingGuess.home : '') : '';
     const awayVal = existingGuess ? (existingGuess.away !== null ? existingGuess.away : '') : '';
+    const currentColor = getPlayerColor(player.id);
 
     const row = document.createElement('div');
     row.className = 'card';
@@ -456,9 +616,17 @@ function renderPlayerGuesses() {
     row.style.background = 'rgba(255, 255, 255, 0.03)';
 
     row.innerHTML = `
-      <div style="font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-        <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${getPlayerColor(player.id)};"></span>
-        <span>${player.name}</span>
+      <div style="font-weight:700; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${currentColor}; border:1px solid rgba(255,255,255,0.4);"></span>
+          <span>${player.name}</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <span style="font-size:0.75rem; color:var(--text-muted);">Color:</span>
+          ${PRESET_PLAYER_COLORS.map(c => `
+            <div class="color-mini-swatch" data-player-id="${player.id}" data-color="${c}" style="width:16px; height:16px; border-radius:50%; background:${c}; cursor:pointer; border:${c === currentColor ? '2px solid white' : '1px solid transparent'}; box-shadow:${c === currentColor ? '0 0 6px ' + c : 'none'};"></div>
+          `).join('')}
+        </div>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div>
@@ -472,6 +640,17 @@ function renderPlayerGuesses() {
       </div>
     `;
     elements.playerGuessesContainer.appendChild(row);
+  });
+
+  // Color Swatch Selection Listeners for Players
+  document.querySelectorAll('.color-mini-swatch').forEach(swatch => {
+    swatch.addEventListener('click', (e) => {
+      const pId = parseInt(e.target.getAttribute('data-player-id'), 10);
+      const color = e.target.getAttribute('data-color');
+      savePlayerColor(pId, color);
+      renderPlayerGuesses();
+      renderLeaderboard();
+    });
   });
 }
 
@@ -515,11 +694,15 @@ async function handleAddPlayer(e) {
   if (!name || !state.currentAccount) return;
 
   try {
-    await SupabaseAPI.createPlayer(name, state.currentAccount.id);
+    const newPlayer = await SupabaseAPI.createPlayer(name, state.currentAccount.id);
+    if (newPlayer && newPlayer.id) {
+      savePlayerColor(newPlayer.id, state.selectedPlayerColor);
+    }
     await loadData();
     elements.newPlayerName.value = '';
     elements.addPlayerCard.style.display = 'none';
     renderPlayerGuesses();
+    renderLeaderboard();
   } catch (err) {
     alert('Failed to add player.');
   }
@@ -592,6 +775,7 @@ function renderAdminView() {
         await loadData();
         renderAdminView();
         setupCountdown();
+        renderLeaderboard();
         alert('Game final score updated!');
       } catch (err) {
         alert('Failed to update score.');

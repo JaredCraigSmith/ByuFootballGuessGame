@@ -474,6 +474,7 @@ body {
 /* Color Picker Row */
 .color-picker {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 8px;
 }
@@ -491,4 +492,35 @@ body {
   transform: scale(1.2);
   border-color: white;
   box-shadow: 0 0 10px currentColor;
+}
+
+/* Sub Tabs for Leaderboard */
+.sub-tab-container {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+  margin-bottom: 14px;
+}
+
+.sub-tab {
+  flex: 1;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.sub-tab.active {
+  background: var(--byu-royal);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 98, 184, 0.4);
 }

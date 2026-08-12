@@ -1,24 +1,29 @@
 // BYU Football Guess Game - Scoring Algorithm & Leaderboard Logic
 
-// Player Color Palette (Assigned dynamically by Player ID or Index)
-const PLAYER_COLORS = [
+// Player Color Palette
+export const PRESET_PLAYER_COLORS = [
   '#0062B8', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', 
-  '#3B82F6', '#EF4444', '#14B8A6', '#6366F1', '#D97706'
+  '#3B82F6', '#EF4444', '#14B8A6', '#6366F1', '#D97706',
+  '#FFC72C', '#06B6D4'
 ];
 
 export function getPlayerColor(playerId) {
-  const index = (playerId || 0) % PLAYER_COLORS.length;
-  return PLAYER_COLORS[index];
+  if (playerId) {
+    const saved = localStorage.getItem('player_color_' + playerId);
+    if (saved) return saved;
+  }
+  const index = (playerId || 0) % PRESET_PLAYER_COLORS.length;
+  return PRESET_PLAYER_COLORS[index];
+}
+
+export function savePlayerColor(playerId, color) {
+  if (playerId && color) {
+    localStorage.setItem('player_color_' + playerId, color);
+  }
 }
 
 /**
  * Calculates game points for a guess against actual score
- * Baseline formula:
- * Difference = |ActualHome - GuessHome| + |ActualAway - GuessAway|
- * Exact score bonus: +50 pts
- * Exact winner bonus: +10 pts
- * Base Game Points: Max(0, 100 - Difference * 5) + Bonuses
- * Season multiplier: Game N has a weight multiplier (1.0 + (gameIndex * 0.15)) to make later games worth slightly more.
  */
 export function calculateGuessPoints(guess, game, gameIndex = 0) {
   if (game.home_score === null || game.away_score === null || guess.home === null || guess.away === null) {
@@ -49,11 +54,7 @@ export function calculateGuessPoints(guess, game, gameIndex = 0) {
 }
 
 /**
- * Calculates Leaderboard Standings
- * Rules for dropping lowest scores based on completed games count:
- * - 1-2 games completed: Drop 0 lowest scores
- * - 3 games completed: Drop 1 lowest score
- * - 4+ games completed: Drop 2 lowest scores
+ * Calculates Overall Leaderboard Standings
  */
 export function computeLeaderboard(players, games, guesses, accounts) {
   const completedGames = games
@@ -82,10 +83,10 @@ export function computeLeaderboard(players, games, guesses, accounts) {
             exactHits++;
           }
         } else {
-          gameScores.push(0); // Missed guess count as 0
+          gameScores.push(0);
         }
       } else {
-        gameScores.push(0); // Missed game
+        gameScores.push(0);
       }
     });
 
@@ -95,7 +96,6 @@ export function computeLeaderboard(players, games, guesses, accounts) {
     const keptScores = sortedScores.slice(dropsAllowed);
     const totalScore = keptScores.reduce((sum, val) => sum + val, 0);
 
-    // Compute recent trend (last game score for fire emoji)
     const lastGameScore = gameScores.length > 0 ? gameScores[gameScores.length - 1] : 0;
     const isOnFire = lastGameScore >= 100 || exactHits > 0;
 
@@ -114,15 +114,10 @@ export function computeLeaderboard(players, games, guesses, accounts) {
     };
   });
 
-  // Sort by Total Score descending
   playerStats.sort((a, b) => b.totalScore - a.totalScore);
 
-  // Assign Ranks and calculate rank change (delta)
-  // For rank delta demo/mock calculation, compare score relative to total average or previous round
   playerStats.forEach((stat, index) => {
     stat.rank = index + 1;
-    // Rank delta heuristic (random demo variance if first run, or strictly computed)
-    stat.rankDelta = 0; 
   });
 
   return {
@@ -130,4 +125,56 @@ export function computeLeaderboard(players, games, guesses, accounts) {
     completedGamesCount: totalCompleted,
     dropsAllowed
   };
+}
+
+/**
+ * Calculates Weekly Leaders for a specific game
+ */
+export function computeWeeklyLeaderboard(gameId, players, games, guesses, accounts) {
+  const game = games.find(g => g.id === gameId);
+  if (!game) return { standings: [], game: null, isCompleted: false };
+
+  const gameIndex = games.indexOf(game);
+  const isCompleted = game.home_score !== null && game.away_score !== null;
+
+  const standings = players.map(player => {
+    const account = accounts.find(a => a.id === player.account_id);
+    const guess = guesses.find(g => g.game_id === gameId && g.player_id === player.id);
+
+    let score = null;
+    let exactHit = false;
+
+    if (guess && isCompleted) {
+      score = calculateGuessPoints(guess, game, gameIndex);
+      if (guess.home === game.home_score && guess.away === game.away_score) {
+        exactHit = true;
+      }
+    }
+
+    return {
+      playerId: player.id,
+      playerName: player.name,
+      accountId: player.account_id,
+      accountName: account ? account.name : 'Unknown Account',
+      color: getPlayerColor(player.id),
+      guessHome: guess ? guess.home : null,
+      guessAway: guess ? guess.away : null,
+      score: score !== null ? score : (guess ? 'Pending' : 'No Guess'),
+      exactHit,
+      hasGuess: !!guess
+    };
+  });
+
+  standings.sort((a, b) => {
+    if (typeof a.score === 'number' && typeof b.score === 'number') return b.score - a.score;
+    if (typeof a.score === 'number') return -1;
+    if (typeof b.score === 'number') return 1;
+    return 0;
+  });
+
+  standings.forEach((stat, index) => {
+    stat.rank = index + 1;
+  });
+
+  return { standings, game, isCompleted };
 }

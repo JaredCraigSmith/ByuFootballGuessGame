@@ -134,9 +134,23 @@
         </div>
       </div>
 
+      <!-- Sub Tab Switcher: Overall vs Weekly -->
+      <div class="sub-tab-container">
+        <button id="btnOverallStandings" class="sub-tab active">🏆 Overall Standings</button>
+        <button id="btnWeeklyLeaders" class="sub-tab">📅 Weekly Leaders</button>
+      </div>
+
+      <!-- Weekly Game Selector (Hidden in Overall mode) -->
+      <div id="weeklySelectorGroup" class="form-group" style="display: none;">
+        <label class="form-label" for="weeklyGameSelect">Select Week / Game</label>
+        <select id="weeklyGameSelect" class="form-control">
+          <!-- Rendered via JS -->
+        </select>
+      </div>
+
       <!-- Leaderboard Header -->
       <div class="card-header" style="margin-bottom: 8px;">
-        <h3 class="card-title">🏆 Overall Standings</h3>
+        <h3 class="card-title" id="standingsTitle">🏆 Overall Standings</h3>
         <span id="dropRulesBadge" style="font-size: 0.75rem; color: var(--byu-gold); background: rgba(255, 199, 44, 0.1); padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255, 199, 44, 0.3);">
           Dropping 0 lowest scores
         </span>
@@ -191,6 +205,14 @@
             <label class="form-label" for="newPlayerName">Player Name</label>
             <input type="text" id="newPlayerName" class="form-control" placeholder="e.g. Johnny" required />
           </div>
+
+          <div class="form-group">
+            <label class="form-label">Pick Player Color Badge</label>
+            <div class="color-picker" id="newPlayerColorPicker">
+              <!-- Swatches generated in JS -->
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-primary">Save New Player</button>
         </form>
       </div>
