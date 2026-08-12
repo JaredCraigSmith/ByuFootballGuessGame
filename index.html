@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BYU Football Guess The Score</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand" id="brandLogo">
+        <div class="brand-y">Y</div>
+        <div class="brand-title">BYU GUESS GAME</div>
+      </div>
+      <div id="userInfo" class="user-badge" style="display: none;">
+        <span class="icon">👤</span>
+        <span id="currentAccountName">Guest</span>
+        <button id="logoutBtn" style="background:none; border:none; color: var(--byu-gold); cursor:pointer; font-size:0.75rem; margin-left:4px;">(Logout)</button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="app-nav" id="appNav">
+      <div class="nav-item active" data-view="leaderboardView">
+        <span class="icon">🏆</span>
+        <span>Leaderboard</span>
+      </div>
+      <div class="nav-item" data-view="guessesView">
+        <span class="icon">🏈</span>
+        <span>My Guesses</span>
+      </div>
+      <div class="nav-item" data-view="gamesView">
+        <span class="icon">📅</span>
+        <span>Schedule</span>
+      </div>
+      <div class="nav-item" id="adminNavTab" data-view="adminView" style="display: none;">
+        <span class="icon">⚡</span>
+        <span>Admin</span>
+      </div>
+    </nav>
+
+    <!-- Login / Auth View -->
+    <section id="loginView" class="view active">
+      <div class="card" style="text-align: center; padding: 28px 20px;">
+        <div style="font-size: 3rem; margin-bottom: 8px;">🏈</div>
+        <h2 style="font-weight: 800; color: var(--byu-gold); margin-bottom: 6px;">Cougar Score Challenge</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Family & Friends BYU Football Score Guessing</p>
+
+        <form id="loginForm">
+          <div class="form-group" style="text-align: left;">
+            <label class="form-label" for="accountSelect">Select Your Account / Family</label>
+            <select id="accountSelect" class="form-control" required>
+              <option value="">-- Choose Account --</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="text-align: left;">
+            <label class="form-label" for="accountPin">4-Digit Security PIN</label>
+            <input type="password" id="accountPin" class="form-control" placeholder="****" maxlength="6" inputmode="numeric" required />
+          </div>
+
+          <button type="submit" class="btn btn-gold" style="margin-top: 10px;">
+            <span>Sign In & Play</span> 🚀
+          </button>
+        </form>
+
+        <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Don't have an account yet?</p>
+          <button id="showCreateAccountBtn" class="btn btn-secondary">
+            <span>Create New Family Account</span> ➕
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Create Account Modal / Form -->
+    <section id="createAccountSection" class="view">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">✨ Create Family Account</h3>
+          <button id="cancelCreateAccountBtn" class="btn btn-secondary" style="width: auto; padding: 4px 12px; font-size: 0.8rem;">Cancel</button>
+        </div>
+        <form id="createAccountForm">
+          <div class="form-group">
+            <label class="form-label" for="newAccountName">Account / Family Name</label>
+            <input type="text" id="newAccountName" class="form-control" placeholder="e.g. Smith Family" required />
+            <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">
+              Admin hint: Name account <strong>"J&J Smith's"</strong> for Admin privileges.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newAccountPin">Security PIN (Digits)</label>
+            <input type="password" id="newAccountPin" class="form-control" placeholder="e.g. 1234" maxlength="6" inputmode="numeric" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary">Create & Login</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Leaderboard View -->
+    <section id="leaderboardView" class="view">
+      <!-- Next Upcoming Game Highlight Card -->
+      <div id="upcomingGameBanner" class="card game-card">
+        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; color: var(--byu-gold);">
+          ⏳ NEXT KICKOFF COUNTDOWN
+        </div>
+        <div class="game-teams">
+          <div class="team">
+            <span id="bannerHome">BYU</span>
+          </div>
+          <div class="vs-badge">VS</div>
+          <div class="team">
+            <span id="bannerAway">Opponent</span>
+          </div>
+        </div>
+        <div class="timer" id="countdownTimer">
+          <div class="time-box"><div class="time-num" id="cdDays">00</div><div class="time-label">Days</div></div>
+          <div class="time-box"><div class="time-num" id="cdHours">00</div><div class="time-label">Hrs</div></div>
+          <div class="time-box"><div class="time-num" id="cdMins">00</div><div class="time-label">Mins</div></div>
+          <div class="time-box"><div class="time-num" id="cdSecs">00</div><div class="time-label">Secs</div></div>
+        </div>
+        <div style="margin-top: 14px;">
+          <span class="submission-pill" id="guessProgressIndicator">
+            📊 0/0 players submitted guesses
+          </span>
+        </div>
+      </div>
+
+      <!-- Leaderboard Header -->
+      <div class="card-header" style="margin-bottom: 8px;">
+        <h3 class="card-title">🏆 Overall Standings</h3>
+        <span id="dropRulesBadge" style="font-size: 0.75rem; color: var(--byu-gold); background: rgba(255, 199, 44, 0.1); padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255, 199, 44, 0.3);">
+          Dropping 0 lowest scores
+        </span>
+      </div>
+
+      <!-- Standings List -->
+      <div id="leaderboardList" class="leaderboard-list">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- Guesses View (Bulk Family Input + Add Player) -->
+    <section id="guessesView" class="view">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">📝 Family Guesses</h3>
+          <button id="showAddPlayerBtn" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.8rem;">
+            ➕ Add Player
+          </button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          Easily submit guesses for all family members under your account in one place!
+        </p>
+
+        <!-- Target Game Selector -->
+        <div class="form-group">
+          <label class="form-label" for="guessGameSelect">Select Game</label>
+          <select id="guessGameSelect" class="form-control">
+            <!-- Rendered via JS -->
+          </select>
+        </div>
+
+        <form id="bulkGuessForm">
+          <div id="playerGuessesContainer">
+            <!-- Player guess rows dynamically inserted -->
+          </div>
+
+          <button type="submit" class="btn btn-gold" style="margin-top: 16px;">
+            <span>Save All Family Guesses</span> 💾
+          </button>
+        </form>
+      </div>
+
+      <!-- Add Player Section (Hidden by default) -->
+      <div id="addPlayerCard" class="card" style="display: none;">
+        <div class="card-header">
+          <h3 class="card-title">👤 Add Family Player</h3>
+          <button id="hideAddPlayerBtn" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.8rem;">✕</button>
+        </div>
+        <form id="addPlayerForm">
+          <div class="form-group">
+            <label class="form-label" for="newPlayerName">Player Name</label>
+            <input type="text" id="newPlayerName" class="form-control" placeholder="e.g. Johnny" required />
+          </div>
+          <button type="submit" class="btn btn-primary">Save New Player</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Schedule / Games View -->
+    <section id="gamesView" class="view">
+      <div class="card-header" style="margin-bottom: 12px;">
+        <h3 class="card-title">📅 BYU Football Schedule</h3>
+      </div>
+      <div id="gamesList">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- Admin View -->
+    <section id="adminView" class="view">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">⚡ Admin Control Panel</h3>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          Logged in as <strong>J&J Smith's</strong>. Manage games and input official final scores.
+        </p>
+
+        <!-- Add New Game -->
+        <h4 style="font-size: 0.95rem; color: var(--byu-gold); margin-bottom: 10px;">➕ Add Upcoming Game</h4>
+        <form id="adminAddGameForm" style="margin-bottom: 24px;">
+          <div class="form-group">
+            <label class="form-label">Home Team</label>
+            <input type="text" id="adminHomeTeam" class="form-control" value="BYU" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Away Team</label>
+            <input type="text" id="adminAwayTeam" class="form-control" placeholder="e.g. Utah" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Start Time / Kickoff</label>
+            <input type="datetime-local" id="adminStartTime" class="form-control" required />
+          </div>
+          <button type="submit" class="btn btn-primary">Add Game to Schedule</button>
+        </form>
+
+        <!-- Enter Game Scores -->
+        <h4 style="font-size: 0.95rem; color: var(--byu-gold); margin-bottom: 10px;">🏁 Update Final Scores</h4>
+        <div id="adminScoreList">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Cosmo Easter Egg Modal -->
+    <div id="cosmoModal" class="modal-overlay">
+      <div class="modal-content">
+        <h2 style="color: var(--byu-gold); font-weight: 800;">🐾 GO COUGARS! 🐾</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Cosmo is hype for your guesses!</p>
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWc0NDdldHBwbmoxeWZtc3pzbnZydWR4NGM2aGVwdXpxeWgzeW01ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKrEzvLbsVAum88/giphy.gif" alt="Cosmo Dancing" class="cosmo-gif" />
+        <button id="closeCosmoBtn" class="btn btn-gold">Let's Play! 🤙</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

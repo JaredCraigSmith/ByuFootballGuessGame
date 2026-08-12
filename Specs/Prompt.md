@@ -1,0 +1,2 @@
+Use the info here: "C:\Main\Personal\Code\ByuFootballGuessGame\Specs" to create and an app here: "C:\Main\Personal\Code\ByuFootballGuessGame". I have limited token so
+create a progress.md file to keep track of what has been done so I can restart from any point in the process. Or look at that file at start where it left off if it's there.  
