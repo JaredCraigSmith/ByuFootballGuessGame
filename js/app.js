@@ -277,7 +277,17 @@ function formatGameDateTime(game) {
     if (game.start_time.includes('T')) {
       timeFormatted = new Date(game.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else {
-      timeFormatted = game.start_time;
+      const timePart = game.start_time.split('+')[0].split('-')[0];
+      const timeParts = timePart.split(':');
+      if (timeParts.length >= 2) {
+        let hours = parseInt(timeParts[0], 10);
+        const minutes = timeParts[1];
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        timeFormatted = `${hours}:${minutes} ${ampm}`;
+      } else {
+        timeFormatted = game.start_time;
+      }
     }
   }
 
