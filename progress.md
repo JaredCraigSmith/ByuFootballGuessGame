@@ -44,5 +44,6 @@
   - **Admin View:** Full control panel enabled for `"J&J Smith's"` account to add games and set final scores
 
 - [x] **Phase 5: Verification & Launch**
-  - Confirmed local preview server running on `http://localhost:8080`
-  - All files organized and ready for GitHub Pages hosting!
+  - Confirmed local preview server running
+  - Created GitHub repository `JaredCraigSmith/ByuFootballGuessGame` and deployed to GitHub Pages
+  - Populated complete 12-game 2026 BYU Football schedule in Supabase `Games` table
