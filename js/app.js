@@ -436,6 +436,24 @@ function getGameStartTimestamp(game) {
   return new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, mins, 0).getTime();
 }
 
+// Check if game guesses are locked (Kickoff passed or final scores entered)
+function isGameLocked(game) {
+  if (!game) return false;
+
+  // 1. If final scores entered, game is locked
+  if (game.home_score !== null && game.away_score !== null) {
+    return true;
+  }
+
+  // 2. If kickoff time has passed, game is locked
+  const kickoffTime = getGameStartTimestamp(game);
+  if (kickoffTime && Date.now() >= kickoffTime) {
+    return true;
+  }
+
+  return false;
+}
+
 // Countdown & Upcoming Game Banner
 function setupCountdown() {
   if (state.countdownInterval) clearInterval(state.countdownInterval);
@@ -634,16 +652,34 @@ function renderGuessesView() {
 
 function renderPlayerGuesses() {
   const selectedGameId = parseInt(elements.guessGameSelect.value, 10);
+  const selectedGame = state.games.find(g => g.id === selectedGameId);
+  const isLocked = isGameLocked(selectedGame);
   const accountPlayers = state.players.filter(p => p.account_id === state.currentAccount.id);
 
   elements.playerGuessesContainer.innerHTML = '';
 
+  if (isLocked) {
+    const lockNotice = document.createElement('div');
+    lockNotice.style.background = 'rgba(239, 68, 68, 0.15)';
+    lockNotice.style.color = '#F87171';
+    lockNotice.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+    lockNotice.style.padding = '10px 14px';
+    lockNotice.style.borderRadius = 'var(--radius-sm)';
+    lockNotice.style.marginBottom = '14px';
+    lockNotice.style.textAlign = 'center';
+    lockNotice.style.fontWeight = '700';
+    lockNotice.style.fontSize = '0.9rem';
+    lockNotice.innerHTML = '🔒 GUESSES LOCKED — Kickoff has passed for this game!';
+    elements.playerGuessesContainer.appendChild(lockNotice);
+  }
+
   if (accountPlayers.length === 0) {
-    elements.playerGuessesContainer.innerHTML = `
-      <div style="text-align:center; color:var(--text-muted); padding:16px;">
-        No players added to your family account yet. Click <strong>"➕ Add Player"</strong> above!
-      </div>
-    `;
+    const emptyNotice = document.createElement('div');
+    emptyNotice.style.textAlign = 'center';
+    emptyNotice.style.color = 'var(--text-muted)';
+    emptyNotice.style.padding = '16px';
+    emptyNotice.innerHTML = 'No players added to your family account yet. Click <strong>"➕ Add Player"</strong> above!';
+    elements.playerGuessesContainer.appendChild(emptyNotice);
     return;
   }
 
@@ -659,6 +695,7 @@ function renderPlayerGuesses() {
     row.style.padding = '12px 14px';
     row.style.marginBottom = '10px';
     row.style.background = 'rgba(255, 255, 255, 0.03)';
+    if (isLocked) row.style.opacity = '0.75';
 
     row.innerHTML = `
       <div style="font-weight:700; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
@@ -673,11 +710,11 @@ function renderPlayerGuesses() {
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div>
           <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:4px;">BYU / Home</label>
-          <input type="number" class="form-control guess-home" data-player-id="${player.id}" value="${homeVal}" placeholder="Score" min="0" />
+          <input type="number" class="form-control guess-home" data-player-id="${player.id}" value="${homeVal}" placeholder="Score" min="0" ${isLocked ? 'disabled' : ''} />
         </div>
         <div>
           <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:4px;">Opponent / Away</label>
-          <input type="number" class="form-control guess-away" data-player-id="${player.id}" value="${awayVal}" placeholder="Score" min="0" />
+          <input type="number" class="form-control guess-away" data-player-id="${player.id}" value="${awayVal}" placeholder="Score" min="0" ${isLocked ? 'disabled' : ''} />
         </div>
       </div>
     `;
@@ -691,6 +728,22 @@ function renderPlayerGuesses() {
       openEditPlayerModal(pId);
     });
   });
+
+  // Disable save button if locked
+  const saveBtn = document.querySelector('#bulkGuessForm button[type="submit"]');
+  if (saveBtn) {
+    if (isLocked) {
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.5';
+      saveBtn.style.cursor = 'not-allowed';
+      saveBtn.innerHTML = '<span>🔒 Guesses Locked for this Game</span>';
+    } else {
+      saveBtn.disabled = false;
+      saveBtn.style.opacity = '1';
+      saveBtn.style.cursor = 'pointer';
+      saveBtn.innerHTML = '<span>Save All Family Guesses</span> 💾';
+    }
+  }
 }
 
 // Open Edit Player Card
@@ -738,6 +791,12 @@ async function handleSaveGuesses(e) {
   e.preventDefault();
   const gameId = parseInt(elements.guessGameSelect.value, 10);
   if (!gameId) return;
+
+  const game = state.games.find(g => g.id === gameId);
+  if (isGameLocked(game)) {
+    alert('🔒 Guesses for this game are locked because kickoff has passed!');
+    return;
+  }
 
   const homeInputs = document.querySelectorAll('.guess-home');
   const awayInputs = document.querySelectorAll('.guess-away');
