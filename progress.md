@@ -11,6 +11,7 @@
   - Player management under accounts (with custom badge colors & status emojis)
   - Edit Player form (edit name, badge color, status emoji)
   - Bulk guess input for all family players on an account in one single view
+  - **Automatic Game Locking:** Once a game starts or scores are entered, inputs are locked (`disabled`) and submission is blocked (`🔒 GUESSES LOCKED`)
   - Live countdown to kickoff timer for upcoming games with **TBD Kickoff support**
   - Support for `start_date` (date) & optional `start_time` (timetz/TBD)
   - Guess completion status indicator (e.g. `X/Y players submitted`)
@@ -42,7 +43,7 @@
 - [x] **Phase 4: Views & Interactive Logic (`js/app.js`)**
   - **Login View:** Account select dropdown + PIN input + Create Account modal
   - **Leaderboard View:** Overall Standings and Weekly Leaders toggle, rank badges, fire emojis, countdown timer to kickoff, and guess submission progress indicator
-  - **Submit Guesses View:** Single-page bulk guess input for all players in account + integrated Add Player & Edit Player forms
+  - **Submit Guesses View:** Single-page bulk guess input for all players in account + integrated Add Player & Edit Player forms + **Game Lock Enforcement**
   - **Schedule View:** List of upcoming and finished games with formatted date & Kickoff TBD indicators
   - **Admin View:** Full control panel enabled for `"J&J Smith's"` account to add games (with Date & optional Kickoff Time) and set final scores
 
@@ -52,3 +53,4 @@
   - Populated complete 12-game 2026 BYU Football schedule in Supabase `Games` table
   - Updated app & API layer to support `start_date` and `start_time` (TBD handling)
   - Added **Edit Player** card & **Single Emoji Status** support (`⚡, 🔥, 🏈, 👑...`)
+  - Implemented **Game Locking** when kickoff passes or scores are entered
