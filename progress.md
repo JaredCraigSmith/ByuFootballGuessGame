@@ -9,6 +9,7 @@
 - **Key Features Implemented:**
   - Account dropdown login + PIN authentication
   - Player management under accounts (with custom badge colors & status emojis)
+  - Interactive **Visual Emoji Selector Grid** (`🏈`, `🔥`, `⚡`, `👑`, `🚀`, `🎯`, `🤙`, `🏆`, `🐾`, `🥇`, `💎`, `🧊`, `💯`...)
   - Edit Player form (edit name, badge color, status emoji)
   - Bulk guess input for all family players on an account in one single view
   - **Automatic Game Locking:** Once a game starts or scores are entered, inputs are locked (`disabled`) and submission is blocked (`🔒 GUESSES LOCKED`)
@@ -39,6 +40,7 @@
 - [x] **Phase 3: UI Design & Styling (`index.html`, `styles.css`)**
   - Designed mobile-first BYU Football theme (Royal Blue `#002E5D`, Gold `#FFC72C`, dark glassmorphism)
   - Added sub-tab switcher styling for Leaderboard view
+  - Added visual Emoji Picker grid styling (`.emoji-picker`, `.emoji-option`)
 
 - [x] **Phase 4: Views & Interactive Logic (`js/app.js`)**
   - **Login View:** Account select dropdown + PIN input + Create Account modal
@@ -52,5 +54,5 @@
   - Created GitHub repository `JaredCraigSmith/ByuFootballGuessGame` and deployed to GitHub Pages
   - Populated complete 12-game 2026 BYU Football schedule in Supabase `Games` table
   - Updated app & API layer to support `start_date` and `start_time` (TBD handling)
-  - Added **Edit Player** card & **Single Emoji Status** support (`⚡, 🔥, 🏈, 👑...`)
+  - Added **Edit Player** card & **Visual Emoji Selector Grid**
   - Implemented **Game Locking** when kickoff passes or scores are entered
