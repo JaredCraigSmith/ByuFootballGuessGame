@@ -91,6 +91,23 @@ export const SupabaseAPI = {
     }
   },
 
+  async updatePlayer(playerId, name) {
+    try {
+      const res = await fetch(`${SUPABASE_BASE_URL}/Players?id=eq.${playerId}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ name })
+      });
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      const data = await res.json();
+      cache.players = null; // Invalidate
+      return data[0];
+    } catch (err) {
+      console.error('Error updating player:', err);
+      throw err;
+    }
+  },
+
   // Games
   async getGames(forceRefresh = false) {
     if (!forceRefresh && isCacheValid('games')) return cache.games;

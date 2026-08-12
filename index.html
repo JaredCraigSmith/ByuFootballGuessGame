@@ -207,6 +207,11 @@
           </div>
 
           <div class="form-group">
+            <label class="form-label" for="newPlayerEmoji">Status Emoji (Optional)</label>
+            <input type="text" id="newPlayerEmoji" class="form-control" placeholder="e.g. ⚡, 🔥, 🏈, 👑" maxlength="4" style="font-size: 1.2rem; text-align: center; width: 80px;" />
+          </div>
+
+          <div class="form-group">
             <label class="form-label">Pick Player Color Badge</label>
             <div class="color-picker" id="newPlayerColorPicker">
               <!-- Swatches generated in JS -->
@@ -214,6 +219,35 @@
           </div>
 
           <button type="submit" class="btn btn-primary">Save New Player</button>
+        </form>
+      </div>
+
+      <!-- Edit Player Section (Hidden by default) -->
+      <div id="editPlayerCard" class="card" style="display: none;">
+        <div class="card-header">
+          <h3 class="card-title">✏️ Edit Family Player</h3>
+          <button id="hideEditPlayerBtn" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.8rem;">✕</button>
+        </div>
+        <form id="editPlayerForm">
+          <input type="hidden" id="editPlayerId" />
+          <div class="form-group">
+            <label class="form-label" for="editPlayerName">Player Name</label>
+            <input type="text" id="editPlayerName" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editPlayerEmoji">Status Emoji (Optional)</label>
+            <input type="text" id="editPlayerEmoji" class="form-control" placeholder="e.g. ⚡, 🔥, 🏈, 👑" maxlength="4" style="font-size: 1.2rem; text-align: center; width: 80px;" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Player Badge Color</label>
+            <div class="color-picker" id="editPlayerColorPicker">
+              <!-- Swatches generated in JS -->
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Player Changes</button>
         </form>
       </div>
     </section>

@@ -5,6 +5,8 @@ import {
   computeWeeklyLeaderboard, 
   getPlayerColor, 
   savePlayerColor, 
+  getPlayerEmoji, 
+  savePlayerEmoji, 
   PRESET_PLAYER_COLORS 
 } from './scoring.js';
 
@@ -19,6 +21,7 @@ const state = {
   leaderboardMode: 'overall', // 'overall' or 'weekly'
   selectedWeeklyGameId: null,
   selectedPlayerColor: PRESET_PLAYER_COLORS[0],
+  editingPlayerColor: PRESET_PLAYER_COLORS[0],
   countdownInterval: null
 };
 
@@ -57,7 +60,7 @@ const elements = {
   leaderboardList: document.getElementById('leaderboardList'),
   dropRulesBadge: document.getElementById('dropRulesBadge'),
 
-  // Guesses
+  // Guesses & Players
   guessGameSelect: document.getElementById('guessGameSelect'),
   playerGuessesContainer: document.getElementById('playerGuessesContainer'),
   bulkGuessForm: document.getElementById('bulkGuessForm'),
@@ -66,7 +69,17 @@ const elements = {
   addPlayerCard: document.getElementById('addPlayerCard'),
   addPlayerForm: document.getElementById('addPlayerForm'),
   newPlayerName: document.getElementById('newPlayerName'),
+  newPlayerEmoji: document.getElementById('newPlayerEmoji'),
   newPlayerColorPicker: document.getElementById('newPlayerColorPicker'),
+
+  // Edit Player
+  editPlayerCard: document.getElementById('editPlayerCard'),
+  hideEditPlayerBtn: document.getElementById('hideEditPlayerBtn'),
+  editPlayerForm: document.getElementById('editPlayerForm'),
+  editPlayerId: document.getElementById('editPlayerId'),
+  editPlayerName: document.getElementById('editPlayerName'),
+  editPlayerEmoji: document.getElementById('editPlayerEmoji'),
+  editPlayerColorPicker: document.getElementById('editPlayerColorPicker'),
 
   // Games & Admin
   gamesList: document.getElementById('gamesList'),
@@ -86,7 +99,7 @@ const elements = {
 // Initialize Application
 async function init() {
   setupEventListeners();
-  initColorPicker();
+  initAddPlayerColorPicker();
   await loadData();
   restoreSession();
   renderAccountsDropdown();
@@ -150,17 +163,28 @@ function setupEventListeners() {
   });
   elements.createAccountForm.addEventListener('submit', handleCreateAccount);
 
-  // Guesses
+  // Guesses & Players
   elements.guessGameSelect.addEventListener('change', renderPlayerGuesses);
   elements.bulkGuessForm.addEventListener('submit', handleSaveGuesses);
   elements.showAddPlayerBtn.addEventListener('click', () => {
     elements.addPlayerCard.style.display = 'block';
-    initColorPicker();
+    elements.editPlayerCard.style.display = 'none';
+    initAddPlayerColorPicker();
   });
   elements.hideAddPlayerBtn.addEventListener('click', () => {
     elements.addPlayerCard.style.display = 'none';
   });
   elements.addPlayerForm.addEventListener('submit', handleAddPlayer);
+
+  // Edit Player
+  if (elements.hideEditPlayerBtn) {
+    elements.hideEditPlayerBtn.addEventListener('click', () => {
+      elements.editPlayerCard.style.display = 'none';
+    });
+  }
+  if (elements.editPlayerForm) {
+    elements.editPlayerForm.addEventListener('submit', handleEditPlayer);
+  }
 
   // Admin
   elements.adminAddGameForm.addEventListener('submit', handleAdminAddGame);
@@ -182,8 +206,8 @@ function setupEventListeners() {
   });
 }
 
-// Color Picker Swatches Initializer
-function initColorPicker() {
+// Color Picker Swatches Initializer for Add Player
+function initAddPlayerColorPicker() {
   if (!elements.newPlayerColorPicker) return;
   state.selectedPlayerColor = PRESET_PLAYER_COLORS[0];
   elements.newPlayerColorPicker.innerHTML = '';
@@ -197,6 +221,24 @@ function initColorPicker() {
       state.selectedPlayerColor = color;
     });
     elements.newPlayerColorPicker.appendChild(swatch);
+  });
+}
+
+// Color Picker Swatches Initializer for Edit Player
+function initEditPlayerColorPicker(initialColor) {
+  if (!elements.editPlayerColorPicker) return;
+  state.editingPlayerColor = initialColor || PRESET_PLAYER_COLORS[0];
+  elements.editPlayerColorPicker.innerHTML = '';
+  PRESET_PLAYER_COLORS.forEach(color => {
+    const swatch = document.createElement('div');
+    swatch.className = 'color-option' + (color === state.editingPlayerColor ? ' selected' : '');
+    swatch.style.backgroundColor = color;
+    swatch.addEventListener('click', () => {
+      elements.editPlayerColorPicker.querySelectorAll('.color-option').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
+      state.editingPlayerColor = color;
+    });
+    elements.editPlayerColorPicker.appendChild(swatch);
   });
 }
 
@@ -479,13 +521,14 @@ function renderLeaderboard() {
       item.className = 'leader-item';
       const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
       const fireBadge = player.isOnFire ? ' 🔥' : '';
+      const statusEmoji = player.emoji ? ` ${player.emoji}` : '';
 
       item.innerHTML = `
         <div class="leader-left">
           <div class="rank ${rankClass}">#${player.rank}</div>
           <div class="player-dot" style="background:${player.color};"></div>
           <div class="player-info">
-            <div class="player-name">${player.playerName} ${fireBadge}</div>
+            <div class="player-name">${player.playerName}${statusEmoji}${fireBadge}</div>
             <div class="account-sub">${player.accountName}</div>
           </div>
         </div>
@@ -546,6 +589,7 @@ function renderLeaderboard() {
       item.className = 'leader-item';
       const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
       const exactBadge = player.exactHit ? ' 🎯' : '';
+      const statusEmoji = player.emoji ? ` ${player.emoji}` : '';
       const guessStr = player.hasGuess ? `${player.guessHome} - ${player.guessAway}` : 'No Guess';
       const scoreStr = typeof player.score === 'number' ? `${player.score} pts` : player.score;
 
@@ -554,7 +598,7 @@ function renderLeaderboard() {
           <div class="rank ${rankClass}">#${player.rank}</div>
           <div class="player-dot" style="background:${player.color};"></div>
           <div class="player-info">
-            <div class="player-name">${player.playerName}${exactBadge}</div>
+            <div class="player-name">${player.playerName}${statusEmoji}${exactBadge}</div>
             <div class="account-sub">Guess: <strong>${guessStr}</strong> • ${player.accountName}</div>
           </div>
         </div>
@@ -608,6 +652,7 @@ function renderPlayerGuesses() {
     const homeVal = existingGuess ? (existingGuess.home !== null ? existingGuess.home : '') : '';
     const awayVal = existingGuess ? (existingGuess.away !== null ? existingGuess.away : '') : '';
     const currentColor = getPlayerColor(player.id);
+    const emoji = getPlayerEmoji(player.id);
 
     const row = document.createElement('div');
     row.className = 'card';
@@ -619,14 +664,11 @@ function renderPlayerGuesses() {
       <div style="font-weight:700; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
         <div style="display:flex; align-items:center; gap:8px;">
           <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${currentColor}; border:1px solid rgba(255,255,255,0.4);"></span>
-          <span>${player.name}</span>
+          <span>${player.name}${emoji ? ' ' + emoji : ''}</span>
         </div>
-        <div style="display:flex; gap:6px; align-items:center;">
-          <span style="font-size:0.75rem; color:var(--text-muted);">Color:</span>
-          ${PRESET_PLAYER_COLORS.map(c => `
-            <div class="color-mini-swatch" data-player-id="${player.id}" data-color="${c}" style="width:16px; height:16px; border-radius:50%; background:${c}; cursor:pointer; border:${c === currentColor ? '2px solid white' : '1px solid transparent'}; box-shadow:${c === currentColor ? '0 0 6px ' + c : 'none'};"></div>
-          `).join('')}
-        </div>
+        <button type="button" class="btn btn-secondary edit-player-btn" data-player-id="${player.id}" style="width:auto; padding:4px 10px; font-size:0.75rem;">
+          ✏️ Edit
+        </button>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div>
@@ -642,16 +684,53 @@ function renderPlayerGuesses() {
     elements.playerGuessesContainer.appendChild(row);
   });
 
-  // Color Swatch Selection Listeners for Players
-  document.querySelectorAll('.color-mini-swatch').forEach(swatch => {
-    swatch.addEventListener('click', (e) => {
+  // Attach Edit Player Button Listeners
+  document.querySelectorAll('.edit-player-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
       const pId = parseInt(e.target.getAttribute('data-player-id'), 10);
-      const color = e.target.getAttribute('data-color');
-      savePlayerColor(pId, color);
-      renderPlayerGuesses();
-      renderLeaderboard();
+      openEditPlayerModal(pId);
     });
   });
+}
+
+// Open Edit Player Card
+function openEditPlayerModal(playerId) {
+  const player = state.players.find(p => p.id === playerId);
+  if (!player) return;
+
+  elements.editPlayerId.value = player.id;
+  elements.editPlayerName.value = player.name;
+  if (elements.editPlayerEmoji) {
+    elements.editPlayerEmoji.value = getPlayerEmoji(player.id);
+  }
+  
+  initEditPlayerColorPicker(getPlayerColor(player.id));
+  elements.addPlayerCard.style.display = 'none';
+  elements.editPlayerCard.style.display = 'block';
+  elements.editPlayerCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Edit Player Form Handler
+async function handleEditPlayer(e) {
+  e.preventDefault();
+  const playerId = parseInt(elements.editPlayerId.value, 10);
+  const newName = elements.editPlayerName.value.trim();
+  const newEmoji = elements.editPlayerEmoji ? elements.editPlayerEmoji.value.trim() : '';
+
+  if (!playerId || !newName) return;
+
+  try {
+    await SupabaseAPI.updatePlayer(playerId, newName);
+    savePlayerColor(playerId, state.editingPlayerColor);
+    savePlayerEmoji(playerId, newEmoji);
+    await loadData();
+    elements.editPlayerCard.style.display = 'none';
+    renderPlayerGuesses();
+    renderLeaderboard();
+    alert('Player updated successfully!');
+  } catch (err) {
+    alert('Failed to update player.');
+  }
 }
 
 // Bulk Save Guesses
@@ -691,15 +770,18 @@ async function handleSaveGuesses(e) {
 async function handleAddPlayer(e) {
   e.preventDefault();
   const name = elements.newPlayerName.value.trim();
+  const emoji = elements.newPlayerEmoji ? elements.newPlayerEmoji.value.trim() : '';
   if (!name || !state.currentAccount) return;
 
   try {
     const newPlayer = await SupabaseAPI.createPlayer(name, state.currentAccount.id);
     if (newPlayer && newPlayer.id) {
       savePlayerColor(newPlayer.id, state.selectedPlayerColor);
+      savePlayerEmoji(newPlayer.id, emoji);
     }
     await loadData();
     elements.newPlayerName.value = '';
+    if (elements.newPlayerEmoji) elements.newPlayerEmoji.value = '';
     elements.addPlayerCard.style.display = 'none';
     renderPlayerGuesses();
     renderLeaderboard();

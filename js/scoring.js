@@ -22,6 +22,20 @@ export function savePlayerColor(playerId, color) {
   }
 }
 
+export function getPlayerEmoji(playerId) {
+  if (playerId) {
+    const saved = localStorage.getItem('player_emoji_' + playerId);
+    if (saved !== null) return saved;
+  }
+  return '';
+}
+
+export function savePlayerEmoji(playerId, emoji) {
+  if (playerId) {
+    localStorage.setItem('player_emoji_' + playerId, (emoji || '').trim());
+  }
+}
+
 /**
  * Calculates game points for a guess against actual score
  */
@@ -90,7 +104,6 @@ export function computeLeaderboard(players, games, guesses, accounts) {
       }
     });
 
-    // Calculate total score after dropping lowest X scores
     const sortedScores = [...gameScores].sort((a, b) => a - b);
     const dropped = sortedScores.slice(0, dropsAllowed);
     const keptScores = sortedScores.slice(dropsAllowed);
@@ -105,6 +118,7 @@ export function computeLeaderboard(players, games, guesses, accounts) {
       accountId: player.account_id,
       accountName: account ? account.name : 'Unknown Account',
       color: getPlayerColor(player.id),
+      emoji: getPlayerEmoji(player.id),
       totalScore,
       gameScores,
       droppedScores: dropped,
@@ -157,6 +171,7 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
       accountId: player.account_id,
       accountName: account ? account.name : 'Unknown Account',
       color: getPlayerColor(player.id),
+      emoji: getPlayerEmoji(player.id),
       guessHome: guess ? guess.home : null,
       guessAway: guess ? guess.away : null,
       score: score !== null ? score : (guess ? 'Pending' : 'No Guess'),
