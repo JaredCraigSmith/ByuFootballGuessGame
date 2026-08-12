@@ -38,7 +38,8 @@ This is just a side project for some fun with my family so security isn't super 
 - `away_team` (varchar, nullable)
 - `home_score` (int2, nullable)
 - `away_score` (int2, nullable)
-- `start_time` (timestamptz)
+- `start_time` (timesz)
+- `start_date` (date)
 
 ### `Guesses`
 - `id` (bigint, PK, identity)

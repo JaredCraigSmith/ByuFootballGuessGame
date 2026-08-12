@@ -95,7 +95,7 @@ export const SupabaseAPI = {
   async getGames(forceRefresh = false) {
     if (!forceRefresh && isCacheValid('games')) return cache.games;
     try {
-      const res = await fetch(`${SUPABASE_BASE_URL}/Games?select=*&order=start_time.asc`, { headers });
+      const res = await fetch(`${SUPABASE_BASE_URL}/Games?select=*&order=start_date.asc,id.asc`, { headers });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const data = await res.json();
       cache.games = data;
@@ -107,7 +107,7 @@ export const SupabaseAPI = {
     }
   },
 
-  async createGame(homeTeam, awayTeam, startTime) {
+  async createGame(homeTeam, awayTeam, startDate, startTime = null) {
     try {
       const res = await fetch(`${SUPABASE_BASE_URL}/Games`, {
         method: 'POST',
@@ -115,7 +115,8 @@ export const SupabaseAPI = {
         body: JSON.stringify({
           home_team: homeTeam,
           away_team: awayTeam,
-          start_time: startTime
+          start_date: startDate,
+          start_time: startTime || null
         })
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);

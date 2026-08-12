@@ -228,8 +228,12 @@
             <input type="text" id="adminAwayTeam" class="form-control" placeholder="e.g. Utah" required />
           </div>
           <div class="form-group">
-            <label class="form-label">Start Time / Kickoff</label>
-            <input type="datetime-local" id="adminStartTime" class="form-control" required />
+            <label class="form-label">Game Date</label>
+            <input type="date" id="adminStartDate" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kickoff Time (Optional / TBD)</label>
+            <input type="time" id="adminStartTime" class="form-control" placeholder="Leave blank if TBD" />
           </div>
           <button type="submit" class="btn btn-primary">Add Game to Schedule</button>
         </form>

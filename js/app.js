@@ -58,6 +58,7 @@ const elements = {
   adminAddGameForm: document.getElementById('adminAddGameForm'),
   adminHomeTeam: document.getElementById('adminHomeTeam'),
   adminAwayTeam: document.getElementById('adminAwayTeam'),
+  adminStartDate: document.getElementById('adminStartDate'),
   adminStartTime: document.getElementById('adminStartTime'),
   adminScoreList: document.getElementById('adminScoreList'),
 
@@ -254,14 +255,61 @@ async function handleCreateAccount(e) {
   }
 }
 
+// Helper to format Game Date & Time string
+function formatGameDateTime(game) {
+  let dateFormatted = '';
+  if (game.start_date) {
+    const parts = game.start_date.split('-');
+    if (parts.length === 3) {
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      dateFormatted = d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    } else {
+      dateFormatted = game.start_date;
+    }
+  } else if (game.start_time) {
+    dateFormatted = new Date(game.start_time).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  } else {
+    dateFormatted = 'TBD';
+  }
+
+  let timeFormatted = 'TBD';
+  if (game.start_time) {
+    if (game.start_time.includes('T')) {
+      timeFormatted = new Date(game.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+      timeFormatted = game.start_time;
+    }
+  }
+
+  return `${dateFormatted} • ${timeFormatted === 'TBD' ? 'Kickoff TBD' : timeFormatted}`;
+}
+
+function getGameStartTimestamp(game) {
+  if (game.start_date) {
+    if (game.start_time) {
+      if (game.start_time.includes('T')) return new Date(game.start_time).getTime();
+      return new Date(`${game.start_date}T${game.start_time}`).getTime();
+    }
+    return new Date(`${game.start_date}T00:00:00`).getTime();
+  }
+  if (game.start_time) {
+    return new Date(game.start_time).getTime();
+  }
+  return null;
+}
+
 // Countdown & Upcoming Game Banner
 function setupCountdown() {
   if (state.countdownInterval) clearInterval(state.countdownInterval);
 
-  const now = new Date();
+  // Find next uncompleted game
   const upcomingGame = state.games
-    .filter(g => new Date(g.start_time) > now)
-    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))[0];
+    .filter(g => g.home_score === null && g.away_score === null)
+    .sort((a, b) => {
+      const dateA = a.start_date || a.start_time || '';
+      const dateB = b.start_date || b.start_time || '';
+      return dateA.localeCompare(dateB);
+    })[0];
 
   if (!upcomingGame) {
     elements.bannerHome.textContent = 'BYU';
@@ -280,15 +328,19 @@ function setupCountdown() {
   // Submission count indicator
   const submittedGuesses = state.guesses.filter(g => g.game_id === upcomingGame.id);
   const uniquePlayersWithGuess = new Set(submittedGuesses.map(g => g.player_id));
-  elements.guessProgressIndicator.textContent = `📊 ${uniquePlayersWithGuess.size}/${state.players.length} players submitted guesses`;
+  const hasTime = !!upcomingGame.start_time;
 
-  const targetDate = new Date(upcomingGame.start_time).getTime();
+  elements.guessProgressIndicator.textContent = `📊 ${uniquePlayersWithGuess.size}/${state.players.length} players submitted guesses ${!hasTime ? '(Kickoff TBD)' : ''}`;
+
+  const targetDate = getGameStartTimestamp(upcomingGame);
+
+  if (!targetDate) return;
 
   state.countdownInterval = setInterval(() => {
-    const currentTime = new Date().getTime();
+    const currentTime = Date.now();
     const diff = targetDate - currentTime;
 
-    if (diff <= 0) {
+    if (diff <= 0 && hasTime) {
       clearInterval(state.countdownInterval);
       elements.cdDays.textContent = '00';
       elements.cdHours.textContent = '00';
@@ -298,10 +350,11 @@ function setupCountdown() {
       return;
     }
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+    const absDiff = Math.abs(diff);
+    const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((absDiff % (1000 * 60)) / 1000);
 
     elements.cdDays.textContent = String(days).padStart(2, '0');
     elements.cdHours.textContent = String(hours).padStart(2, '0');
@@ -358,7 +411,8 @@ function renderGuessesView() {
     const opt = document.createElement('option');
     opt.value = game.id;
     const isCompleted = game.home_score !== null && game.away_score !== null;
-    opt.textContent = `${game.home_team} vs ${game.away_team} ${isCompleted ? ' (Final)' : ''}`;
+    const dateFormatted = formatGameDateTime(game);
+    opt.textContent = `${game.home_team} vs ${game.away_team} (${dateFormatted})${isCompleted ? ' - Final' : ''}`;
     elements.guessGameSelect.appendChild(opt);
   });
 
@@ -472,7 +526,7 @@ function renderSchedule() {
   state.games.forEach(game => {
     const card = document.createElement('div');
     card.className = 'card';
-    const dateStr = new Date(game.start_time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const dateStr = formatGameDateTime(game);
     const isFinished = game.home_score !== null && game.away_score !== null;
 
     card.innerHTML = `
@@ -541,14 +595,16 @@ async function handleAdminAddGame(e) {
   e.preventDefault();
   const home = elements.adminHomeTeam.value.trim();
   const away = elements.adminAwayTeam.value.trim();
-  const startTime = elements.adminStartTime.value;
+  const startDate = elements.adminStartDate.value;
+  const startTime = elements.adminStartTime.value || null;
 
-  if (!home || !away || !startTime) return;
+  if (!home || !away || !startDate) return;
 
   try {
-    await SupabaseAPI.createGame(home, away, new Date(startTime).toISOString());
+    await SupabaseAPI.createGame(home, away, startDate, startTime);
     await loadData();
     elements.adminAwayTeam.value = '';
+    elements.adminStartDate.value = '';
     elements.adminStartTime.value = '';
     renderAdminView();
     setupCountdown();

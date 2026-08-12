@@ -58,7 +58,7 @@ export function calculateGuessPoints(guess, game, gameIndex = 0) {
 export function computeLeaderboard(players, games, guesses, accounts) {
   const completedGames = games
     .filter(g => g.home_score !== null && g.away_score !== null)
-    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+    .sort((a, b) => new Date(a.start_date || a.start_time) - new Date(b.start_date || b.start_time));
 
   const totalCompleted = completedGames.length;
   let dropsAllowed = 0;
