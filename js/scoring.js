@@ -7,13 +7,6 @@ export const PRESET_PLAYER_COLORS = [
   '#FFC72C', '#06B6D4'
 ];
 
-// Preset Player Status Emojis
-export const PRESET_PLAYER_EMOJIS = [
-  '🏈', '🔥', '⚡', '👑', '🚀', '🎯', '🤙', '🏆', 
-  '🐾', '🥇', '💎', '🧊', '💯', '🦾', '🕶️', '🥳', 
-  '🐻', '🦁', '🐺', '🐉', '🍿', '🌟', '💥', '🎓'
-];
-
 export function getPlayerColor(playerId) {
   if (playerId) {
     const saved = localStorage.getItem('player_color_' + playerId);
@@ -26,20 +19,6 @@ export function getPlayerColor(playerId) {
 export function savePlayerColor(playerId, color) {
   if (playerId && color) {
     localStorage.setItem('player_color_' + playerId, color);
-  }
-}
-
-export function getPlayerEmoji(playerId) {
-  if (playerId) {
-    const saved = localStorage.getItem('player_emoji_' + playerId);
-    if (saved !== null) return saved;
-  }
-  return '';
-}
-
-export function savePlayerEmoji(playerId, emoji) {
-  if (playerId) {
-    localStorage.setItem('player_emoji_' + playerId, (emoji || '').trim());
   }
 }
 
@@ -125,7 +104,6 @@ export function computeLeaderboard(players, games, guesses, accounts) {
       accountId: player.account_id,
       accountName: account ? account.name : 'Unknown Account',
       color: getPlayerColor(player.id),
-      emoji: getPlayerEmoji(player.id),
       totalScore,
       gameScores,
       droppedScores: dropped,
@@ -178,7 +156,6 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
       accountId: player.account_id,
       accountName: account ? account.name : 'Unknown Account',
       color: getPlayerColor(player.id),
-      emoji: getPlayerEmoji(player.id),
       guessHome: guess ? guess.home : null,
       guessAway: guess ? guess.away : null,
       score: score !== null ? score : (guess ? 'Pending' : 'No Guess'),

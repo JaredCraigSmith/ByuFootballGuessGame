@@ -5,10 +5,7 @@ import {
   computeWeeklyLeaderboard, 
   getPlayerColor, 
   savePlayerColor, 
-  getPlayerEmoji, 
-  savePlayerEmoji, 
-  PRESET_PLAYER_COLORS,
-  PRESET_PLAYER_EMOJIS
+  PRESET_PLAYER_COLORS 
 } from './scoring.js';
 
 // Application State
@@ -23,8 +20,6 @@ const state = {
   selectedWeeklyGameId: null,
   selectedPlayerColor: PRESET_PLAYER_COLORS[0],
   editingPlayerColor: PRESET_PLAYER_COLORS[0],
-  selectedPlayerEmoji: '',
-  editingPlayerEmoji: '',
   countdownInterval: null
 };
 
@@ -72,8 +67,6 @@ const elements = {
   addPlayerCard: document.getElementById('addPlayerCard'),
   addPlayerForm: document.getElementById('addPlayerForm'),
   newPlayerName: document.getElementById('newPlayerName'),
-  newPlayerEmoji: document.getElementById('newPlayerEmoji'),
-  newPlayerEmojiPicker: document.getElementById('newPlayerEmojiPicker'),
   newPlayerColorPicker: document.getElementById('newPlayerColorPicker'),
 
   // Edit Player
@@ -82,8 +75,6 @@ const elements = {
   editPlayerForm: document.getElementById('editPlayerForm'),
   editPlayerId: document.getElementById('editPlayerId'),
   editPlayerName: document.getElementById('editPlayerName'),
-  editPlayerEmoji: document.getElementById('editPlayerEmoji'),
-  editPlayerEmojiPicker: document.getElementById('editPlayerEmojiPicker'),
   editPlayerColorPicker: document.getElementById('editPlayerColorPicker'),
 
   // Games & Admin
@@ -105,7 +96,6 @@ const elements = {
 async function init() {
   setupEventListeners();
   initAddPlayerColorPicker();
-  initAddPlayerEmojiPicker();
   await loadData();
   restoreSession();
   renderAccountsDropdown();
@@ -176,7 +166,6 @@ function setupEventListeners() {
     elements.addPlayerCard.style.display = 'block';
     elements.editPlayerCard.style.display = 'none';
     initAddPlayerColorPicker();
-    initAddPlayerEmojiPicker();
   });
   elements.hideAddPlayerBtn.addEventListener('click', () => {
     elements.addPlayerCard.style.display = 'none';
@@ -246,76 +235,6 @@ function initEditPlayerColorPicker(initialColor) {
       state.editingPlayerColor = color;
     });
     elements.editPlayerColorPicker.appendChild(swatch);
-  });
-}
-
-// Emoji Picker Initializer for Add Player
-function initAddPlayerEmojiPicker() {
-  if (!elements.newPlayerEmojiPicker) return;
-  state.selectedPlayerEmoji = '';
-  if (elements.newPlayerEmoji) elements.newPlayerEmoji.value = '';
-
-  elements.newPlayerEmojiPicker.innerHTML = '';
-
-  const noneOpt = document.createElement('div');
-  noneOpt.className = 'emoji-option selected';
-  noneOpt.style.fontSize = '0.75rem';
-  noneOpt.style.fontWeight = '700';
-  noneOpt.textContent = 'None';
-  noneOpt.addEventListener('click', () => {
-    elements.newPlayerEmojiPicker.querySelectorAll('.emoji-option').forEach(s => s.classList.remove('selected'));
-    noneOpt.classList.add('selected');
-    state.selectedPlayerEmoji = '';
-    if (elements.newPlayerEmoji) elements.newPlayerEmoji.value = '';
-  });
-  elements.newPlayerEmojiPicker.appendChild(noneOpt);
-
-  PRESET_PLAYER_EMOJIS.forEach(emoji => {
-    const swatch = document.createElement('div');
-    swatch.className = 'emoji-option';
-    swatch.textContent = emoji;
-    swatch.addEventListener('click', () => {
-      elements.newPlayerEmojiPicker.querySelectorAll('.emoji-option').forEach(s => s.classList.remove('selected'));
-      swatch.classList.add('selected');
-      state.selectedPlayerEmoji = emoji;
-      if (elements.newPlayerEmoji) elements.newPlayerEmoji.value = emoji;
-    });
-    elements.newPlayerEmojiPicker.appendChild(swatch);
-  });
-}
-
-// Emoji Picker Initializer for Edit Player
-function initEditPlayerEmojiPicker(currentEmoji) {
-  if (!elements.editPlayerEmojiPicker) return;
-  state.editingPlayerEmoji = currentEmoji || '';
-  if (elements.editPlayerEmoji) elements.editPlayerEmoji.value = state.editingPlayerEmoji;
-
-  elements.editPlayerEmojiPicker.innerHTML = '';
-
-  const noneOpt = document.createElement('div');
-  noneOpt.className = 'emoji-option' + (state.editingPlayerEmoji === '' ? ' selected' : '');
-  noneOpt.style.fontSize = '0.75rem';
-  noneOpt.style.fontWeight = '700';
-  noneOpt.textContent = 'None';
-  noneOpt.addEventListener('click', () => {
-    elements.editPlayerEmojiPicker.querySelectorAll('.emoji-option').forEach(s => s.classList.remove('selected'));
-    noneOpt.classList.add('selected');
-    state.editingPlayerEmoji = '';
-    if (elements.editPlayerEmoji) elements.editPlayerEmoji.value = '';
-  });
-  elements.editPlayerEmojiPicker.appendChild(noneOpt);
-
-  PRESET_PLAYER_EMOJIS.forEach(emoji => {
-    const swatch = document.createElement('div');
-    swatch.className = 'emoji-option' + (emoji === state.editingPlayerEmoji ? ' selected' : '');
-    swatch.textContent = emoji;
-    swatch.addEventListener('click', () => {
-      elements.editPlayerEmojiPicker.querySelectorAll('.emoji-option').forEach(s => s.classList.remove('selected'));
-      swatch.classList.add('selected');
-      state.editingPlayerEmoji = emoji;
-      if (elements.editPlayerEmoji) elements.editPlayerEmoji.value = emoji;
-    });
-    elements.editPlayerEmojiPicker.appendChild(swatch);
   });
 }
 
@@ -616,14 +535,13 @@ function renderLeaderboard() {
       item.className = 'leader-item';
       const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
       const fireBadge = player.isOnFire ? ' 🔥' : '';
-      const statusEmoji = player.emoji ? ` ${player.emoji}` : '';
 
       item.innerHTML = `
         <div class="leader-left">
           <div class="rank ${rankClass}">#${player.rank}</div>
           <div class="player-dot" style="background:${player.color};"></div>
           <div class="player-info">
-            <div class="player-name">${player.playerName}${statusEmoji}${fireBadge}</div>
+            <div class="player-name">${player.playerName}${fireBadge}</div>
             <div class="account-sub">${player.accountName}</div>
           </div>
         </div>
@@ -684,7 +602,6 @@ function renderLeaderboard() {
       item.className = 'leader-item';
       const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
       const exactBadge = player.exactHit ? ' 🎯' : '';
-      const statusEmoji = player.emoji ? ` ${player.emoji}` : '';
       const guessStr = player.hasGuess ? `${player.guessHome} - ${player.guessAway}` : 'No Guess';
       const scoreStr = typeof player.score === 'number' ? `${player.score} pts` : player.score;
 
@@ -693,7 +610,7 @@ function renderLeaderboard() {
           <div class="rank ${rankClass}">#${player.rank}</div>
           <div class="player-dot" style="background:${player.color};"></div>
           <div class="player-info">
-            <div class="player-name">${player.playerName}${statusEmoji}${exactBadge}</div>
+            <div class="player-name">${player.playerName}${exactBadge}</div>
             <div class="account-sub">Guess: <strong>${guessStr}</strong> • ${player.accountName}</div>
           </div>
         </div>
@@ -765,7 +682,6 @@ function renderPlayerGuesses() {
     const homeVal = existingGuess ? (existingGuess.home !== null ? existingGuess.home : '') : '';
     const awayVal = existingGuess ? (existingGuess.away !== null ? existingGuess.away : '') : '';
     const currentColor = getPlayerColor(player.id);
-    const emoji = getPlayerEmoji(player.id);
 
     const row = document.createElement('div');
     row.className = 'card';
@@ -778,7 +694,7 @@ function renderPlayerGuesses() {
       <div style="font-weight:700; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
         <div style="display:flex; align-items:center; gap:8px;">
           <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${currentColor}; border:1px solid rgba(255,255,255,0.4);"></span>
-          <span>${player.name}${emoji ? ' ' + emoji : ''}</span>
+          <span>${player.name}</span>
         </div>
         <button type="button" class="btn btn-secondary edit-player-btn" data-player-id="${player.id}" style="width:auto; padding:4px 10px; font-size:0.75rem;">
           ✏️ Edit
@@ -832,7 +748,6 @@ function openEditPlayerModal(playerId) {
   elements.editPlayerName.value = player.name;
   
   initEditPlayerColorPicker(getPlayerColor(player.id));
-  initEditPlayerEmojiPicker(getPlayerEmoji(player.id));
   
   elements.addPlayerCard.style.display = 'none';
   elements.editPlayerCard.style.display = 'block';
@@ -844,14 +759,12 @@ async function handleEditPlayer(e) {
   e.preventDefault();
   const playerId = parseInt(elements.editPlayerId.value, 10);
   const newName = elements.editPlayerName.value.trim();
-  const newEmoji = state.editingPlayerEmoji || '';
 
   if (!playerId || !newName) return;
 
   try {
     await SupabaseAPI.updatePlayer(playerId, newName);
     savePlayerColor(playerId, state.editingPlayerColor);
-    savePlayerEmoji(playerId, newEmoji);
     await loadData();
     elements.editPlayerCard.style.display = 'none';
     renderPlayerGuesses();
@@ -905,14 +818,12 @@ async function handleSaveGuesses(e) {
 async function handleAddPlayer(e) {
   e.preventDefault();
   const name = elements.newPlayerName.value.trim();
-  const emoji = state.selectedPlayerEmoji || '';
   if (!name || !state.currentAccount) return;
 
   try {
     const newPlayer = await SupabaseAPI.createPlayer(name, state.currentAccount.id);
     if (newPlayer && newPlayer.id) {
       savePlayerColor(newPlayer.id, state.selectedPlayerColor);
-      savePlayerEmoji(newPlayer.id, emoji);
     }
     await loadData();
     elements.newPlayerName.value = '';

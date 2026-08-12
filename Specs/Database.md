@@ -30,6 +30,7 @@ This is just a side project for some fun with my family so security isn't super 
 - `created_at` (timestamptz, default: `now()`)
 - `name` (varchar, nullable)
 - `account_id` (bigint, FK $\rightarrow$ `Accounts.id`)
+- `color` (emoji)
 
 ### `Games`
 - `id` (bigint, PK, identity)
