@@ -524,3 +524,44 @@ body {
   color: white;
   box-shadow: 0 2px 8px rgba(0, 98, 184, 0.4);
 }
+
+/* Emoji Picker Grid */
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.emoji-option {
+  font-size: 1.3rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.emoji-option:hover {
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.emoji-option.selected {
+  transform: scale(1.2);
+  border-color: var(--byu-gold);
+  background: rgba(255, 199, 44, 0.2);
+  box-shadow: 0 0 10px rgba(255, 199, 44, 0.4);
+}

@@ -7,7 +7,8 @@ import {
   savePlayerColor, 
   getPlayerEmoji, 
   savePlayerEmoji, 
-  PRESET_PLAYER_COLORS 
+  PRESET_PLAYER_COLORS,
+  PRESET_PLAYER_EMOJIS
 } from './scoring.js';
 
 // Application State
@@ -22,6 +23,8 @@ const state = {
   selectedWeeklyGameId: null,
   selectedPlayerColor: PRESET_PLAYER_COLORS[0],
   editingPlayerColor: PRESET_PLAYER_COLORS[0],
+  selectedPlayerEmoji: '',
+  editingPlayerEmoji: '',
   countdownInterval: null
 };
 
@@ -70,6 +73,7 @@ const elements = {
   addPlayerForm: document.getElementById('addPlayerForm'),
   newPlayerName: document.getElementById('newPlayerName'),
   newPlayerEmoji: document.getElementById('newPlayerEmoji'),
+  newPlayerEmojiPicker: document.getElementById('newPlayerEmojiPicker'),
   newPlayerColorPicker: document.getElementById('newPlayerColorPicker'),
 
   // Edit Player
@@ -79,6 +83,7 @@ const elements = {
   editPlayerId: document.getElementById('editPlayerId'),
   editPlayerName: document.getElementById('editPlayerName'),
   editPlayerEmoji: document.getElementById('editPlayerEmoji'),
+  editPlayerEmojiPicker: document.getElementById('editPlayerEmojiPicker'),
   editPlayerColorPicker: document.getElementById('editPlayerColorPicker'),
 
   // Games & Admin
@@ -100,6 +105,7 @@ const elements = {
 async function init() {
   setupEventListeners();
   initAddPlayerColorPicker();
+  initAddPlayerEmojiPicker();
   await loadData();
   restoreSession();
   renderAccountsDropdown();
@@ -170,6 +176,7 @@ function setupEventListeners() {
     elements.addPlayerCard.style.display = 'block';
     elements.editPlayerCard.style.display = 'none';
     initAddPlayerColorPicker();
+    initAddPlayerEmojiPicker();
   });
   elements.hideAddPlayerBtn.addEventListener('click', () => {
     elements.addPlayerCard.style.display = 'none';
@@ -239,6 +246,76 @@ function initEditPlayerColorPicker(initialColor) {
       state.editingPlayerColor = color;
     });
     elements.editPlayerColorPicker.appendChild(swatch);
+  });
+}
+
+// Emoji Picker Initializer for Add Player
+function initAddPlayerEmojiPicker() {
+  if (!elements.newPlayerEmojiPicker) return;
+  state.selectedPlayerEmoji = '';
+  if (elements.newPlayerEmoji) elements.newPlayerEmoji.value = '';
+
+  elements.newPlayerEmojiPicker.innerHTML = '';
+
+  const noneOpt = document.createElement('div');
+  noneOpt.className = 'emoji-option selected';
+  noneOpt.style.fontSize = '0.75rem';
+  noneOpt.style.fontWeight = '700';
+  noneOpt.textContent = 'None';
+  noneOpt.addEventListener('click', () => {
+    elements.newPlayerEmojiPicker.querySelectorAll('.emoji-option').forEach(s => s.classList.remove('selected'));
+    noneOpt.classList.add('selected');
+    state.selectedPlayerEmoji = '';
+    if (elements.newPlayerEmoji) elements.newPlayerEmoji.value = '';
+  });
+  elements.newPlayerEmojiPicker.appendChild(noneOpt);
+
+  PRESET_PLAYER_EMOJIS.forEach(emoji => {
+    const swatch = document.createElement('div');
+    swatch.className = 'emoji-option';
+    swatch.textContent = emoji;
+    swatch.addEventListener('click', () => {
+      elements.newPlayerEmojiPicker.querySelectorAll('.emoji-option').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
+      state.selectedPlayerEmoji = emoji;
+      if (elements.newPlayerEmoji) elements.newPlayerEmoji.value = emoji;
+    });
+    elements.newPlayerEmojiPicker.appendChild(swatch);
+  });
+}
+
+// Emoji Picker Initializer for Edit Player
+function initEditPlayerEmojiPicker(currentEmoji) {
+  if (!elements.editPlayerEmojiPicker) return;
+  state.editingPlayerEmoji = currentEmoji || '';
+  if (elements.editPlayerEmoji) elements.editPlayerEmoji.value = state.editingPlayerEmoji;
+
+  elements.editPlayerEmojiPicker.innerHTML = '';
+
+  const noneOpt = document.createElement('div');
+  noneOpt.className = 'emoji-option' + (state.editingPlayerEmoji === '' ? ' selected' : '');
+  noneOpt.style.fontSize = '0.75rem';
+  noneOpt.style.fontWeight = '700';
+  noneOpt.textContent = 'None';
+  noneOpt.addEventListener('click', () => {
+    elements.editPlayerEmojiPicker.querySelectorAll('.emoji-option').forEach(s => s.classList.remove('selected'));
+    noneOpt.classList.add('selected');
+    state.editingPlayerEmoji = '';
+    if (elements.editPlayerEmoji) elements.editPlayerEmoji.value = '';
+  });
+  elements.editPlayerEmojiPicker.appendChild(noneOpt);
+
+  PRESET_PLAYER_EMOJIS.forEach(emoji => {
+    const swatch = document.createElement('div');
+    swatch.className = 'emoji-option' + (emoji === state.editingPlayerEmoji ? ' selected' : '');
+    swatch.textContent = emoji;
+    swatch.addEventListener('click', () => {
+      elements.editPlayerEmojiPicker.querySelectorAll('.emoji-option').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
+      state.editingPlayerEmoji = emoji;
+      if (elements.editPlayerEmoji) elements.editPlayerEmoji.value = emoji;
+    });
+    elements.editPlayerEmojiPicker.appendChild(swatch);
   });
 }
 
@@ -753,11 +830,10 @@ function openEditPlayerModal(playerId) {
 
   elements.editPlayerId.value = player.id;
   elements.editPlayerName.value = player.name;
-  if (elements.editPlayerEmoji) {
-    elements.editPlayerEmoji.value = getPlayerEmoji(player.id);
-  }
   
   initEditPlayerColorPicker(getPlayerColor(player.id));
+  initEditPlayerEmojiPicker(getPlayerEmoji(player.id));
+  
   elements.addPlayerCard.style.display = 'none';
   elements.editPlayerCard.style.display = 'block';
   elements.editPlayerCard.scrollIntoView({ behavior: 'smooth' });
@@ -768,7 +844,7 @@ async function handleEditPlayer(e) {
   e.preventDefault();
   const playerId = parseInt(elements.editPlayerId.value, 10);
   const newName = elements.editPlayerName.value.trim();
-  const newEmoji = elements.editPlayerEmoji ? elements.editPlayerEmoji.value.trim() : '';
+  const newEmoji = state.editingPlayerEmoji || '';
 
   if (!playerId || !newName) return;
 
@@ -829,7 +905,7 @@ async function handleSaveGuesses(e) {
 async function handleAddPlayer(e) {
   e.preventDefault();
   const name = elements.newPlayerName.value.trim();
-  const emoji = elements.newPlayerEmoji ? elements.newPlayerEmoji.value.trim() : '';
+  const emoji = state.selectedPlayerEmoji || '';
   if (!name || !state.currentAccount) return;
 
   try {
@@ -840,7 +916,6 @@ async function handleAddPlayer(e) {
     }
     await loadData();
     elements.newPlayerName.value = '';
-    if (elements.newPlayerEmoji) elements.newPlayerEmoji.value = '';
     elements.addPlayerCard.style.display = 'none';
     renderPlayerGuesses();
     renderLeaderboard();

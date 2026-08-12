@@ -7,6 +7,13 @@ export const PRESET_PLAYER_COLORS = [
   '#FFC72C', '#06B6D4'
 ];
 
+// Preset Player Status Emojis
+export const PRESET_PLAYER_EMOJIS = [
+  '🏈', '🔥', '⚡', '👑', '🚀', '🎯', '🤙', '🏆', 
+  '🐾', '🥇', '💎', '🧊', '💯', '🦾', '🕶️', '🥳', 
+  '🐻', '🦁', '🐺', '🐉', '🍿', '🌟', '💥', '🎓'
+];
+
 export function getPlayerColor(playerId) {
   if (playerId) {
     const saved = localStorage.getItem('player_color_' + playerId);
