@@ -254,7 +254,27 @@ function setupEventListeners() {
   }
 }
 
-// Audio Controller for Pump Up Song (Secret Surprise #1 - Unlocked at 300 Avg Pts)
+// Launch Fireworks Display on Screen
+function launchFireworksShow() {
+  if (!window.confetti) return;
+
+  const count = 180;
+  const fire = (particleRatio, opts) => {
+    window.confetti({
+      origin: { y: 0.7 },
+      ...opts,
+      particleCount: Math.floor(count * particleRatio)
+    });
+  };
+
+  fire(0.25, { spread: 30, startVelocity: 60, colors: ['#0062B8', '#FFC72C', '#FFFFFF'] });
+  fire(0.2, { spread: 65, colors: ['#003865', '#FFC72C', '#34D399'] });
+  fire(0.35, { spread: 100, decay: 0.91, scalar: 0.9, colors: ['#0062B8', '#FFFFFF', '#FFC72C'] });
+  fire(0.1, { spread: 120, startVelocity: 30, decay: 0.92, scalar: 1.2, colors: ['#FFC72C', '#0062B8'] });
+  fire(0.1, { spread: 130, startVelocity: 50, colors: ['#FFFFFF', '#FFC72C'] });
+}
+
+// Audio & Fireworks Controller for Secret Surprise #1 (Unlocked at 300 Avg Pts)
 let isMusicPlaying = false;
 
 function toggleMusic() {
@@ -267,12 +287,12 @@ function toggleMusic() {
     return;
   }
 
-  // If points reached but present not unwrapped yet, unwrap present with confetti fireworks!
+  // Shoot fireworks on screen when unwrapping or tapping!
+  launchFireworksShow();
+
+  // If points reached but present not unwrapped yet, unwrap present!
   if (!isUnwrapped1) {
     localStorage.setItem(`byu_prize_unwrapped_1_${accId}`, 'true');
-    if (window.confetti) {
-      window.confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
-    }
     renderPrizesView();
     return;
   }
