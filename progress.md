@@ -54,4 +54,5 @@
   - Updated app & API layer to support `start_date` and `start_time` (TBD handling)
   - Added **Edit Player** card (edit name & color)
   - Implemented **Game Locking** when kickoff passes or scores are entered
-  - Updated codebase to use `is_admin` column in `Accounts` table (replaces hardcoded name checks) and `is_finished` column in `Games` table (with admin toggle & API updates)
+  - Added **Live Game Score Tracker** to Admin Control Panel with `⏱️ Save Live Score` and `🏆 Mark Final Score` controls
+  - Added live status indicators (`🏆 FINISHED`, `🔴 LIVE IN PROGRESS`, `🗓️ UPCOMING`) across Admin Panel, Schedule View, Weekly Leaderboard, and Main Countdown Banner

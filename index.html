@@ -54,9 +54,9 @@
 
         <form id="loginForm">
           <div class="form-group" style="text-align: left;">
-            <label class="form-label" for="accountSelect">Select Your Account / Family</label>
+            <label class="form-label" for="accountSelect">Select Your Shared Family Account</label>
             <select id="accountSelect" class="form-control" required>
-              <option value="">-- Choose Account --</option>
+              <option value="">-- Choose Shared Family Account --</option>
             </select>
           </div>
 
@@ -73,7 +73,7 @@
         <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Don't have an account yet?</p>
           <button id="showCreateAccountBtn" class="btn btn-secondary">
-            <span>Create New Family Account</span> ➕
+            <span>Create Shared Family Account</span> ➕
           </button>
         </div>
       </div>
@@ -83,20 +83,20 @@
     <section id="createAccountSection" class="view">
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">✨ Create Family Account</h3>
+          <h3 class="card-title">✨ Create Shared Family Account</h3>
           <button id="cancelCreateAccountBtn" class="btn btn-secondary" style="width: auto; padding: 4px 12px; font-size: 0.8rem;">Cancel</button>
         </div>
         <form id="createAccountForm">
           <div class="form-group">
-            <label class="form-label" for="newAccountName">Account / Family Name</label>
+            <label class="form-label" for="newAccountName">Shared Family Account Name</label>
             <input type="text" id="newAccountName" class="form-control" placeholder="e.g. Smith Family" required />
             <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">
-              Admin hint: Name account <strong>"J&J Smith's"</strong> for Admin privileges.
+              Create one account for your family so parents & kids can enter guesses together under individual player badges!
             </small>
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="newAccountPin">Security PIN (Digits)</label>
+            <label class="form-label" for="newAccountPin">Security PIN (4 Digits)</label>
             <input type="password" id="newAccountPin" class="form-control" placeholder="e.g. 1234" maxlength="6" inputmode="numeric" required />
           </div>
 
@@ -285,7 +285,10 @@
         </form>
 
         <!-- Enter Game Scores -->
-        <h4 style="font-size: 0.95rem; color: var(--byu-gold); margin-bottom: 10px;">🏁 Update Final Scores</h4>
+        <h4 style="font-size: 0.95rem; color: var(--byu-gold); margin-bottom: 6px;">🏈 Live Score Tracker & Game Status</h4>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
+          Update live scores as games progress. Uncheck <strong>"Finished"</strong> while play is ongoing, and check <strong>"Finished"</strong> when the final score is set!
+        </p>
         <div id="adminScoreList">
           <!-- Rendered via JS -->
         </div>

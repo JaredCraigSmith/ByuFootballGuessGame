@@ -128,10 +128,12 @@ export function computeLeaderboard(players, games, guesses, accounts) {
  */
 export function computeWeeklyLeaderboard(gameId, players, games, guesses, accounts) {
   const game = games.find(g => g.id === gameId);
-  if (!game) return { standings: [], game: null, isCompleted: false };
+  if (!game) return { standings: [], game: null, isCompleted: false, isLive: false };
 
   const gameIndex = games.indexOf(game);
-  const isCompleted = Boolean(game.is_finished) || (game.home_score !== null && game.away_score !== null);
+  const isFinished = Boolean(game.is_finished);
+  const hasScores = game.home_score !== null && game.away_score !== null;
+  const hasStarted = isFinished || hasScores;
 
   const standings = players.map(player => {
     const account = accounts.find(a => a.id === player.account_id);
@@ -140,7 +142,7 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
     let score = null;
     let exactHit = false;
 
-    if (guess && isCompleted) {
+    if (guess && hasStarted) {
       score = calculateGuessPoints(guess, game, gameIndex);
       if (guess.home === game.home_score && guess.away === game.away_score) {
         exactHit = true;
@@ -172,5 +174,5 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
     stat.rank = index + 1;
   });
 
-  return { standings, game, isCompleted };
+  return { standings, game, isCompleted: isFinished, isLive: !isFinished && hasScores };
 }
