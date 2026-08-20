@@ -98,16 +98,18 @@ const elements = {
   adminStartTime: document.getElementById('adminStartTime'),
   adminScoreList: document.getElementById('adminScoreList'),
 
-  // Cosmo Easter Egg
+  // Cosmo Easter Egg & Dance Button
   brandLogo: document.getElementById('brandLogo'),
   cosmoModal: document.getElementById('cosmoModal'),
-  closeCosmoBtn: document.getElementById('closeCosmoBtn')
+  closeCosmoBtn: document.getElementById('closeCosmoBtn'),
+  cosmoDanceTrigger: document.getElementById('cosmoDanceTrigger')
 };
 
 // Initialize Application
 async function init() {
   setupEventListeners();
   initAddPlayerColorPicker();
+  prepareCosmoDancerImage();
   await loadData();
   restoreSession();
   renderAccountsDropdown();
@@ -212,6 +214,113 @@ function setupEventListeners() {
   elements.closeCosmoBtn.addEventListener('click', () => {
     elements.cosmoModal.classList.remove('active');
   });
+
+  // Floating Cosmo Dance Button Click Handler
+  if (elements.cosmoDanceTrigger) {
+    elements.cosmoDanceTrigger.addEventListener('click', triggerCosmoDance);
+  }
+}
+
+// Remove White Background from Cosmo Images dynamically using Canvas
+function prepareCosmoDancerImage() {
+  const processImage = (targetImgId, srcPath) => {
+    const targetImg = document.getElementById(targetImgId);
+    if (!targetImg) return;
+
+    const rawImg = new Image();
+    rawImg.crossOrigin = 'Anonymous';
+    rawImg.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = rawImg.naturalWidth || rawImg.width;
+        canvas.height = rawImg.naturalHeight || rawImg.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(rawImg, 0, 0);
+
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+
+        // Make white/near-white background pixels 100% transparent
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          if (r > 230 && g > 230 && b > 230) {
+            data[i + 3] = 0;
+          }
+        }
+
+        ctx.putImageData(imgData, 0, 0);
+        targetImg.src = canvas.toDataURL('image/png');
+      } catch (e) {
+        console.warn('Canvas background removal fallback:', e);
+      }
+    };
+    rawImg.src = srcPath;
+  };
+
+  processImage('cosmoDanceImg', 'assets/cosmo_dancer.jpg');
+  processImage('cosmoBtnImg', 'assets/cosmo_head.jpg');
+}
+
+// Trigger Full Screen Dancing Cosmo Animation
+let isCosmoDancing = false;
+function triggerCosmoDance() {
+  if (isCosmoDancing) return;
+  isCosmoDancing = true;
+
+  const overlay = document.getElementById('cosmoDanceOverlay');
+  const dancerImg = document.getElementById('cosmoDanceImg');
+  const cheerText = document.getElementById('cosmoCheerText');
+
+  if (!overlay || !dancerImg) return;
+
+  overlay.style.display = 'block';
+
+  // Restart keyframe animation
+  dancerImg.classList.remove('cosmo-dancer-animating');
+  if (cheerText) cheerText.classList.remove('cosmo-cheer-pop');
+
+  // Trigger DOM reflow
+  void dancerImg.offsetWidth;
+
+  dancerImg.classList.add('cosmo-dancer-animating');
+
+  // Fun cheer phrases
+  const cheers = [
+    "GO COUGARS! 🐾",
+    "COSMO IS ON FIRE! 🔥",
+    "COUGAR POWER! 🤙",
+    "BYU ALL THE WAY! 🏈",
+    "TOUCHDOWN BYU! 🏆"
+  ];
+  const randomCheer = cheers[Math.floor(Math.random() * cheers.length)];
+  if (cheerText) {
+    cheerText.textContent = randomCheer;
+    cheerText.classList.add('cosmo-cheer-pop');
+  }
+
+  // Confetti fireworks show during the dance
+  if (window.confetti) {
+    window.confetti({ particleCount: 90, spread: 80, origin: { x: 0.2, y: 0.8 } });
+    setTimeout(() => {
+      window.confetti({ particleCount: 110, spread: 100, origin: { x: 0.7, y: 0.3 } });
+    }, 1200);
+    setTimeout(() => {
+      window.confetti({ particleCount: 130, spread: 90, origin: { x: 0.5, y: 0.5 } });
+    }, 2400);
+    setTimeout(() => {
+      window.confetti({ particleCount: 150, spread: 120, origin: { x: 0.8, y: 0.6 } });
+    }, 3600);
+  }
+
+  // Hide overlay after dance ends
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    dancerImg.classList.remove('cosmo-dancer-animating');
+    if (cheerText) cheerText.classList.remove('cosmo-cheer-pop');
+    isCosmoDancing = false;
+  }, 4800);
 }
 
 // Color Picker Swatches Initializer for Add Player
