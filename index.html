@@ -297,6 +297,24 @@
       </div>
     </section>
 
+      <!-- Hidden Easter Egg Footer (Inline at the bottom of the page) -->
+      <footer id="easterEggFooter" class="easter-egg-footer">
+        <div id="musicToggleBtn" class="music-inline-btn" title="Turn On/Off BYU Pump Up Song! 🎵">
+          <div id="musicBtnIcon" class="music-btn-icon">🎵</div>
+          <div id="musicEqualizer" class="music-equalizer" style="display: none;">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="btn-label">Pump Up Song</span>
+        </div>
+
+        <div id="cosmoDanceTrigger" class="cosmo-inline-btn" title="Dance with Cosmo! 🐾">
+          <img id="cosmoBtnImg" src="assets/cosmo_head.jpg" alt="Cosmo Button" class="cosmo-btn-img" />
+          <span class="btn-label">Cosmo Dance!</span>
+        </div>
+      </footer>
+
+    </div>
+
     <!-- Cosmo Easter Egg Modal -->
     <div id="cosmoModal" class="modal-overlay">
       <div class="modal-content">
@@ -309,18 +327,8 @@
 
   </div>
 
-  <!-- Floating Music Toggle Button (Fixed at Bottom Left) -->
-  <div id="musicToggleBtn" class="music-float-btn" title="Turn On/Off BYU Pump Up Song! 🎵">
-    <div id="musicBtnIcon" class="music-btn-icon">🎵</div>
-    <div id="musicEqualizer" class="music-equalizer" style="display: none;">
-      <span></span><span></span><span></span>
-    </div>
-  </div>
-
-  <!-- Floating Cosmo Dance Button (Fixed at Bottom Right) -->
-  <div id="cosmoDanceTrigger" class="cosmo-float-btn" title="Push to Dance with Cosmo! 🐾">
-    <img id="cosmoBtnImg" src="assets/cosmo_head.jpg" alt="Cosmo Button" class="cosmo-btn-img" />
-  </div>
+  <!-- Audio Element for BYU Pump Up Song -->
+  <audio id="pumpUpAudio" src="PumpUpSong.mp3" preload="auto" loop playsinline></audio>
 
   <!-- Dancing Cosmo Screen Overlay -->
   <div id="cosmoDanceOverlay" class="cosmo-dance-overlay" style="display: none;">

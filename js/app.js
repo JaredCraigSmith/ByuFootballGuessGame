@@ -105,7 +105,8 @@ const elements = {
   cosmoDanceTrigger: document.getElementById('cosmoDanceTrigger'),
   musicToggleBtn: document.getElementById('musicToggleBtn'),
   musicBtnIcon: document.getElementById('musicBtnIcon'),
-  musicEqualizer: document.getElementById('musicEqualizer')
+  musicEqualizer: document.getElementById('musicEqualizer'),
+  pumpUpAudio: document.getElementById('pumpUpAudio')
 };
 
 // Initialize Application
@@ -218,73 +219,67 @@ function setupEventListeners() {
     elements.cosmoModal.classList.remove('active');
   });
 
-  // Floating Buttons Click Handlers
+  // Easter Egg Buttons Click & Touch Handlers
   if (elements.cosmoDanceTrigger) {
     elements.cosmoDanceTrigger.addEventListener('click', triggerCosmoDance);
   }
   if (elements.musicToggleBtn) {
-    elements.musicToggleBtn.addEventListener('click', toggleMusic);
+    elements.musicToggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleMusic();
+    });
+    elements.musicToggleBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      toggleMusic();
+    });
   }
-
-  // Scroll & Resize Listener for Floating Buttons Visibility
-  window.addEventListener('scroll', handleScrollForCosmoButton, { passive: true });
-  window.addEventListener('resize', handleScrollForCosmoButton, { passive: true });
 }
 
 // Audio Controller for Pump Up Song
 let isMusicPlaying = false;
-const pumpUpAudio = new Audio('PumpUpSong.mp3');
-pumpUpAudio.loop = true;
 
 function toggleMusic() {
+  const audioEl = elements.pumpUpAudio || document.getElementById('pumpUpAudio');
   const btn = elements.musicToggleBtn;
   const icon = elements.musicBtnIcon;
   const eq = elements.musicEqualizer;
 
-  if (isMusicPlaying) {
-    pumpUpAudio.pause();
+  if (!audioEl) return;
+
+  if (isMusicPlaying || !audioEl.paused) {
+    audioEl.pause();
     isMusicPlaying = false;
     if (btn) btn.classList.remove('playing');
     if (icon) icon.style.display = 'block';
     if (eq) eq.style.display = 'none';
   } else {
-    pumpUpAudio.play().then(() => {
-      isMusicPlaying = true;
-      if (btn) btn.classList.add('playing');
-      if (icon) icon.style.display = 'none';
-      if (eq) eq.style.display = 'flex';
-    }).catch(err => {
-      console.warn('Audio playback error:', err);
-    });
-  }
-}
+    audioEl.loop = true;
 
-// Check Scroll Position to Show/Hide Floating Buttons when near bottom
-function handleScrollForCosmoButton() {
-  const cosmoTrigger = elements.cosmoDanceTrigger;
-  const musicBtn = elements.musicToggleBtn;
+    // Direct synchronous call to play()
+    const playPromise = audioEl.play();
+    isMusicPlaying = true;
+    if (btn) btn.classList.add('playing');
+    if (icon) icon.style.display = 'none';
+    if (eq) eq.style.display = 'flex';
 
-  const windowHeight = window.innerHeight;
-  const scrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-  const documentHeight = Math.max(
-    document.body.scrollHeight,
-    document.body.offsetHeight,
-    document.documentElement.clientHeight,
-    document.documentElement.scrollHeight,
-    document.documentElement.offsetHeight
-  );
-
-  const distanceToBottom = documentHeight - (windowHeight + scrollY);
-  const isNearBottom = distanceToBottom <= 250;
-
-  if (cosmoTrigger) {
-    if (isNearBottom) cosmoTrigger.classList.add('visible');
-    else cosmoTrigger.classList.remove('visible');
-  }
-
-  if (musicBtn) {
-    if (isNearBottom) musicBtn.classList.add('visible');
-    else musicBtn.classList.remove('visible');
+    if (playPromise !== undefined) {
+      playPromise.catch(err => {
+        console.warn('Primary audio path failed, trying fallback:', err);
+        audioEl.src = 'assets/PumpUpSong.mp3';
+        audioEl.play().then(() => {
+          isMusicPlaying = true;
+          if (btn) btn.classList.add('playing');
+          if (icon) icon.style.display = 'none';
+          if (eq) eq.style.display = 'flex';
+        }).catch(e => {
+          console.error('All audio playback attempts failed:', e);
+          isMusicPlaying = false;
+          if (btn) btn.classList.remove('playing');
+          if (icon) icon.style.display = 'block';
+          if (eq) eq.style.display = 'none';
+        });
+      });
+    }
   }
 }
 

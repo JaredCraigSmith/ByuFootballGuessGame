@@ -57,8 +57,7 @@
   - Added **Live Game Score Tracker** to Admin Control Panel with `⏱️ Save Live Score` and `🏆 Mark Final Score` controls
   - Added live status indicators (`🏆 FINISHED`, `🔴 LIVE IN PROGRESS`, `🗓️ UPCOMING`) across Admin Panel, Schedule View, Weekly Leaderboard, and Main Countdown Banner
   - Enhanced **Player Cell Styling**: Full cell cards in Overall Standings, Weekly Leaders, and My Guesses now display in each player's chosen color with custom background gradients, matching borders, and glowing shadows 🎨
-  - Added **Interactive Cosmo Dance Button**: Background-less Cosmo head mascot icon anchored at the bottom right. The button is hidden by default and smoothly fades in/pops up **only when the user scrolls near the bottom of the page**. Pushing it triggers a transparent background Cosmo mascot leaping, spinning, backflipping, and dancing across the screen with cheer announcements & confetti fireworks! 🐾
-  - Added **Pump Up Song Music Button**: Floating audio control button anchored at the bottom left (`#musicToggleBtn`). Automatically fades in/pops up alongside the Cosmo button when scrolling near the bottom. Tapping it toggles playback of `PumpUpSong.mp3` with animated equalizer audio bars! 🎵
+  - Added **Interactive Cosmo Dance & Pump Up Song Buttons**: Placed as a hidden inline easter egg section at the very bottom of the page content (`#easterEggFooter`). Because they are placed inline at the bottom of the page flow, they are **100% hidden when viewing the top of the page** on any phone screen, and only appear when scrolling all the way down to the bottom! 🐾🎵
   - Optimized **Mobile Phone Screen Dance Animation**: Constrained Cosmo mascot sprite sizing (`160px` width / `max-width: 44vw`) and re-centered keyframe trajectories so the mascot remains 100% visible inside phone viewports without going off-screen 📱
 
 
