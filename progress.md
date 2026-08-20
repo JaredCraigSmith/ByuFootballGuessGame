@@ -58,7 +58,9 @@
   - Added live status indicators (`🏆 FINISHED`, `🔴 LIVE IN PROGRESS`, `🗓️ UPCOMING`) across Admin Panel, Schedule View, Weekly Leaderboard, and Main Countdown Banner
   - Enhanced **Player Cell Styling**: Full cell cards in Overall Standings, Weekly Leaders, and My Guesses now display in each player's chosen color with custom background gradients, matching borders, and glowing shadows 🎨
   - Added **Family Account Prize Vault Tab (`🎁 Prizes`)**: Added a dedicated Prizes view where families track their account average score toward mystery surprise unlocks!
-    - **Single Present Image Badges**: Prizes initially display as grayed-out mystery gift boxes (`assets/gift_box.jpg`).
-    - **Interactive Unwrapping Milestone**: When family points reach the threshold (300 avg pts for Surprise #1, 500 avg pts for Surprise #2), the present turns full-color, glows, and shakes with `🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!`. Tapping it triggers a confetti explosion and unwraps the present into a full-color revealed Badge image (`assets/music_badge.jpg` & `assets/cosmo_head.jpg`)! 🎁✨
+    - **Secret Surprise #1 (250 Avg Pts)**: Unlocks **Fireworks Explosion & BYU Hype Song** (`assets/music_badge.jpg`)! 🎆🎵
+    - **Secret Surprise #2 (450 Avg Pts)**: Unlocks the **4th Quarter Fire Knife Spinner Show** (`assets/fire_spinner_badge.jpg`) with high-speed spinning fire ring, fire embers, and fireworks! 🔥
+    - **Secret Surprise #3 (650 Avg Pts)**: Unlocks the ultimate **Cosmo Dance Party** (`assets/cosmo_head.jpg`)! 🐾
+    - **Interactive Unwrapping**: Present boxes (`assets/gift_box.jpg`) stay grayed out until points are hit, then glow & shake for the family to unwrap! 🎁✨
 
 
