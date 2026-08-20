@@ -840,3 +840,83 @@ body {
   100% { transform: translate(-50%, -50%) scale(1.5) rotate(10deg); opacity: 0; }
 }
 
+/* 4th Quarter Fire Spinner Show Overlay & Keyframes */
+.fire-spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background: radial-gradient(circle at center, rgba(40, 12, 0, 0.94) 0%, rgba(0, 0, 0, 0.98) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  animation: fadeIn 0.4s ease;
+}
+
+.fire-spinner-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 90vw;
+}
+
+.fire-banner-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #FF7700;
+  text-shadow: 0 0 15px rgba(255, 119, 0, 0.8), 0 0 25px rgba(255, 199, 44, 1);
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+  animation: firePulse 1.2s infinite ease-in-out alternate;
+}
+
+.fire-spinner-ring {
+  width: 240px;
+  height: 240px;
+  max-width: 65vw;
+  max-height: 65vw;
+  border-radius: 50%;
+  padding: 8px;
+  background: linear-gradient(135deg, #FF4500 0%, #FFC72C 50%, #FF0000 100%);
+  box-shadow: 0 0 40px rgba(255, 69, 0, 0.9), 0 0 80px rgba(255, 199, 44, 0.8);
+  animation: fireRingSpin 3s infinite linear, fireRingGlow 1.5s infinite ease-in-out alternate;
+}
+
+.fire-spinner-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  animation: fireInnerSpin 1.8s infinite linear reverse;
+}
+
+.fire-cheer-subtitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #FFC72C;
+  margin-top: 24px;
+  text-shadow: 0 0 10px rgba(255, 199, 44, 0.8);
+  letter-spacing: 0.5px;
+}
+
+@keyframes fireRingSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.06); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes fireInnerSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+@keyframes firePulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.08); filter: brightness(1.3); }
+}
+
