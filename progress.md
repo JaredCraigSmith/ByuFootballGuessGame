@@ -58,8 +58,7 @@
   - Added live status indicators (`🏆 FINISHED`, `🔴 LIVE IN PROGRESS`, `🗓️ UPCOMING`) across Admin Panel, Schedule View, Weekly Leaderboard, and Main Countdown Banner
   - Enhanced **Player Cell Styling**: Full cell cards in Overall Standings, Weekly Leaders, and My Guesses now display in each player's chosen color with custom background gradients, matching borders, and glowing shadows 🎨
   - Added **Family Account Prize Vault Tab (`🎁 Prizes`)**: Added a dedicated Prizes view where families track their account average score toward mystery surprise unlocks!
-    - **Secret Surprise #1 (Requires 300 Avg Pts)**: Unlocks the **Pump Up Song** (`PumpUpSong.mp3`) with animated equalizer audio bars!
-    - **Secret Surprise #2 (Requires 500 Avg Pts)**: Unlocks the ultimate **Cosmo Dance** victory animation across the screen!
-    - Mystery surprise buttons do not reveal what they do until unlocked/tapped, preserving the fun secret! Progress bars display real-time average family account points & remaining points needed. 🎁✨
+    - **Single Present Image Badges**: Prizes initially display as grayed-out mystery gift boxes (`assets/gift_box.jpg`).
+    - **Interactive Unwrapping Milestone**: When family points reach the threshold (300 avg pts for Surprise #1, 500 avg pts for Surprise #2), the present turns full-color, glows, and shakes with `🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!`. Tapping it triggers a confetti explosion and unwraps the present into a full-color revealed Badge image (`assets/music_badge.jpg` & `assets/cosmo_head.jpg`)! 🎁✨
 
 
