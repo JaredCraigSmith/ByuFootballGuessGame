@@ -98,11 +98,14 @@ const elements = {
   adminStartTime: document.getElementById('adminStartTime'),
   adminScoreList: document.getElementById('adminScoreList'),
 
-  // Cosmo Easter Egg & Dance Button
+  // Cosmo Easter Egg & Music Controls
   brandLogo: document.getElementById('brandLogo'),
   cosmoModal: document.getElementById('cosmoModal'),
   closeCosmoBtn: document.getElementById('closeCosmoBtn'),
-  cosmoDanceTrigger: document.getElementById('cosmoDanceTrigger')
+  cosmoDanceTrigger: document.getElementById('cosmoDanceTrigger'),
+  musicToggleBtn: document.getElementById('musicToggleBtn'),
+  musicBtnIcon: document.getElementById('musicBtnIcon'),
+  musicEqualizer: document.getElementById('musicEqualizer')
 };
 
 // Initialize Application
@@ -215,9 +218,73 @@ function setupEventListeners() {
     elements.cosmoModal.classList.remove('active');
   });
 
-  // Floating Cosmo Dance Button Click Handler
+  // Floating Buttons Click Handlers
   if (elements.cosmoDanceTrigger) {
     elements.cosmoDanceTrigger.addEventListener('click', triggerCosmoDance);
+  }
+  if (elements.musicToggleBtn) {
+    elements.musicToggleBtn.addEventListener('click', toggleMusic);
+  }
+
+  // Scroll & Resize Listener for Floating Buttons Visibility
+  window.addEventListener('scroll', handleScrollForCosmoButton, { passive: true });
+  window.addEventListener('resize', handleScrollForCosmoButton, { passive: true });
+}
+
+// Audio Controller for Pump Up Song
+let isMusicPlaying = false;
+const pumpUpAudio = new Audio('PumpUpSong.mp3');
+pumpUpAudio.loop = true;
+
+function toggleMusic() {
+  const btn = elements.musicToggleBtn;
+  const icon = elements.musicBtnIcon;
+  const eq = elements.musicEqualizer;
+
+  if (isMusicPlaying) {
+    pumpUpAudio.pause();
+    isMusicPlaying = false;
+    if (btn) btn.classList.remove('playing');
+    if (icon) icon.style.display = 'block';
+    if (eq) eq.style.display = 'none';
+  } else {
+    pumpUpAudio.play().then(() => {
+      isMusicPlaying = true;
+      if (btn) btn.classList.add('playing');
+      if (icon) icon.style.display = 'none';
+      if (eq) eq.style.display = 'flex';
+    }).catch(err => {
+      console.warn('Audio playback error:', err);
+    });
+  }
+}
+
+// Check Scroll Position to Show/Hide Floating Buttons when near bottom
+function handleScrollForCosmoButton() {
+  const cosmoTrigger = elements.cosmoDanceTrigger;
+  const musicBtn = elements.musicToggleBtn;
+
+  const windowHeight = window.innerHeight;
+  const scrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  const documentHeight = Math.max(
+    document.body.scrollHeight,
+    document.body.offsetHeight,
+    document.documentElement.clientHeight,
+    document.documentElement.scrollHeight,
+    document.documentElement.offsetHeight
+  );
+
+  const distanceToBottom = documentHeight - (windowHeight + scrollY);
+  const isNearBottom = distanceToBottom <= 250;
+
+  if (cosmoTrigger) {
+    if (isNearBottom) cosmoTrigger.classList.add('visible');
+    else cosmoTrigger.classList.remove('visible');
+  }
+
+  if (musicBtn) {
+    if (isNearBottom) musicBtn.classList.add('visible');
+    else musicBtn.classList.remove('visible');
   }
 }
 
@@ -274,6 +341,11 @@ function triggerCosmoDance() {
   const cheerText = document.getElementById('cosmoCheerText');
 
   if (!overlay || !dancerImg) return;
+
+  // Auto play pump up song if music is currently off
+  if (!isMusicPlaying) {
+    toggleMusic();
+  }
 
   overlay.style.display = 'block';
 
@@ -416,6 +488,8 @@ function switchView(viewId) {
   if (viewId === 'guessesView') renderGuessesView();
   if (viewId === 'gamesView') renderSchedule();
   if (viewId === 'adminView') renderAdminView();
+
+  setTimeout(handleScrollForCosmoButton, 50);
 }
 
 // Session Persistence
