@@ -1,0 +1,4 @@
+- Color entire cell
+- Dancing cosmo if win the week
+- Add a check if game is finished
+- Admin page

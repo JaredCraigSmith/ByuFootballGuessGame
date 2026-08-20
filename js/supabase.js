@@ -46,7 +46,7 @@ export const SupabaseAPI = {
       const res = await fetch(`${SUPABASE_BASE_URL}/Accounts`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ name, pin: parseInt(pin, 10) })
+        body: JSON.stringify({ name, pin: parseInt(pin, 10), is_admin: false })
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const data = await res.json();
@@ -133,7 +133,8 @@ export const SupabaseAPI = {
           home_team: homeTeam,
           away_team: awayTeam,
           start_date: startDate,
-          start_time: startTime || null
+          start_time: startTime || null,
+          is_finished: false
         })
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -146,14 +147,15 @@ export const SupabaseAPI = {
     }
   },
 
-  async updateGameScore(gameId, homeScore, awayScore) {
+  async updateGameScore(gameId, homeScore, awayScore, isFinished = true) {
     try {
       const res = await fetch(`${SUPABASE_BASE_URL}/Games?id=eq.${gameId}`, {
         method: 'PATCH',
         headers,
         body: JSON.stringify({
           home_score: parseInt(homeScore, 10),
-          away_score: parseInt(awayScore, 10)
+          away_score: parseInt(awayScore, 10),
+          is_finished: Boolean(isFinished)
         })
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);

@@ -26,7 +26,8 @@ export function savePlayerColor(playerId, color) {
  * Calculates game points for a guess against actual score
  */
 export function calculateGuessPoints(guess, game, gameIndex = 0) {
-  if (game.home_score === null || game.away_score === null || guess.home === null || guess.away === null) {
+  const isFinished = Boolean(game.is_finished) || (game.home_score !== null && game.away_score !== null);
+  if (!isFinished || game.home_score === null || game.away_score === null || guess.home === null || guess.away === null) {
     return null;
   }
 
@@ -34,23 +35,19 @@ export function calculateGuessPoints(guess, game, gameIndex = 0) {
   const diffAway = Math.abs(game.away_score - guess.away);
   const totalDiff = diffHome + diffAway;
 
-  let rawPoints = Math.max(0, 100 - (totalDiff * 5));
-
-  // Exact Score Bonus
-  if (diffHome === 0 && diffAway === 0) {
-    rawPoints += 50;
-  }
+  let rawPoints = Math.max(0, 100 - (totalDiff * 3));
 
   // Exact Winner Bonus
   const actualWinner = game.home_score > game.away_score ? 'home' : (game.home_score < game.away_score ? 'away' : 'tie');
   const guessWinner = guess.home > guess.away ? 'home' : (guess.home < guess.away ? 'away' : 'tie');
   if (actualWinner === guessWinner && actualWinner !== 'tie') {
-    rawPoints += 15;
+    rawPoints += 5;
   }
 
   // Season Progression Multiplier (Later games worth slightly more)
   const multiplier = 1.0 + (gameIndex * 0.15);
-  return Math.round(rawPoints * multiplier);
+  const finalScore = Math.round(rawPoints * multiplier);
+  return finalScore * 10 // Return score out of 1000 for more fun.
 }
 
 /**
@@ -58,7 +55,7 @@ export function calculateGuessPoints(guess, game, gameIndex = 0) {
  */
 export function computeLeaderboard(players, games, guesses, accounts) {
   const completedGames = games
-    .filter(g => g.home_score !== null && g.away_score !== null)
+    .filter(g => Boolean(g.is_finished) || (g.home_score !== null && g.away_score !== null))
     .sort((a, b) => new Date(a.start_date || a.start_time) - new Date(b.start_date || b.start_time));
 
   const totalCompleted = completedGames.length;
@@ -134,7 +131,7 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
   if (!game) return { standings: [], game: null, isCompleted: false };
 
   const gameIndex = games.indexOf(game);
-  const isCompleted = game.home_score !== null && game.away_score !== null;
+  const isCompleted = Boolean(game.is_finished) || (game.home_score !== null && game.away_score !== null);
 
   const standings = players.map(player => {
     const account = accounts.find(a => a.id === player.account_id);

@@ -24,6 +24,7 @@ This is just a side project for some fun with my family so security isn't super 
 - `created_at` (timestamptz, default: `now()`)
 - `name` (varchar, nullable)
 - `pin` (int2, nullable)
+- `is_admin` (boolean, default: `false`)
 
 ### `Players`
 - `id` (bigint, PK, identity)
@@ -41,6 +42,7 @@ This is just a side project for some fun with my family so security isn't super 
 - `away_score` (int2, nullable)
 - `start_time` (timesz)
 - `start_date` (date)
+- `is_finished` (boolean, default: `false`)
 
 ### `Guesses`
 - `id` (bigint, PK, identity)

@@ -259,13 +259,13 @@ function populateWeeklySelector() {
   state.games.forEach(game => {
     const opt = document.createElement('option');
     opt.value = game.id;
-    const isCompleted = game.home_score !== null && game.away_score !== null;
+    const isCompleted = Boolean(game.is_finished) || (game.home_score !== null && game.away_score !== null);
     const dateFormatted = formatGameDateTime(game);
     opt.textContent = `${game.home_team} vs ${game.away_team} (${dateFormatted})${isCompleted ? ' - Completed' : ''}`;
     elements.weeklyGameSelect.appendChild(opt);
   });
   if (!state.selectedWeeklyGameId && state.games.length > 0) {
-    const firstCompleted = state.games.find(g => g.home_score !== null && g.away_score !== null);
+    const firstCompleted = state.games.find(g => Boolean(g.is_finished) || (g.home_score !== null && g.away_score !== null));
     state.selectedWeeklyGameId = firstCompleted ? firstCompleted.id : state.games[0].id;
   }
   if (state.selectedWeeklyGameId) {
@@ -313,7 +313,7 @@ function setLoggedInUser(account) {
   elements.userInfo.style.display = 'flex';
   elements.currentAccountName.textContent = account.name;
 
-  if (account.name === "J&J Smith's") {
+  if (account && Boolean(account.is_admin)) {
     elements.adminNavTab.style.display = 'flex';
   } else {
     elements.adminNavTab.style.display = 'none';
@@ -432,12 +432,12 @@ function getGameStartTimestamp(game) {
   return new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, mins, 0).getTime();
 }
 
-// Check if game guesses are locked (Kickoff passed or final scores entered)
+// Check if game guesses are locked (Kickoff passed or final scores entered / game finished)
 function isGameLocked(game) {
   if (!game) return false;
 
-  // 1. If final scores entered, game is locked
-  if (game.home_score !== null && game.away_score !== null) {
+  // 1. If game is marked finished or final scores entered, game is locked
+  if (Boolean(game.is_finished) || (game.home_score !== null && game.away_score !== null)) {
     return true;
   }
 
@@ -456,7 +456,7 @@ function setupCountdown() {
 
   // Find next uncompleted game
   const upcomingGame = state.games
-    .filter(g => g.home_score === null && g.away_score === null)
+    .filter(g => !Boolean(g.is_finished) && (g.home_score === null || g.away_score === null))
     .sort((a, b) => {
       const dateA = a.start_date || a.start_time || '';
       const dateB = b.start_date || b.start_time || '';
@@ -847,7 +847,7 @@ function renderSchedule() {
     const card = document.createElement('div');
     card.className = 'card';
     const dateStr = formatGameDateTime(game);
-    const isFinished = game.home_score !== null && game.away_score !== null;
+    const isFinished = Boolean(game.is_finished) || (game.home_score !== null && game.away_score !== null);
 
     card.innerHTML = `
       <div style="font-size:0.8rem; color:var(--byu-gold); font-weight:700; margin-bottom:6px;">
@@ -855,7 +855,7 @@ function renderSchedule() {
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:1.1rem;">
         <div>${game.home_team}</div>
-        <div style="color:var(--text-muted); font-size:0.9rem;">${isFinished ? `${game.home_score} - ${game.away_score}` : 'VS'}</div>
+        <div style="color:var(--text-muted); font-size:0.9rem;">${isFinished ? `${game.home_score !== null ? game.home_score : '?'} - ${game.away_score !== null ? game.away_score : '?'}` : 'VS'}</div>
         <div>${game.away_team}</div>
       </div>
     `;
@@ -873,13 +873,17 @@ function renderAdminView() {
     row.style.padding = '12px 14px';
 
     row.innerHTML = `
-      <div style="font-weight:700; font-size:0.9rem; margin-bottom:8px;">
-        ${game.home_team} vs ${game.away_team}
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-weight:700; font-size:0.9rem;">${game.home_team} vs ${game.away_team}</span>
+        <label style="font-size:0.8rem; display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text-bright);">
+          <input type="checkbox" class="admin-is-finished" data-game-id="${game.id}" ${Boolean(game.is_finished) ? 'checked' : ''} />
+          <span>Finished</span>
+        </label>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr 100px; gap:8px; align-items:center;">
         <input type="number" class="form-control admin-home-score" data-game-id="${game.id}" value="${game.home_score !== null ? game.home_score : ''}" placeholder="${game.home_team} Score" />
         <input type="number" class="form-control admin-away-score" data-game-id="${game.id}" value="${game.away_score !== null ? game.away_score : ''}" placeholder="${game.away_team} Score" />
-        <button class="btn btn-gold save-score-btn" data-game-id="${game.id}" style="padding:10px 4px; font-size:0.8rem;">Save Score</button>
+        <button class="btn btn-gold save-score-btn" data-game-id="${game.id}" style="padding:10px 4px; font-size:0.8rem;">Save</button>
       </div>
     `;
     elements.adminScoreList.appendChild(row);
@@ -891,14 +895,17 @@ function renderAdminView() {
       const gameId = parseInt(e.target.getAttribute('data-game-id'), 10);
       const homeInput = document.querySelector(`.admin-home-score[data-game-id="${gameId}"]`);
       const awayInput = document.querySelector(`.admin-away-score[data-game-id="${gameId}"]`);
+      const isFinishedInput = document.querySelector(`.admin-is-finished[data-game-id="${gameId}"]`);
 
       if (homeInput.value === '' || awayInput.value === '') {
         alert('Please enter scores for both teams.');
         return;
       }
 
+      const isFinished = isFinishedInput ? isFinishedInput.checked : true;
+
       try {
-        await SupabaseAPI.updateGameScore(gameId, homeInput.value, awayInput.value);
+        await SupabaseAPI.updateGameScore(gameId, homeInput.value, awayInput.value, isFinished);
         await loadData();
         renderAdminView();
         setupCountdown();
