@@ -5,7 +5,8 @@ import {
   computeWeeklyLeaderboard, 
   getPlayerColor, 
   savePlayerColor, 
-  PRESET_PLAYER_COLORS 
+  PRESET_PLAYER_COLORS,
+  isGameFinished
 } from './scoring.js';
 
 // Application State
@@ -261,7 +262,7 @@ function populateWeeklySelector() {
   state.games.forEach(game => {
     const opt = document.createElement('option');
     opt.value = game.id;
-    const isFinished = Boolean(game.is_finished);
+    const isFinished = isGameFinished(game);
     const isLive = !isFinished && (game.home_score !== null && game.away_score !== null);
     const dateFormatted = formatGameDateTime(game);
 
@@ -273,7 +274,7 @@ function populateWeeklySelector() {
     elements.weeklyGameSelect.appendChild(opt);
   });
   if (!state.selectedWeeklyGameId && state.games.length > 0) {
-    const firstActive = state.games.find(g => Boolean(g.is_finished) || (g.home_score !== null && g.away_score !== null));
+    const firstActive = state.games.find(g => isGameFinished(g) || (g.home_score !== null && g.away_score !== null));
     state.selectedWeeklyGameId = firstActive ? firstActive.id : state.games[0].id;
   }
   if (state.selectedWeeklyGameId) {
@@ -445,7 +446,7 @@ function isGameLocked(game) {
   if (!game) return false;
 
   // 1. If game is marked finished or final scores entered, game is locked
-  if (Boolean(game.is_finished) || (game.home_score !== null && game.away_score !== null)) {
+  if (isGameFinished(game) || (game.home_score !== null && game.away_score !== null)) {
     return true;
   }
 
@@ -463,7 +464,7 @@ function setupCountdown() {
   if (state.countdownInterval) clearInterval(state.countdownInterval);
 
   // Check if there is a currently live/in-progress game
-  const liveGame = state.games.find(g => !Boolean(g.is_finished) && (g.home_score !== null && g.away_score !== null));
+  const liveGame = state.games.find(g => !isGameFinished(g) && (g.home_score !== null && g.away_score !== null));
 
   if (liveGame) {
     elements.bannerHome.textContent = liveGame.home_team || 'BYU';
@@ -478,7 +479,7 @@ function setupCountdown() {
 
   // Otherwise find next uncompleted upcoming game
   const upcomingGame = state.games
-    .filter(g => !Boolean(g.is_finished) && g.home_score === null && g.away_score === null)
+    .filter(g => !isGameFinished(g) && g.home_score === null && g.away_score === null)
     .sort((a, b) => {
       const dateA = a.start_date || a.start_time || '';
       const dateB = b.start_date || b.start_time || '';
@@ -870,7 +871,7 @@ function renderSchedule() {
     const card = document.createElement('div');
     card.className = 'card';
     const dateStr = formatGameDateTime(game);
-    const isFinished = Boolean(game.is_finished);
+    const isFinished = isGameFinished(game);
     const isLive = !isFinished && (game.home_score !== null && game.away_score !== null);
 
     let scoreDisplay = 'VS';
@@ -904,7 +905,7 @@ function renderAdminView() {
     row.style.padding = '14px';
     row.style.marginBottom = '12px';
 
-    const isFinished = Boolean(game.is_finished);
+    const isFinished = isGameFinished(game);
     const isLive = !isFinished && (game.home_score !== null && game.away_score !== null);
     const dateFormatted = formatGameDateTime(game);
 

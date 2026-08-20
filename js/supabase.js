@@ -134,7 +134,7 @@ export const SupabaseAPI = {
           away_team: awayTeam,
           start_date: startDate,
           start_time: startTime || null,
-          is_finished: false
+          game_finished: false
         })
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -155,7 +155,7 @@ export const SupabaseAPI = {
         body: JSON.stringify({
           home_score: parseInt(homeScore, 10),
           away_score: parseInt(awayScore, 10),
-          is_finished: Boolean(isFinished)
+          game_finished: Boolean(isFinished)
         })
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);

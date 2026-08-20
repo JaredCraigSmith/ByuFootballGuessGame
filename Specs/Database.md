@@ -42,7 +42,7 @@ This is just a side project for some fun with my family so security isn't super 
 - `away_score` (int2, nullable)
 - `start_time` (timesz)
 - `start_date` (date)
-- `is_finished` (boolean, default: `false`)
+- `game_finished` (boolean, default: `false`)
 
 ### `Guesses`
 - `id` (bigint, PK, identity)

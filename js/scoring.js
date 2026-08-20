@@ -22,11 +22,16 @@ export function savePlayerColor(playerId, color) {
   }
 }
 
+export function isGameFinished(game) {
+  if (!game) return false;
+  return Boolean(game.game_finished || game.is_finished);
+}
+
 /**
  * Calculates game points for a guess against actual score
  */
 export function calculateGuessPoints(guess, game, gameIndex = 0) {
-  const isFinished = Boolean(game.is_finished) || (game.home_score !== null && game.away_score !== null);
+  const isFinished = isGameFinished(game) || (game.home_score !== null && game.away_score !== null);
   if (!isFinished || game.home_score === null || game.away_score === null || guess.home === null || guess.away === null) {
     return null;
   }
@@ -55,7 +60,7 @@ export function calculateGuessPoints(guess, game, gameIndex = 0) {
  */
 export function computeLeaderboard(players, games, guesses, accounts) {
   const completedGames = games
-    .filter(g => Boolean(g.is_finished) || (g.home_score !== null && g.away_score !== null))
+    .filter(g => isGameFinished(g) || (g.home_score !== null && g.away_score !== null))
     .sort((a, b) => new Date(a.start_date || a.start_time) - new Date(b.start_date || b.start_time));
 
   const totalCompleted = completedGames.length;
@@ -131,7 +136,7 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
   if (!game) return { standings: [], game: null, isCompleted: false, isLive: false };
 
   const gameIndex = games.indexOf(game);
-  const isFinished = Boolean(game.is_finished);
+  const isFinished = isGameFinished(game);
   const hasScores = game.home_score !== null && game.away_score !== null;
   const hasStarted = isFinished || hasScores;
 
