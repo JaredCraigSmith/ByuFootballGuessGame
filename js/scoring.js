@@ -22,6 +22,18 @@ export function savePlayerColor(playerId, color) {
   }
 }
 
+export function hexToRgba(hex, alpha = 0.25) {
+  if (!hex) return `rgba(0, 98, 184, ${alpha})`;
+  let c = hex.replace('#', '');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const num = parseInt(c, 16);
+  if (isNaN(num)) return `rgba(0, 98, 184, ${alpha})`;
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function isGameFinished(game) {
   if (!game) return false;
   return Boolean(game.game_finished || game.is_finished);

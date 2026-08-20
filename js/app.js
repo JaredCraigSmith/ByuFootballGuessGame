@@ -6,7 +6,8 @@ import {
   getPlayerColor, 
   savePlayerColor, 
   PRESET_PLAYER_COLORS,
-  isGameFinished
+  isGameFinished,
+  hexToRgba
 } from './scoring.js?v=2';
 
 // Application State
@@ -586,18 +587,21 @@ function renderLeaderboard() {
       item.className = 'leader-item';
       const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
       const fireBadge = player.isOnFire ? ' 🔥' : '';
+      const playerColor = player.color || getPlayerColor(player.playerId);
+      const bgStyle = `background: linear-gradient(135deg, ${hexToRgba(playerColor, 0.38)} 0%, ${hexToRgba(playerColor, 0.16)} 100%); border: 1px solid ${hexToRgba(playerColor, 0.65)}; box-shadow: 0 4px 16px ${hexToRgba(playerColor, 0.25)};`;
+      item.setAttribute('style', bgStyle);
 
       item.innerHTML = `
         <div class="leader-left">
           <div class="rank ${rankClass}">#${player.rank}</div>
-          <div class="player-dot" style="background:${player.color};"></div>
+          <div class="player-dot" style="background:${playerColor}; box-shadow: 0 0 10px ${playerColor}; border: 2px solid rgba(255,255,255,0.9);"></div>
           <div class="player-info">
             <div class="player-name">${player.playerName}${fireBadge}</div>
             <div class="account-sub">${player.accountName}</div>
           </div>
         </div>
         <div class="leader-right">
-          <div class="score-tag">${player.totalScore} <span style="font-size:0.7rem; color:var(--text-muted);">pts</span></div>
+          <div class="score-tag">${player.totalScore} <span style="font-size:0.7rem; color:rgba(241,245,249,0.8);">pts</span></div>
         </div>
       `;
       elements.leaderboardList.appendChild(item);
@@ -665,14 +669,17 @@ function renderLeaderboard() {
       const exactBadge = player.exactHit ? ' 🎯' : '';
       const guessStr = player.hasGuess ? `${player.guessHome} - ${player.guessAway}` : 'No Guess';
       const scoreStr = typeof player.score === 'number' ? `${player.score} pts` : player.score;
+      const playerColor = player.color || getPlayerColor(player.playerId);
+      const bgStyle = `background: linear-gradient(135deg, ${hexToRgba(playerColor, 0.38)} 0%, ${hexToRgba(playerColor, 0.16)} 100%); border: 1px solid ${hexToRgba(playerColor, 0.65)}; box-shadow: 0 4px 16px ${hexToRgba(playerColor, 0.25)};`;
+      item.setAttribute('style', bgStyle);
 
       item.innerHTML = `
         <div class="leader-left">
           <div class="rank ${rankClass}">#${player.rank}</div>
-          <div class="player-dot" style="background:${player.color};"></div>
+          <div class="player-dot" style="background:${playerColor}; box-shadow: 0 0 10px ${playerColor}; border: 2px solid rgba(255,255,255,0.9);"></div>
           <div class="player-info">
             <div class="player-name">${player.playerName}${exactBadge}</div>
-            <div class="account-sub">Guess: <strong>${guessStr}</strong> • ${player.accountName}</div>
+            <div class="account-sub">Guess: <strong style="color:#FFF;">${guessStr}</strong> • ${player.accountName}</div>
           </div>
         </div>
         <div class="leader-right">
@@ -770,29 +777,27 @@ function renderPlayerGuesses() {
     const currentColor = getPlayerColor(player.id);
 
     const row = document.createElement('div');
-    row.className = 'card';
-    row.style.padding = '12px 14px';
-    row.style.marginBottom = '10px';
-    row.style.background = 'rgba(255, 255, 255, 0.03)';
-    if (isLocked) row.style.opacity = '0.75';
+    row.className = 'card player-guess-card';
+    const bgStyle = `background: linear-gradient(135deg, ${hexToRgba(currentColor, 0.38)} 0%, ${hexToRgba(currentColor, 0.16)} 100%); border: 1px solid ${hexToRgba(currentColor, 0.65)}; box-shadow: 0 4px 16px ${hexToRgba(currentColor, 0.25)};`;
+    row.setAttribute('style', `padding: 14px 16px; margin-bottom: 12px; ${bgStyle}${isLocked ? ' opacity: 0.75;' : ''}`);
 
     row.innerHTML = `
-      <div style="font-weight:700; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${currentColor}; border:1px solid rgba(255,255,255,0.4);"></span>
-          <span>${player.name}</span>
+      <div style="font-weight:700; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:${currentColor}; box-shadow:0 0 10px ${currentColor}; border:2px solid rgba(255,255,255,0.9);"></span>
+          <span style="font-weight:800; font-size:1.05rem; color:#FFF; text-shadow:0 1px 3px rgba(0,0,0,0.5);">${player.name}</span>
         </div>
-        <button type="button" class="btn btn-secondary edit-player-btn" data-player-id="${player.id}" style="width:auto; padding:4px 10px; font-size:0.75rem;">
+        <button type="button" class="btn btn-secondary edit-player-btn" data-player-id="${player.id}" style="width:auto; padding:4px 10px; font-size:0.75rem; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.3);">
           ✏️ Edit
         </button>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div>
-          <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:4px;">BYU / Home</label>
+          <label style="font-size:0.75rem; color:rgba(241,245,249,0.85); display:block; margin-bottom:4px; font-weight:600;">BYU / Home</label>
           <input type="number" class="form-control guess-home" data-player-id="${player.id}" value="${homeVal}" placeholder="Score" min="0" ${isLocked ? 'disabled' : ''} />
         </div>
         <div>
-          <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:4px;">Opponent / Away</label>
+          <label style="font-size:0.75rem; color:rgba(241,245,249,0.85); display:block; margin-bottom:4px; font-weight:600;">Opponent / Away</label>
           <input type="number" class="form-control guess-away" data-player-id="${player.id}" value="${awayVal}" placeholder="Score" min="0" ${isLocked ? 'disabled' : ''} />
         </div>
       </div>
