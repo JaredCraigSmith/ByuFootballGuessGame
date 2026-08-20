@@ -259,8 +259,21 @@ let isMusicPlaying = false;
 
 function toggleMusic() {
   const { avgScore } = getAccountAverageScore();
+  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
+  const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
+
   if (avgScore < 300) {
-    alert(`🔒 Secret Surprise #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs a 300 point average to unlock this surprise!`);
+    alert(`🔒 Secret Present #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 300 average points to unwrap this present!`);
+    return;
+  }
+
+  // If points reached but present not unwrapped yet, unwrap present with confetti fireworks!
+  if (!isUnwrapped1) {
+    localStorage.setItem(`byu_prize_unwrapped_1_${accId}`, 'true');
+    if (window.confetti) {
+      window.confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+    }
+    renderPrizesView();
     return;
   }
 
@@ -348,15 +361,27 @@ function prepareCosmoDancerImage() {
   };
 
   processImage('cosmoDanceImg', 'assets/cosmo_dancer.jpg');
-  processImage('cosmoBtnImg', 'assets/cosmo_head.jpg');
 }
 
 // Trigger Full Screen Dancing Cosmo Animation (Secret Surprise #2 - Unlocked at 500 Avg Pts)
 let isCosmoDancing = false;
 function triggerCosmoDance() {
   const { avgScore } = getAccountAverageScore();
+  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
+  const isUnwrapped2 = localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true';
+
   if (avgScore < 500) {
-    alert(`🔒 Secret Surprise #2 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs a 500 point average to unlock this surprise!`);
+    alert(`🔒 Secret Present #2 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 500 average points to unwrap this present!`);
+    return;
+  }
+
+  // If points reached but present not unwrapped yet, unwrap present with confetti fireworks!
+  if (!isUnwrapped2) {
+    localStorage.setItem(`byu_prize_unwrapped_2_${accId}`, 'true');
+    if (window.confetti) {
+      window.confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+    }
+    renderPrizesView();
     return;
   }
 
@@ -524,6 +549,9 @@ function getAccountAverageScore() {
 // Render Prizes View
 function renderPrizesView() {
   const { avgScore, playerCount } = getAccountAverageScore();
+  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
+  const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
+  const isUnwrapped2 = localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true';
 
   if (elements.prizesAccountAvgScore) {
     elements.prizesAccountAvgScore.innerHTML = `${avgScore} <span style="font-size:0.9rem; color:var(--byu-gold);">avg pts</span>`;
@@ -542,26 +570,46 @@ function renderPrizesView() {
   if (elements.prizeProgressBar1) elements.prizeProgressBar1.style.width = `${pct1}%`;
   if (elements.prizeProgressText1) elements.prizeProgressText1.textContent = `${avgScore} / ${unlockThreshold1} avg pts`;
 
-  if (isUnlocked1) {
-    if (elements.prizeIcon1) elements.prizeIcon1.textContent = '✨';
-    if (elements.prizeBadge1) {
-      elements.prizeBadge1.className = 'prize-badge unlocked';
-      elements.prizeBadge1.textContent = 'UNLOCKED!';
-    }
-    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = 'Unlocked! Tap button below to activate!';
-    if (elements.musicToggleBtn) elements.musicToggleBtn.classList.remove('disabled');
-    if (elements.prizeBtnLabel1) {
-      elements.prizeBtnLabel1.textContent = isMusicPlaying ? '🎁 Stop Secret Surprise #1' : '🎁 Activate Secret Surprise #1';
-    }
-  } else {
+  const badgeBox1 = elements.musicToggleBtn;
+  const badgeImg1 = elements.prizeBadgeImg1 || document.getElementById('prizeBadgeImg1');
+
+  if (!isUnlocked1) {
+    // State 1: Locked Present (Grayed Out)
     if (elements.prizeIcon1) elements.prizeIcon1.textContent = '🔒';
     if (elements.prizeBadge1) {
       elements.prizeBadge1.className = 'prize-badge locked';
       elements.prizeBadge1.textContent = `Requires ${unlockThreshold1} Avg Pts`;
     }
-    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = `Needs ${unlockThreshold1 - avgScore} more avg pts`;
-    if (elements.musicToggleBtn) elements.musicToggleBtn.classList.add('disabled');
-    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = `🔒 Locked (${unlockThreshold1} Avg Pts Needed)`;
+    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = `Needs ${unlockThreshold1 - avgScore} more avg pts to unwrap`;
+    if (badgeBox1) badgeBox1.className = 'prize-badge-box locked';
+    if (badgeImg1) badgeImg1.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = `🔒 Locked Present (300 Avg Pts Needed)`;
+  } else if (!isUnwrapped1) {
+    // State 2: Ready to Unwrap (Full Color Shaking Present)
+    if (elements.prizeIcon1) elements.prizeIcon1.textContent = '🎁';
+    if (elements.prizeBadge1) {
+      elements.prizeBadge1.className = 'prize-badge unlocked';
+      elements.prizeBadge1.textContent = 'READY TO UNWRAP!';
+    }
+    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = 'Points Reached! Tap Present to Unwrap!';
+    if (badgeBox1) badgeBox1.className = 'prize-badge-box ready-to-unwrap';
+    if (badgeImg1) badgeImg1.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
+  } else {
+    // State 3: Unlocked Revealed Badge (Full Color Badge Image)
+    if (elements.prizeIcon1) elements.prizeIcon1.textContent = '✨';
+    if (elements.prizeBadge1) {
+      elements.prizeBadge1.className = 'prize-badge unlocked';
+      elements.prizeBadge1.textContent = 'UNLOCKED BADGE';
+    }
+    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = 'Unlocked Badge! Tap to play/pause song!';
+    if (badgeBox1) {
+      badgeBox1.className = isMusicPlaying ? 'prize-badge-box unlocked-badge playing' : 'prize-badge-box unlocked-badge';
+    }
+    if (badgeImg1) badgeImg1.src = 'assets/music_badge.jpg';
+    if (elements.prizeBtnLabel1) {
+      elements.prizeBtnLabel1.textContent = isMusicPlaying ? '🎵 Secret Surprise #1 (Playing - Tap to Stop)' : '🎵 Secret Surprise #1 (Tap to Play)';
+    }
   }
 
   // Surprise #2 (Cosmo Dance - 500 Avg Pts)
@@ -572,24 +620,42 @@ function renderPrizesView() {
   if (elements.prizeProgressBar2) elements.prizeProgressBar2.style.width = `${pct2}%`;
   if (elements.prizeProgressText2) elements.prizeProgressText2.textContent = `${avgScore} / ${unlockThreshold2} avg pts`;
 
-  if (isUnlocked2) {
-    if (elements.prizeIcon2) elements.prizeIcon2.textContent = '✨';
-    if (elements.prizeBadge2) {
-      elements.prizeBadge2.className = 'prize-badge unlocked';
-      elements.prizeBadge2.textContent = 'UNLOCKED!';
-    }
-    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = 'Unlocked! Tap button below to activate!';
-    if (elements.cosmoDanceTrigger) elements.cosmoDanceTrigger.classList.remove('disabled');
-    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = '🎁 Activate Secret Surprise #2';
-  } else {
+  const badgeBox2 = elements.cosmoDanceTrigger;
+  const badgeImg2 = elements.cosmoBtnImg || document.getElementById('cosmoBtnImg');
+
+  if (!isUnlocked2) {
+    // State 1: Locked Present (Grayed Out)
     if (elements.prizeIcon2) elements.prizeIcon2.textContent = '🔒';
     if (elements.prizeBadge2) {
       elements.prizeBadge2.className = 'prize-badge locked';
       elements.prizeBadge2.textContent = `Requires ${unlockThreshold2} Avg Pts`;
     }
-    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = `Needs ${unlockThreshold2 - avgScore} more avg pts`;
-    if (elements.cosmoDanceTrigger) elements.cosmoDanceTrigger.classList.add('disabled');
-    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = `🔒 Locked (${unlockThreshold2} Avg Pts Needed)`;
+    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = `Needs ${unlockThreshold2 - avgScore} more avg pts to unwrap`;
+    if (badgeBox2) badgeBox2.className = 'prize-badge-box locked';
+    if (badgeImg2) badgeImg2.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = `🔒 Locked Present (500 Avg Pts Needed)`;
+  } else if (!isUnwrapped2) {
+    // State 2: Ready to Unwrap (Full Color Shaking Present)
+    if (elements.prizeIcon2) elements.prizeIcon2.textContent = '🎁';
+    if (elements.prizeBadge2) {
+      elements.prizeBadge2.className = 'prize-badge unlocked';
+      elements.prizeBadge2.textContent = 'READY TO UNWRAP!';
+    }
+    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = 'Points Reached! Tap Present to Unwrap!';
+    if (badgeBox2) badgeBox2.className = 'prize-badge-box ready-to-unwrap';
+    if (badgeImg2) badgeImg2.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
+  } else {
+    // State 3: Unlocked Revealed Badge (Full Color Badge Image)
+    if (elements.prizeIcon2) elements.prizeIcon2.textContent = '✨';
+    if (elements.prizeBadge2) {
+      elements.prizeBadge2.className = 'prize-badge unlocked';
+      elements.prizeBadge2.textContent = 'UNLOCKED BADGE';
+    }
+    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = 'Unlocked Badge! Tap to launch Cosmo Dance!';
+    if (badgeBox2) badgeBox2.className = 'prize-badge-box unlocked-badge';
+    if (badgeImg2) badgeImg2.src = 'assets/cosmo_head.jpg';
+    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = '🐾 Secret Surprise #2 (Tap for Cosmo Dance!)';
   }
 }
 

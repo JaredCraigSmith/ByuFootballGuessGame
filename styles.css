@@ -597,48 +597,116 @@ body {
   transition: width 0.4s ease;
 }
 
-.prize-action-btn {
+/* Single Image Prize Badge Box & Animations */
+.prize-badge-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.badge-img-wrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 20px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--byu-royal) 0%, var(--byu-navy) 100%);
-  border: 1px solid var(--byu-gold);
-  color: #FFF;
-  font-weight: 800;
-  font-size: 0.95rem;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 98, 184, 0.3);
-  transition: all 0.2s ease;
-  user-select: none;
+}
+
+.badge-img {
   width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  transition: all 0.35s ease;
 }
 
-.prize-action-btn:hover:not(.disabled) {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(255, 199, 44, 0.4);
-  background: linear-gradient(135deg, #0072D8 0%, var(--byu-navy) 100%);
+.badge-sub-label {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-align: center;
 }
 
-.prize-action-btn:active:not(.disabled) {
-  transform: scale(0.98);
+/* Locked Present State (Grayed out & desaturated) */
+.prize-badge-box.locked {
+  cursor: pointer;
 }
 
-.prize-action-btn.disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: none;
+.prize-badge-box.locked .badge-img {
+  filter: grayscale(90%) opacity(0.55);
 }
 
-.prize-action-btn.playing {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(0, 98, 184, 0.4) 100%);
+.prize-badge-box.locked:hover .badge-img {
+  filter: grayscale(70%) opacity(0.75);
+}
+
+/* Ready to Unwrap Present State (Shaking & Full Color Glow) */
+.prize-badge-box.ready-to-unwrap {
+  border-color: var(--byu-gold);
+  background: rgba(255, 199, 44, 0.1);
+  box-shadow: 0 0 25px rgba(255, 199, 44, 0.4);
+  animation: giftBoxPulse 2s infinite ease-in-out;
+}
+
+.prize-badge-box.ready-to-unwrap .badge-img {
+  filter: none;
+  animation: giftBoxShake 1.2s infinite ease-in-out;
+}
+
+@keyframes giftBoxShake {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-5deg) scale(1.05); }
+  40% { transform: rotate(5deg) scale(1.05); }
+  60% { transform: rotate(-3deg) scale(1.03); }
+  80% { transform: rotate(3deg) scale(1.03); }
+}
+
+@keyframes giftBoxPulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 199, 44, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(255, 199, 44, 0.7); }
+}
+
+/* Unlocked Revealed Badge State */
+.prize-badge-box.unlocked-badge {
+  border-color: var(--byu-gold);
+  background: rgba(0, 98, 184, 0.15);
+  box-shadow: 0 0 20px rgba(0, 98, 184, 0.4);
+}
+
+.prize-badge-box.unlocked-badge .badge-img {
+  filter: none;
+}
+
+.prize-badge-box.unlocked-badge:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 30px rgba(255, 199, 44, 0.6);
+}
+
+.prize-badge-box.playing {
   border-color: #34D399;
-  box-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
-  animation: musicPulse 1.5s infinite ease-in-out;
+  background: rgba(52, 211, 153, 0.15);
+  box-shadow: 0 0 25px rgba(52, 211, 153, 0.6);
+}
+
+.badge-eq-overlay {
+  position: absolute;
+  bottom: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid #34D399;
+}  animation: musicPulse 1.5s infinite ease-in-out;
 }
 
 @keyframes musicPulse {
