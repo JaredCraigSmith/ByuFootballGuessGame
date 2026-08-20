@@ -118,6 +118,8 @@ const elements = {
   prizeProgressText1: document.getElementById('prizeProgressText1'),
   prizeStatusText1: document.getElementById('prizeStatusText1'),
   prizeBtnLabel1: document.getElementById('prizeBtnLabel1'),
+  fireworksTrigger: document.getElementById('fireworksTrigger'),
+  prizeBadgeImg1: document.getElementById('prizeBadgeImg1'),
 
   prizeCard2: document.getElementById('prizeCard2'),
   prizeIcon2: document.getElementById('prizeIcon2'),
@@ -126,7 +128,6 @@ const elements = {
   prizeProgressText2: document.getElementById('prizeProgressText2'),
   prizeStatusText2: document.getElementById('prizeStatusText2'),
   prizeBtnLabel2: document.getElementById('prizeBtnLabel2'),
-  fireSpinnerTrigger: document.getElementById('fireSpinnerTrigger'),
   prizeBadgeImg2: document.getElementById('prizeBadgeImg2'),
 
   prizeCard3: document.getElementById('prizeCard3'),
@@ -135,7 +136,17 @@ const elements = {
   prizeProgressBar3: document.getElementById('prizeProgressBar3'),
   prizeProgressText3: document.getElementById('prizeProgressText3'),
   prizeStatusText3: document.getElementById('prizeStatusText3'),
-  prizeBtnLabel3: document.getElementById('prizeBtnLabel3')
+  prizeBtnLabel3: document.getElementById('prizeBtnLabel3'),
+  fireSpinnerTrigger: document.getElementById('fireSpinnerTrigger'),
+  prizeBadgeImg3: document.getElementById('prizeBadgeImg3'),
+
+  prizeCard4: document.getElementById('prizeCard4'),
+  prizeIcon4: document.getElementById('prizeIcon4'),
+  prizeBadge4: document.getElementById('prizeBadge4'),
+  prizeProgressBar4: document.getElementById('prizeProgressBar4'),
+  prizeProgressText4: document.getElementById('prizeProgressText4'),
+  prizeStatusText4: document.getElementById('prizeStatusText4'),
+  prizeBtnLabel4: document.getElementById('prizeBtnLabel4')
 };
 
 // Initialize Application
@@ -249,17 +260,14 @@ function setupEventListeners() {
   });
 
   // Easter Egg & Prize Badge Click & Touch Handlers
-  if (elements.cosmoDanceTrigger) {
-    elements.cosmoDanceTrigger.addEventListener('click', triggerCosmoDance);
-  }
-  if (elements.fireSpinnerTrigger) {
-    elements.fireSpinnerTrigger.addEventListener('click', (e) => {
+  if (elements.fireworksTrigger) {
+    elements.fireworksTrigger.addEventListener('click', (e) => {
       e.preventDefault();
-      triggerFireSpinner();
+      triggerFireworksPrize();
     });
-    elements.fireSpinnerTrigger.addEventListener('touchend', (e) => {
+    elements.fireworksTrigger.addEventListener('touchend', (e) => {
       e.preventDefault();
-      triggerFireSpinner();
+      triggerFireworksPrize();
     });
   }
   if (elements.musicToggleBtn) {
@@ -271,6 +279,19 @@ function setupEventListeners() {
       e.preventDefault();
       toggleMusic();
     });
+  }
+  if (elements.fireSpinnerTrigger) {
+    elements.fireSpinnerTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      triggerFireSpinner();
+    });
+    elements.fireSpinnerTrigger.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      triggerFireSpinner();
+    });
+  }
+  if (elements.cosmoDanceTrigger) {
+    elements.cosmoDanceTrigger.addEventListener('click', triggerCosmoDance);
   }
 }
 
@@ -294,25 +315,42 @@ function launchFireworksShow() {
   fire(0.1, { spread: 130, startVelocity: 50, colors: ['#FFFFFF', '#FFC72C'] });
 }
 
-// Audio & Fireworks Controller for Secret Surprise #1 (Unlocked at 300 Avg Pts)
+// Trigger Fireworks Display (Secret Surprise #1 - Unlocked at 150 Avg Pts)
+function triggerFireworksPrize() {
+  const { avgScore } = getAccountAverageScore();
+  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
+  const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
+
+  if (avgScore < 150) {
+    alert(`🔒 Secret Present #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 150 average points to unwrap this present!`);
+    return;
+  }
+
+  // If points reached but present not unwrapped yet, unwrap present!
+  if (!isUnwrapped1) {
+    localStorage.setItem(`byu_prize_unwrapped_1_${accId}`, 'true');
+    renderPrizesView();
+  }
+
+  launchFireworksShow();
+}
+
+// Audio Controller for Pump Up Song (Secret Surprise #2 - Unlocked at 300 Avg Pts)
 let isMusicPlaying = false;
 
 function toggleMusic() {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
-  const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
+  const isUnwrapped2 = localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true';
 
   if (avgScore < 300) {
-    alert(`🔒 Secret Present #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 300 average points to unwrap this present!`);
+    alert(`🔒 Secret Present #2 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 300 average points to unwrap this present!`);
     return;
   }
 
-  // Shoot fireworks on screen when unwrapping or tapping!
-  launchFireworksShow();
-
   // If points reached but present not unwrapped yet, unwrap present!
-  if (!isUnwrapped1) {
-    localStorage.setItem(`byu_prize_unwrapped_1_${accId}`, 'true');
+  if (!isUnwrapped2) {
+    localStorage.setItem(`byu_prize_unwrapped_2_${accId}`, 'true');
     renderPrizesView();
     return;
   }
@@ -403,21 +441,64 @@ function prepareCosmoDancerImage() {
   processImage('cosmoDanceImg', 'assets/cosmo_dancer.jpg');
 }
 
-// Trigger Full Screen Dancing Cosmo Animation (Secret Surprise #2 - Unlocked at 500 Avg Pts)
+// Trigger 4th Quarter Fire Spinner Show (Secret Surprise #3 - Unlocked at 450 Avg Pts)
+let isFireSpinnerActive = false;
+
+function triggerFireSpinner() {
+  const { avgScore } = getAccountAverageScore();
+  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
+  const isUnwrapped3 = localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true';
+
+  if (avgScore < 450) {
+    alert(`🔒 Secret Present #3 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 450 average points to unwrap this present!`);
+    return;
+  }
+
+  // If points reached but present not unwrapped yet, unwrap present!
+  if (!isUnwrapped3) {
+    localStorage.setItem(`byu_prize_unwrapped_3_${accId}`, 'true');
+    launchFireworksShow();
+    renderPrizesView();
+    return;
+  }
+
+  if (isFireSpinnerActive) return;
+  isFireSpinnerActive = true;
+
+  const overlay = document.getElementById('fireSpinnerOverlay');
+  if (!overlay) return;
+
+  overlay.style.display = 'flex';
+
+  const closeBtn = document.getElementById('closeFireSpinnerBtn');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      overlay.style.display = 'none';
+      isFireSpinnerActive = false;
+    };
+  }
+
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    isFireSpinnerActive = false;
+  }, 5500);
+}
+
+// Trigger Full Screen Dancing Cosmo Animation (Secret Surprise #4 - Unlocked at 600 Avg Pts)
 let isCosmoDancing = false;
 function triggerCosmoDance() {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
-  const isUnwrapped2 = localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true';
+  const isUnwrapped4 = localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true';
 
-  if (avgScore < 500) {
-    alert(`🔒 Secret Present #2 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 500 average points to unwrap this present!`);
+  if (avgScore < 600) {
+    alert(`🔒 Secret Present #4 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 600 average points to unwrap this present!`);
     return;
   }
 
-  // If points reached but present not unwrapped yet, unwrap present with confetti fireworks!
-  if (!isUnwrapped2) {
-    localStorage.setItem(`byu_prize_unwrapped_2_${accId}`, 'true');
+  // If points reached but present not unwrapped yet, unwrap present!
+  if (!isUnwrapped4) {
+    localStorage.setItem(`byu_prize_unwrapped_4_${accId}`, 'true');
     if (window.confetti) {
       window.confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
     }
@@ -434,11 +515,6 @@ function triggerCosmoDance() {
 
   if (!overlay || !dancerImg) return;
 
-  // Auto play pump up song if music is currently off
-  if (!isMusicPlaying) {
-    toggleMusic();
-  }
-
   overlay.style.display = 'block';
 
   // Restart keyframe animation
@@ -449,20 +525,7 @@ function triggerCosmoDance() {
   void dancerImg.offsetWidth;
 
   dancerImg.classList.add('cosmo-dancer-animating');
-
-  // Fun cheer phrases
-  const cheers = [
-    "GO COUGARS! 🐾",
-    "COSMO IS ON FIRE! 🔥",
-    "COUGAR POWER! 🤙",
-    "BYU ALL THE WAY! 🏈",
-    "TOUCHDOWN BYU! 🏆"
-  ];
-  const randomCheer = cheers[Math.floor(Math.random() * cheers.length)];
-  if (cheerText) {
-    cheerText.textContent = randomCheer;
-    cheerText.classList.add('cosmo-cheer-pop');
-  }
+  if (cheerText) cheerText.classList.add('cosmo-cheer-pop');
 
   // Confetti fireworks show during the dance
   if (window.confetti) {
@@ -593,6 +656,7 @@ function renderPrizesView() {
   const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
   const isUnwrapped2 = localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true';
   const isUnwrapped3 = localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true';
+  const isUnwrapped4 = localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true';
 
   if (elements.prizesAccountAvgScore) {
     elements.prizesAccountAvgScore.innerHTML = `${avgScore} <span style="font-size:0.9rem; color:var(--byu-gold);">avg pts</span>`;
@@ -603,15 +667,15 @@ function renderPrizesView() {
       : 'Log in to view your family account average points!';
   }
 
-  // Surprise #1 (Fireworks & Song - 250 Avg Pts)
-  const unlockThreshold1 = 250;
+  // Surprise #1 (Fireworks Display - 150 Avg Pts)
+  const unlockThreshold1 = 150;
   const isUnlocked1 = avgScore >= unlockThreshold1;
   const pct1 = Math.min(100, Math.round((avgScore / unlockThreshold1) * 100));
 
   if (elements.prizeProgressBar1) elements.prizeProgressBar1.style.width = `${pct1}%`;
   if (elements.prizeProgressText1) elements.prizeProgressText1.textContent = `${avgScore} / ${unlockThreshold1} avg pts`;
 
-  const badgeBox1 = elements.musicToggleBtn;
+  const badgeBox1 = elements.fireworksTrigger;
   const badgeImg1 = elements.prizeBadgeImg1 || document.getElementById('prizeBadgeImg1');
 
   if (!isUnlocked1) {
@@ -623,7 +687,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = `Needs ${unlockThreshold1 - avgScore} more avg pts to unwrap`;
     if (badgeBox1) badgeBox1.className = 'prize-badge-box locked';
     if (badgeImg1) badgeImg1.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = `🔒 Locked Present (250 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = `🔒 Locked Present (150 Avg Pts Needed)`;
   } else if (!isUnwrapped1) {
     if (elements.prizeIcon1) elements.prizeIcon1.textContent = '🎁';
     if (elements.prizeBadge1) {
@@ -640,25 +704,21 @@ function renderPrizesView() {
       elements.prizeBadge1.className = 'prize-badge unlocked';
       elements.prizeBadge1.textContent = 'UNLOCKED BADGE';
     }
-    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = 'Unlocked Badge! Tap to play fireworks & song!';
-    if (badgeBox1) {
-      badgeBox1.className = isMusicPlaying ? 'prize-badge-box unlocked-badge playing' : 'prize-badge-box unlocked-badge';
-    }
-    if (badgeImg1) badgeImg1.src = 'assets/music_badge.jpg';
-    if (elements.prizeBtnLabel1) {
-      elements.prizeBtnLabel1.textContent = isMusicPlaying ? '🎆 Secret Surprise #1 (Playing - Tap to Stop)' : '🎆 Secret Surprise #1 (Tap for Fireworks & Song)';
-    }
+    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = 'Unlocked Badge! Tap for Fireworks!';
+    if (badgeBox1) badgeBox1.className = 'prize-badge-box unlocked-badge';
+    if (badgeImg1) badgeImg1.src = 'assets/fireworks_badge.jpg';
+    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = '🎆 Secret Surprise #1 (Tap for Fireworks!)';
   }
 
-  // Surprise #2 (4th Quarter Fire Spinner Show - 450 Avg Pts)
-  const unlockThreshold2 = 450;
+  // Surprise #2 (BYU Pump Up Song - 300 Avg Pts)
+  const unlockThreshold2 = 300;
   const isUnlocked2 = avgScore >= unlockThreshold2;
   const pct2 = Math.min(100, Math.round((avgScore / unlockThreshold2) * 100));
 
   if (elements.prizeProgressBar2) elements.prizeProgressBar2.style.width = `${pct2}%`;
   if (elements.prizeProgressText2) elements.prizeProgressText2.textContent = `${avgScore} / ${unlockThreshold2} avg pts`;
 
-  const badgeBox2 = elements.fireSpinnerTrigger;
+  const badgeBox2 = elements.musicToggleBtn;
   const badgeImg2 = elements.prizeBadgeImg2 || document.getElementById('prizeBadgeImg2');
 
   if (!isUnlocked2) {
@@ -670,7 +730,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = `Needs ${unlockThreshold2 - avgScore} more avg pts to unwrap`;
     if (badgeBox2) badgeBox2.className = 'prize-badge-box locked';
     if (badgeImg2) badgeImg2.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = `🔒 Locked Present (450 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = `🔒 Locked Present (300 Avg Pts Needed)`;
   } else if (!isUnwrapped2) {
     if (elements.prizeIcon2) elements.prizeIcon2.textContent = '🎁';
     if (elements.prizeBadge2) {
@@ -687,22 +747,26 @@ function renderPrizesView() {
       elements.prizeBadge2.className = 'prize-badge unlocked';
       elements.prizeBadge2.textContent = 'UNLOCKED BADGE';
     }
-    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = 'Unlocked Badge! Tap to launch Fire Knife Spinner!';
-    if (badgeBox2) badgeBox2.className = 'prize-badge-box unlocked-badge';
-    if (badgeImg2) badgeImg2.src = 'assets/fire_spinner_badge.jpg';
-    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = '🔥 Secret Surprise #2 (Tap for Fire Knife Spinner!)';
+    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = 'Unlocked Badge! Tap to play/pause song!';
+    if (badgeBox2) {
+      badgeBox2.className = isMusicPlaying ? 'prize-badge-box unlocked-badge playing' : 'prize-badge-box unlocked-badge';
+    }
+    if (badgeImg2) badgeImg2.src = 'assets/music_badge.jpg';
+    if (elements.prizeBtnLabel2) {
+      elements.prizeBtnLabel2.textContent = isMusicPlaying ? '🎵 Secret Surprise #2 (Playing - Tap to Stop)' : '🎵 Secret Surprise #2 (Tap to Play Song)';
+    }
   }
 
-  // Surprise #3 (Cosmo Dance - 650 Avg Pts)
-  const unlockThreshold3 = 650;
+  // Surprise #3 (4th Quarter Fire Spinner Show - 450 Avg Pts)
+  const unlockThreshold3 = 450;
   const isUnlocked3 = avgScore >= unlockThreshold3;
   const pct3 = Math.min(100, Math.round((avgScore / unlockThreshold3) * 100));
 
   if (elements.prizeProgressBar3) elements.prizeProgressBar3.style.width = `${pct3}%`;
   if (elements.prizeProgressText3) elements.prizeProgressText3.textContent = `${avgScore} / ${unlockThreshold3} avg pts`;
 
-  const badgeBox3 = elements.cosmoDanceTrigger;
-  const badgeImg3 = elements.cosmoBtnImg || document.getElementById('cosmoBtnImg');
+  const badgeBox3 = elements.fireSpinnerTrigger;
+  const badgeImg3 = elements.prizeBadgeImg3 || document.getElementById('prizeBadgeImg3');
 
   if (!isUnlocked3) {
     if (elements.prizeIcon3) elements.prizeIcon3.textContent = '🔒';
@@ -713,7 +777,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText3) elements.prizeStatusText3.textContent = `Needs ${unlockThreshold3 - avgScore} more avg pts to unwrap`;
     if (badgeBox3) badgeBox3.className = 'prize-badge-box locked';
     if (badgeImg3) badgeImg3.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = `🔒 Locked Present (650 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = `🔒 Locked Present (450 Avg Pts Needed)`;
   } else if (!isUnwrapped3) {
     if (elements.prizeIcon3) elements.prizeIcon3.textContent = '🎁';
     if (elements.prizeBadge3) {
@@ -730,10 +794,53 @@ function renderPrizesView() {
       elements.prizeBadge3.className = 'prize-badge unlocked';
       elements.prizeBadge3.textContent = 'UNLOCKED BADGE';
     }
-    if (elements.prizeStatusText3) elements.prizeStatusText3.textContent = 'Unlocked Badge! Tap to launch Cosmo Dance!';
+    if (elements.prizeStatusText3) elements.prizeStatusText3.textContent = 'Unlocked Badge! Tap to launch Fire Knife Spinner!';
     if (badgeBox3) badgeBox3.className = 'prize-badge-box unlocked-badge';
-    if (badgeImg3) badgeImg3.src = 'assets/cosmo_head.jpg';
-    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = '🐾 Secret Surprise #3 (Tap for Cosmo Dance!)';
+    if (badgeImg3) badgeImg3.src = 'assets/fire_spinner_badge.jpg';
+    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = '🔥 Secret Surprise #3 (Tap for Fire Knife Spinner!)';
+  }
+
+  // Surprise #4 (Cosmo Dance Party - 600 Avg Pts)
+  const unlockThreshold4 = 600;
+  const isUnlocked4 = avgScore >= unlockThreshold4;
+  const pct4 = Math.min(100, Math.round((avgScore / unlockThreshold4) * 100));
+
+  if (elements.prizeProgressBar4) elements.prizeProgressBar4.style.width = `${pct4}%`;
+  if (elements.prizeProgressText4) elements.prizeProgressText4.textContent = `${avgScore} / ${unlockThreshold4} avg pts`;
+
+  const badgeBox4 = elements.cosmoDanceTrigger;
+  const badgeImg4 = elements.cosmoBtnImg || document.getElementById('cosmoBtnImg');
+
+  if (!isUnlocked4) {
+    if (elements.prizeIcon4) elements.prizeIcon4.textContent = '🔒';
+    if (elements.prizeBadge4) {
+      elements.prizeBadge4.className = 'prize-badge locked';
+      elements.prizeBadge4.textContent = `Requires ${unlockThreshold4} Avg Pts`;
+    }
+    if (elements.prizeStatusText4) elements.prizeStatusText4.textContent = `Needs ${unlockThreshold4 - avgScore} more avg pts to unwrap`;
+    if (badgeBox4) badgeBox4.className = 'prize-badge-box locked';
+    if (badgeImg4) badgeImg4.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = `🔒 Locked Present (600 Avg Pts Needed)`;
+  } else if (!isUnwrapped4) {
+    if (elements.prizeIcon4) elements.prizeIcon4.textContent = '🎁';
+    if (elements.prizeBadge4) {
+      elements.prizeBadge4.className = 'prize-badge unlocked';
+      elements.prizeBadge4.textContent = 'READY TO UNWRAP!';
+    }
+    if (elements.prizeStatusText4) elements.prizeStatusText4.textContent = 'Points Reached! Tap Present to Unwrap!';
+    if (badgeBox4) badgeBox4.className = 'prize-badge-box ready-to-unwrap';
+    if (badgeImg4) badgeImg4.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
+  } else {
+    if (elements.prizeIcon4) elements.prizeIcon4.textContent = '✨';
+    if (elements.prizeBadge4) {
+      elements.prizeBadge4.className = 'prize-badge unlocked';
+      elements.prizeBadge4.textContent = 'UNLOCKED BADGE';
+    }
+    if (elements.prizeStatusText4) elements.prizeStatusText4.textContent = 'Unlocked Badge! Tap to launch Cosmo Dance!';
+    if (badgeBox4) badgeBox4.className = 'prize-badge-box unlocked-badge';
+    if (badgeImg4) badgeImg4.src = 'assets/cosmo_head.jpg';
+    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = '🐾 Secret Surprise #4 (Tap for Cosmo Dance!)';
   }
 }
 
