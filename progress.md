@@ -57,7 +57,9 @@
   - Added **Live Game Score Tracker** to Admin Control Panel with `⏱️ Save Live Score` and `🏆 Mark Final Score` controls
   - Added live status indicators (`🏆 FINISHED`, `🔴 LIVE IN PROGRESS`, `🗓️ UPCOMING`) across Admin Panel, Schedule View, Weekly Leaderboard, and Main Countdown Banner
   - Enhanced **Player Cell Styling**: Full cell cards in Overall Standings, Weekly Leaders, and My Guesses now display in each player's chosen color with custom background gradients, matching borders, and glowing shadows 🎨
-  - Added **Interactive Cosmo Dance & Pump Up Song Buttons**: Placed as a hidden inline easter egg section at the very bottom of the page content (`#easterEggFooter`). Because they are placed inline at the bottom of the page flow, they are **100% hidden when viewing the top of the page** on any phone screen, and only appear when scrolling all the way down to the bottom! 🐾🎵
-  - Optimized **Mobile Phone Screen Dance Animation**: Constrained Cosmo mascot sprite sizing (`160px` width / `max-width: 44vw`) and re-centered keyframe trajectories so the mascot remains 100% visible inside phone viewports without going off-screen 📱
+  - Added **Family Account Prize Vault Tab (`🎁 Prizes`)**: Added a dedicated Prizes view where families track their account average score toward mystery surprise unlocks!
+    - **Secret Surprise #1 (Requires 300 Avg Pts)**: Unlocks the **Pump Up Song** (`PumpUpSong.mp3`) with animated equalizer audio bars!
+    - **Secret Surprise #2 (Requires 500 Avg Pts)**: Unlocks the ultimate **Cosmo Dance** victory animation across the screen!
+    - Mystery surprise buttons do not reveal what they do until unlocked/tapped, preserving the fun secret! Progress bars display real-time average family account points & remaining points needed. 🎁✨
 
 

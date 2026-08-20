@@ -39,6 +39,10 @@
         <span class="icon">📅</span>
         <span>Schedule</span>
       </div>
+      <div class="nav-item" data-view="prizesView">
+        <span class="icon">🎁</span>
+        <span>Prizes</span>
+      </div>
       <div class="nav-item" id="adminNavTab" data-view="adminView" style="display: none;">
         <span class="icon">⚡</span>
         <span>Admin</span>
@@ -297,21 +301,79 @@
       </div>
     </section>
 
-      <!-- Hidden Easter Egg Footer (Inline at the bottom of the page) -->
-      <footer id="easterEggFooter" class="easter-egg-footer">
-        <div id="musicToggleBtn" class="music-inline-btn" title="Turn On/Off BYU Pump Up Song! 🎵">
-          <div id="musicBtnIcon" class="music-btn-icon">🎵</div>
+    <!-- Prizes View -->
+    <section id="prizesView" class="view">
+      <!-- Account Average Score Banner -->
+      <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(255, 199, 44, 0.2) 0%, rgba(0, 98, 184, 0.25) 100%); border: 1px solid var(--byu-gold);">
+        <div style="font-size: 2.2rem; margin-bottom: 4px;">🎁</div>
+        <h3 class="card-title" style="justify-content: center; font-size: 1.2rem; color: var(--byu-gold);">Family Account Prize Vault</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+          Earn points with your family to unlock secret surprises!
+        </p>
+        <div style="margin-top: 14px; padding: 10px 16px; background: rgba(0, 0, 0, 0.4); border-radius: var(--radius-sm); display: inline-block; min-width: 220px;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Family Average Score</div>
+          <div id="prizesAccountAvgScore" style="font-size: 1.8rem; font-weight: 900; color: #FFF;">0 <span style="font-size: 0.9rem; color: var(--byu-gold);">avg pts</span></div>
+          <div id="prizesAccountPlayerCount" style="font-size: 0.75rem; color: var(--text-muted);">0 family players registered</div>
+        </div>
+      </div>
+
+      <!-- Surprise #1 Card (300 Avg Pts) -->
+      <div id="prizeCard1" class="card prize-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span id="prizeIcon1">🔒</span>
+            <span>Secret Surprise #1</span>
+          </h4>
+          <span id="prizeBadge1" class="prize-badge locked">Requires 300 Avg Pts</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+          Reach a family average of <strong>300 points</strong> to unlock this mystery surprise!
+        </p>
+        <!-- Progress bar -->
+        <div class="prize-progress-track">
+          <div id="prizeProgressBar1" class="prize-progress-fill" style="width: 0%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; margin-bottom: 14px;">
+          <span id="prizeProgressText1">0 / 300 avg pts</span>
+          <span id="prizeStatusText1">Locked</span>
+        </div>
+        <!-- Secret Action Button -->
+        <div id="musicToggleBtn" class="prize-action-btn disabled" title="Requires 300 Avg Pts">
+          <div id="musicBtnIcon" class="music-btn-icon">🎁</div>
           <div id="musicEqualizer" class="music-equalizer" style="display: none;">
             <span></span><span></span><span></span>
           </div>
-          <span class="btn-label">Pump Up Song</span>
+          <span id="prizeBtnLabel1" class="btn-label">🔒 Locked (300 Avg Pts Needed)</span>
         </div>
+      </div>
 
-        <div id="cosmoDanceTrigger" class="cosmo-inline-btn" title="Dance with Cosmo! 🐾">
-          <img id="cosmoBtnImg" src="assets/cosmo_head.jpg" alt="Cosmo Button" class="cosmo-btn-img" />
-          <span class="btn-label">Cosmo Dance!</span>
+      <!-- Surprise #2 Card (500 Avg Pts) -->
+      <div id="prizeCard2" class="card prize-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span id="prizeIcon2">🔒</span>
+            <span>Secret Surprise #2</span>
+          </h4>
+          <span id="prizeBadge2" class="prize-badge locked">Requires 500 Avg Pts</span>
         </div>
-      </footer>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+          Reach a family average of <strong>500 points</strong> to unlock this ultimate mystery surprise!
+        </p>
+        <!-- Progress bar -->
+        <div class="prize-progress-track">
+          <div id="prizeProgressBar2" class="prize-progress-fill" style="width: 0%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; margin-bottom: 14px;">
+          <span id="prizeProgressText2">0 / 500 avg pts</span>
+          <span id="prizeStatusText2">Locked</span>
+        </div>
+        <!-- Secret Action Button -->
+        <div id="cosmoDanceTrigger" class="prize-action-btn disabled" title="Requires 500 Avg Pts">
+          <img id="cosmoBtnImg" src="assets/cosmo_head.jpg" alt="Cosmo Button" class="cosmo-btn-img" style="width:28px; height:28px;" />
+          <span id="prizeBtnLabel2" class="btn-label">🔒 Locked (500 Avg Pts Needed)</span>
+        </div>
+      </div>
+    </section>
 
     </div>
 

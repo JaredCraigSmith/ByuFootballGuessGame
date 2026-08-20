@@ -106,7 +106,26 @@ const elements = {
   musicToggleBtn: document.getElementById('musicToggleBtn'),
   musicBtnIcon: document.getElementById('musicBtnIcon'),
   musicEqualizer: document.getElementById('musicEqualizer'),
-  pumpUpAudio: document.getElementById('pumpUpAudio')
+  pumpUpAudio: document.getElementById('pumpUpAudio'),
+
+  // Prizes View
+  prizesAccountAvgScore: document.getElementById('prizesAccountAvgScore'),
+  prizesAccountPlayerCount: document.getElementById('prizesAccountPlayerCount'),
+  prizeCard1: document.getElementById('prizeCard1'),
+  prizeIcon1: document.getElementById('prizeIcon1'),
+  prizeBadge1: document.getElementById('prizeBadge1'),
+  prizeProgressBar1: document.getElementById('prizeProgressBar1'),
+  prizeProgressText1: document.getElementById('prizeProgressText1'),
+  prizeStatusText1: document.getElementById('prizeStatusText1'),
+  prizeBtnLabel1: document.getElementById('prizeBtnLabel1'),
+
+  prizeCard2: document.getElementById('prizeCard2'),
+  prizeIcon2: document.getElementById('prizeIcon2'),
+  prizeBadge2: document.getElementById('prizeBadge2'),
+  prizeProgressBar2: document.getElementById('prizeProgressBar2'),
+  prizeProgressText2: document.getElementById('prizeProgressText2'),
+  prizeStatusText2: document.getElementById('prizeStatusText2'),
+  prizeBtnLabel2: document.getElementById('prizeBtnLabel2')
 };
 
 // Initialize Application
@@ -235,10 +254,16 @@ function setupEventListeners() {
   }
 }
 
-// Audio Controller for Pump Up Song
+// Audio Controller for Pump Up Song (Secret Surprise #1 - Unlocked at 300 Avg Pts)
 let isMusicPlaying = false;
 
 function toggleMusic() {
+  const { avgScore } = getAccountAverageScore();
+  if (avgScore < 300) {
+    alert(`🔒 Secret Surprise #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs a 300 point average to unlock this surprise!`);
+    return;
+  }
+
   const audioEl = elements.pumpUpAudio || document.getElementById('pumpUpAudio');
   const btn = elements.musicToggleBtn;
   const icon = elements.musicBtnIcon;
@@ -255,7 +280,6 @@ function toggleMusic() {
   } else {
     audioEl.loop = true;
 
-    // Direct synchronous call to play()
     const playPromise = audioEl.play();
     isMusicPlaying = true;
     if (btn) btn.classList.add('playing');
@@ -281,6 +305,8 @@ function toggleMusic() {
       });
     }
   }
+
+  renderPrizesView();
 }
 
 // Remove White Background from Cosmo Images dynamically using Canvas
@@ -325,9 +351,15 @@ function prepareCosmoDancerImage() {
   processImage('cosmoBtnImg', 'assets/cosmo_head.jpg');
 }
 
-// Trigger Full Screen Dancing Cosmo Animation
+// Trigger Full Screen Dancing Cosmo Animation (Secret Surprise #2 - Unlocked at 500 Avg Pts)
 let isCosmoDancing = false;
 function triggerCosmoDance() {
+  const { avgScore } = getAccountAverageScore();
+  if (avgScore < 500) {
+    alert(`🔒 Secret Surprise #2 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs a 500 point average to unlock this surprise!`);
+    return;
+  }
+
   if (isCosmoDancing) return;
   isCosmoDancing = true;
 
@@ -467,6 +499,100 @@ function populateWeeklySelector() {
   }
 }
 
+// Calculate Family Account Average Score
+function getAccountAverageScore() {
+  if (!state.currentAccount) return { avgScore: 0, playerCount: 0 };
+
+  const accountPlayers = state.players.filter(p => p.account_id === state.currentAccount.id);
+  const playerCount = accountPlayers.length;
+  if (playerCount === 0) return { avgScore: 0, playerCount: 0 };
+
+  const leaderboardResult = computeLeaderboard(state.players, state.games, state.guesses, state.accounts);
+  let totalScoreSum = 0;
+
+  accountPlayers.forEach(player => {
+    const stat = leaderboardResult.standings.find(s => s.playerId === player.id);
+    if (stat) {
+      totalScoreSum += stat.totalScore;
+    }
+  });
+
+  const avgScore = Math.round(totalScoreSum / playerCount);
+  return { avgScore, playerCount };
+}
+
+// Render Prizes View
+function renderPrizesView() {
+  const { avgScore, playerCount } = getAccountAverageScore();
+
+  if (elements.prizesAccountAvgScore) {
+    elements.prizesAccountAvgScore.innerHTML = `${avgScore} <span style="font-size:0.9rem; color:var(--byu-gold);">avg pts</span>`;
+  }
+  if (elements.prizesAccountPlayerCount) {
+    elements.prizesAccountPlayerCount.textContent = state.currentAccount 
+      ? `${playerCount} family player(s) registered under ${state.currentAccount.name}`
+      : 'Log in to view your family account average points!';
+  }
+
+  // Surprise #1 (Song - 300 Avg Pts)
+  const unlockThreshold1 = 300;
+  const isUnlocked1 = avgScore >= unlockThreshold1;
+  const pct1 = Math.min(100, Math.round((avgScore / unlockThreshold1) * 100));
+
+  if (elements.prizeProgressBar1) elements.prizeProgressBar1.style.width = `${pct1}%`;
+  if (elements.prizeProgressText1) elements.prizeProgressText1.textContent = `${avgScore} / ${unlockThreshold1} avg pts`;
+
+  if (isUnlocked1) {
+    if (elements.prizeIcon1) elements.prizeIcon1.textContent = '✨';
+    if (elements.prizeBadge1) {
+      elements.prizeBadge1.className = 'prize-badge unlocked';
+      elements.prizeBadge1.textContent = 'UNLOCKED!';
+    }
+    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = 'Unlocked! Tap button below to activate!';
+    if (elements.musicToggleBtn) elements.musicToggleBtn.classList.remove('disabled');
+    if (elements.prizeBtnLabel1) {
+      elements.prizeBtnLabel1.textContent = isMusicPlaying ? '🎁 Stop Secret Surprise #1' : '🎁 Activate Secret Surprise #1';
+    }
+  } else {
+    if (elements.prizeIcon1) elements.prizeIcon1.textContent = '🔒';
+    if (elements.prizeBadge1) {
+      elements.prizeBadge1.className = 'prize-badge locked';
+      elements.prizeBadge1.textContent = `Requires ${unlockThreshold1} Avg Pts`;
+    }
+    if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = `Needs ${unlockThreshold1 - avgScore} more avg pts`;
+    if (elements.musicToggleBtn) elements.musicToggleBtn.classList.add('disabled');
+    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = `🔒 Locked (${unlockThreshold1} Avg Pts Needed)`;
+  }
+
+  // Surprise #2 (Cosmo Dance - 500 Avg Pts)
+  const unlockThreshold2 = 500;
+  const isUnlocked2 = avgScore >= unlockThreshold2;
+  const pct2 = Math.min(100, Math.round((avgScore / unlockThreshold2) * 100));
+
+  if (elements.prizeProgressBar2) elements.prizeProgressBar2.style.width = `${pct2}%`;
+  if (elements.prizeProgressText2) elements.prizeProgressText2.textContent = `${avgScore} / ${unlockThreshold2} avg pts`;
+
+  if (isUnlocked2) {
+    if (elements.prizeIcon2) elements.prizeIcon2.textContent = '✨';
+    if (elements.prizeBadge2) {
+      elements.prizeBadge2.className = 'prize-badge unlocked';
+      elements.prizeBadge2.textContent = 'UNLOCKED!';
+    }
+    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = 'Unlocked! Tap button below to activate!';
+    if (elements.cosmoDanceTrigger) elements.cosmoDanceTrigger.classList.remove('disabled');
+    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = '🎁 Activate Secret Surprise #2';
+  } else {
+    if (elements.prizeIcon2) elements.prizeIcon2.textContent = '🔒';
+    if (elements.prizeBadge2) {
+      elements.prizeBadge2.className = 'prize-badge locked';
+      elements.prizeBadge2.textContent = `Requires ${unlockThreshold2} Avg Pts`;
+    }
+    if (elements.prizeStatusText2) elements.prizeStatusText2.textContent = `Needs ${unlockThreshold2 - avgScore} more avg pts`;
+    if (elements.cosmoDanceTrigger) elements.cosmoDanceTrigger.classList.add('disabled');
+    if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = `🔒 Locked (${unlockThreshold2} Avg Pts Needed)`;
+  }
+}
+
 // Switch Views
 function switchView(viewId) {
   state.activeView = viewId;
@@ -482,9 +608,8 @@ function switchView(viewId) {
   if (viewId === 'leaderboardView') renderLeaderboard();
   if (viewId === 'guessesView') renderGuessesView();
   if (viewId === 'gamesView') renderSchedule();
+  if (viewId === 'prizesView') renderPrizesView();
   if (viewId === 'adminView') renderAdminView();
-
-  setTimeout(handleScrollForCosmoButton, 50);
 }
 
 // Session Persistence

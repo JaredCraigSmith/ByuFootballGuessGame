@@ -553,56 +553,91 @@ body {
   box-shadow: 0 2px 8px rgba(0, 98, 184, 0.4);
 }
 
-/* Hidden Easter Egg Footer (Inline at bottom of page content) */
-.easter-egg-footer {
+/* Prize Vault & Mystery Surprise Cards */
+.prize-card {
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 16px;
+  transition: all 0.25s ease;
+}
+
+.prize-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+}
+
+.prize-badge.locked {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.prize-badge.unlocked {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.prize-progress-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prize-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--byu-royal) 0%, var(--byu-gold) 100%);
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+.prize-action-btn {
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 24px 16px 40px 16px;
-  margin-top: 32px;
-  border-top: 1px dashed rgba(255, 199, 44, 0.25);
-  gap: 16px;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--byu-royal) 0%, var(--byu-navy) 100%);
+  border: 1px solid var(--byu-gold);
+  color: #FFF;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 98, 184, 0.3);
+  transition: all 0.2s ease;
+  user-select: none;
   width: 100%;
 }
 
-.music-inline-btn, .cosmo-inline-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
+.prize-action-btn:hover:not(.disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(255, 199, 44, 0.4);
+  background: linear-gradient(135deg, #0072D8 0%, var(--byu-navy) 100%);
+}
+
+.prize-action-btn:active:not(.disabled) {
+  transform: scale(0.98);
+}
+
+.prize-action-btn.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--card-border);
-  padding: 14px 16px;
-  border-radius: var(--radius-md);
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  user-select: none;
-  flex: 1;
-  max-width: 170px;
-  backdrop-filter: blur(8px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: none;
 }
 
-.music-inline-btn:hover, .cosmo-inline-btn:hover {
-  transform: scale(1.06);
-  background: rgba(255, 199, 44, 0.12);
-  border-color: var(--byu-gold);
-  box-shadow: 0 4px 15px rgba(255, 199, 44, 0.3);
-}
-
-.music-inline-btn:active, .cosmo-inline-btn:active {
-  transform: scale(0.94);
-}
-
-.music-btn-icon {
-  font-size: 1.8rem;
-  line-height: 1;
-}
-
-.music-inline-btn.playing {
-  background: rgba(52, 211, 153, 0.15);
+.prize-action-btn.playing {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(0, 98, 184, 0.4) 100%);
   border-color: #34D399;
-  box-shadow: 0 0 18px rgba(52, 211, 153, 0.4);
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
   animation: musicPulse 1.5s infinite ease-in-out;
 }
 
