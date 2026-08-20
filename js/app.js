@@ -24,6 +24,12 @@ const state = {
   countdownInterval: null
 };
 
+// Helper for Team Logo URLs
+function getTeamLogoUrl(teamName) {
+  if (!teamName) return '';
+  return `TeamLogo/${encodeURIComponent(teamName)}.png`;
+}
+
 // DOM Elements
 const elements = {
   navItems: document.querySelectorAll('.nav-item'),
@@ -45,7 +51,9 @@ const elements = {
 
   // Countdown & Banner
   bannerHome: document.getElementById('bannerHome'),
+  bannerHomeLogo: document.getElementById('bannerHomeLogo'),
   bannerAway: document.getElementById('bannerAway'),
+  bannerAwayLogo: document.getElementById('bannerAwayLogo'),
   cdDays: document.getElementById('cdDays'),
   cdHours: document.getElementById('cdHours'),
   cdMins: document.getElementById('cdMins'),
@@ -469,6 +477,14 @@ function setupCountdown() {
   if (liveGame) {
     elements.bannerHome.textContent = liveGame.home_team || 'BYU';
     elements.bannerAway.textContent = liveGame.away_team || 'Opponent';
+    if (elements.bannerHomeLogo) {
+      elements.bannerHomeLogo.src = getTeamLogoUrl(liveGame.home_team);
+      elements.bannerHomeLogo.alt = liveGame.home_team;
+    }
+    if (elements.bannerAwayLogo) {
+      elements.bannerAwayLogo.src = getTeamLogoUrl(liveGame.away_team);
+      elements.bannerAwayLogo.alt = liveGame.away_team;
+    }
     elements.cdDays.textContent = 'LI';
     elements.cdHours.textContent = 'VE';
     elements.cdMins.textContent = '00';
@@ -489,6 +505,8 @@ function setupCountdown() {
   if (!upcomingGame) {
     elements.bannerHome.textContent = 'BYU';
     elements.bannerAway.textContent = 'Season Ended';
+    if (elements.bannerHomeLogo) elements.bannerHomeLogo.src = getTeamLogoUrl('BYU');
+    if (elements.bannerAwayLogo) elements.bannerAwayLogo.style.display = 'none';
     elements.cdDays.textContent = '00';
     elements.cdHours.textContent = '00';
     elements.cdMins.textContent = '00';
@@ -499,6 +517,16 @@ function setupCountdown() {
 
   elements.bannerHome.textContent = upcomingGame.home_team || 'BYU';
   elements.bannerAway.textContent = upcomingGame.away_team || 'Opponent';
+  if (elements.bannerHomeLogo) {
+    elements.bannerHomeLogo.style.display = 'block';
+    elements.bannerHomeLogo.src = getTeamLogoUrl(upcomingGame.home_team);
+    elements.bannerHomeLogo.alt = upcomingGame.home_team;
+  }
+  if (elements.bannerAwayLogo) {
+    elements.bannerAwayLogo.style.display = 'block';
+    elements.bannerAwayLogo.src = getTeamLogoUrl(upcomingGame.away_team);
+    elements.bannerAwayLogo.alt = upcomingGame.away_team;
+  }
 
   // Submission count indicator
   const submittedGuesses = state.guesses.filter(g => g.game_id === upcomingGame.id);
@@ -584,7 +612,16 @@ function renderLeaderboard() {
 
     const { standings, game, isCompleted, isLive } = computeWeeklyLeaderboard(gameId, state.players, state.games, state.guesses, state.accounts);
 
-    elements.standingsTitle.textContent = `📅 ${game.home_team} vs ${game.away_team}`;
+    const homeLogo = getTeamLogoUrl(game.home_team);
+    const awayLogo = getTeamLogoUrl(game.away_team);
+
+    elements.standingsTitle.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img src="${homeLogo}" class="team-logo-md" alt="${game.home_team}" onerror="this.style.display='none'" />
+        <span>${game.home_team} vs ${game.away_team}</span>
+        <img src="${awayLogo}" class="team-logo-md" alt="${game.away_team}" onerror="this.style.display='none'" />
+      </div>
+    `;
     elements.dropRulesBadge.style.display = 'inline-block';
     if (isCompleted) {
       elements.dropRulesBadge.textContent = `🏆 Final Score: ${game.home_team} ${game.home_score} - ${game.away_score} ${game.away_team}`;
@@ -675,6 +712,31 @@ function renderPlayerGuesses() {
   const accountPlayers = state.players.filter(p => p.account_id === state.currentAccount.id);
 
   elements.playerGuessesContainer.innerHTML = '';
+
+  if (selectedGame) {
+    const matchHeaderCard = document.createElement('div');
+    matchHeaderCard.className = 'card';
+    matchHeaderCard.style.padding = '12px 16px';
+    matchHeaderCard.style.marginBottom = '14px';
+    matchHeaderCard.style.background = 'linear-gradient(135deg, rgba(0, 98, 184, 0.2) 0%, rgba(255, 199, 44, 0.12) 100%)';
+    matchHeaderCard.style.border = '1px solid rgba(0, 98, 184, 0.3)';
+    matchHeaderCard.style.display = 'flex';
+    matchHeaderCard.style.justifyContent = 'space-around';
+    matchHeaderCard.style.alignItems = 'center';
+
+    matchHeaderCard.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <img src="${getTeamLogoUrl(selectedGame.home_team)}" class="team-logo-img" alt="${selectedGame.home_team}" onerror="this.style.display='none'" />
+        <span style="font-weight:800; font-size:0.95rem; color:var(--text-bright);">${selectedGame.home_team}</span>
+      </div>
+      <div style="font-weight:900; color:var(--byu-gold); font-size:1.1rem; padding:0 8px;">VS</div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <img src="${getTeamLogoUrl(selectedGame.away_team)}" class="team-logo-img" alt="${selectedGame.away_team}" onerror="this.style.display='none'" />
+        <span style="font-weight:800; font-size:0.95rem; color:var(--text-bright);">${selectedGame.away_team}</span>
+      </div>
+    `;
+    elements.playerGuessesContainer.appendChild(matchHeaderCard);
+  }
 
   if (isLocked) {
     const lockNotice = document.createElement('div');
@@ -881,14 +943,23 @@ function renderSchedule() {
       scoreDisplay = `<span style="color:#F87171; font-weight:900;">🔴 ${game.home_score} - ${game.away_score} (Live)</span>`;
     }
 
+    const homeLogo = getTeamLogoUrl(game.home_team);
+    const awayLogo = getTeamLogoUrl(game.away_team);
+
     card.innerHTML = `
       <div style="font-size:0.8rem; color:var(--byu-gold); font-weight:700; margin-bottom:6px;">
         📅 ${dateStr}
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:1.1rem;">
-        <div>${game.home_team}</div>
-        <div style="font-size:0.9rem; text-align:center;">${scoreDisplay}</div>
-        <div>${game.away_team}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:1.05rem;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <img src="${homeLogo}" class="team-logo-md" alt="${game.home_team}" onerror="this.style.display='none'" />
+          <span>${game.home_team}</span>
+        </div>
+        <div style="font-size:0.9rem; text-align:center; padding:0 8px;">${scoreDisplay}</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>${game.away_team}</span>
+          <img src="${awayLogo}" class="team-logo-md" alt="${game.away_team}" onerror="this.style.display='none'" />
+        </div>
       </div>
     `;
     elements.gamesList.appendChild(card);
@@ -908,6 +979,8 @@ function renderAdminView() {
     const isFinished = isGameFinished(game);
     const isLive = !isFinished && (game.home_score !== null && game.away_score !== null);
     const dateFormatted = formatGameDateTime(game);
+    const homeLogo = getTeamLogoUrl(game.home_team);
+    const awayLogo = getTeamLogoUrl(game.away_team);
 
     let statusBadge = '';
     if (isFinished) {
@@ -921,8 +994,14 @@ function renderAdminView() {
     row.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <div>
-          <div style="font-weight:800; font-size:1rem; color:var(--text-bright);">${game.home_team} vs ${game.away_team}</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">${dateFormatted}</div>
+          <div style="font-weight:800; font-size:1rem; color:var(--text-bright); display:flex; align-items:center; gap:6px;">
+            <img src="${homeLogo}" class="team-logo-sm" alt="${game.home_team}" onerror="this.style.display='none'" />
+            <span>${game.home_team}</span>
+            <span style="color:var(--byu-gold); font-size:0.85rem; margin:0 2px;">vs</span>
+            <img src="${awayLogo}" class="team-logo-sm" alt="${game.away_team}" onerror="this.style.display='none'" />
+            <span>${game.away_team}</span>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${dateFormatted}</div>
         </div>
         <div>${statusBadge}</div>
       </div>
