@@ -1,5 +1,5 @@
 // BYU Football Guess Game - Main Application Controller
-import { SupabaseAPI } from './supabase.js';
+import { SupabaseAPI } from './supabase.js?v=2';
 import { 
   computeLeaderboard, 
   computeWeeklyLeaderboard, 
@@ -7,7 +7,7 @@ import {
   savePlayerColor, 
   PRESET_PLAYER_COLORS,
   isGameFinished
-} from './scoring.js';
+} from './scoring.js?v=2';
 
 // Application State
 const state = {

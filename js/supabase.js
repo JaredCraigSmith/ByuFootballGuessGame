@@ -149,16 +149,22 @@ export const SupabaseAPI = {
 
   async updateGameScore(gameId, homeScore, awayScore, isFinished = true) {
     try {
+      const homeVal = (homeScore !== null && homeScore !== undefined && homeScore !== '') ? parseInt(homeScore, 10) : null;
+      const awayVal = (awayScore !== null && awayScore !== undefined && awayScore !== '') ? parseInt(awayScore, 10) : null;
       const res = await fetch(`${SUPABASE_BASE_URL}/Games?id=eq.${gameId}`, {
         method: 'PATCH',
         headers,
         body: JSON.stringify({
-          home_score: parseInt(homeScore, 10),
-          away_score: parseInt(awayScore, 10),
+          home_score: homeVal,
+          away_score: awayVal,
           game_finished: Boolean(isFinished)
         })
       });
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      if (!res.ok) {
+        const errBody = await res.text();
+        console.error(`HTTP error ${res.status}:`, errBody);
+        throw new Error(`HTTP error ${res.status}: ${errBody}`);
+      }
       const data = await res.json();
       cache.games = null; // Invalidate
       return data[0];
