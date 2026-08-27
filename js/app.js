@@ -272,57 +272,59 @@ function setupEventListeners() {
     elements.cosmoModal.classList.remove('active');
   });
 
-  // Easter Egg & Prize Badge Click & Touch Handlers
-  if (elements.cosmoDanceTrigger) {
-    elements.cosmoDanceTrigger.addEventListener('click', (e) => {
+// Smart Tap Listener to differentiate genuine taps from scroll dragging on mobile
+function attachSmartTapListener(element, callback) {
+  if (!element) return;
+  let startX = 0;
+  let startY = 0;
+  let isScroll = false;
+  let touchHandled = false;
+
+  element.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isScroll = false;
+      touchHandled = false;
+    }
+  }, { passive: true });
+
+  element.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      const diffX = Math.abs(e.touches[0].clientX - startX);
+      const diffY = Math.abs(e.touches[0].clientY - startY);
+      if (diffX > 8 || diffY > 8) {
+        isScroll = true; // User is scrolling/swiping!
+      }
+    }
+  }, { passive: true });
+
+  element.addEventListener('touchend', (e) => {
+    if (!isScroll) {
+      touchHandled = true;
       e.preventDefault();
-      triggerCosmoDance();
-    });
-    elements.cosmoDanceTrigger.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      triggerCosmoDance();
-    });
-  }
-  if (elements.musicToggleBtn) {
-    elements.musicToggleBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      toggleMusic();
-    });
-    elements.musicToggleBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      toggleMusic();
-    });
-  }
-  if (elements.fireSpinnerTrigger) {
-    elements.fireSpinnerTrigger.addEventListener('click', (e) => {
-      e.preventDefault();
-      triggerFireSpinner();
-    });
-    elements.fireSpinnerTrigger.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      triggerFireSpinner();
-    });
-  }
-  if (elements.stadiumWaveTrigger) {
-    elements.stadiumWaveTrigger.addEventListener('click', (e) => {
-      e.preventDefault();
-      triggerStadiumWave();
-    });
-    elements.stadiumWaveTrigger.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      triggerStadiumWave();
-    });
-  }
-  if (elements.drumHypeTrigger) {
-    elements.drumHypeTrigger.addEventListener('click', (e) => {
-      e.preventDefault();
-      triggerDrumHype();
-    });
-    elements.drumHypeTrigger.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      triggerDrumHype();
-    });
-  }
+      callback(e);
+    }
+    isScroll = false;
+  });
+
+  element.addEventListener('click', (e) => {
+    if (touchHandled) {
+      touchHandled = false;
+      return;
+    }
+    if (!isScroll) {
+      callback(e);
+    }
+  });
+}
+
+  // Smart Tap Listeners for Prize Badges (Prevents accidental triggers when scrolling!)
+  attachSmartTapListener(elements.cosmoDanceTrigger, () => triggerCosmoDance());
+  attachSmartTapListener(elements.musicToggleBtn, () => toggleMusic());
+  attachSmartTapListener(elements.fireSpinnerTrigger, () => triggerFireSpinner());
+  attachSmartTapListener(elements.stadiumWaveTrigger, () => triggerStadiumWave());
+  attachSmartTapListener(elements.drumHypeTrigger, () => triggerDrumHype());
 }
 
 // Launch Fireworks Display on Screen
