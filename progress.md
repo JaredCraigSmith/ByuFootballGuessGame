@@ -60,7 +60,7 @@
   - Added **Family Account Prize Vault Tab (`🎁 Prizes`)**: Added a dedicated Prizes view where families track their account average score toward mystery surprise unlocks!
     - **Secret Surprise #1 (150 Avg Pts)**: Unlocks **Fireworks Display** (`assets/fireworks_badge.jpg`)! 🎆
     - **Secret Surprise #2 (300 Avg Pts)**: Unlocks the **BYU Pump Up Song** (`assets/music_badge.jpg`)! 🎵
-    - **Secret Surprise #3 (450 Avg Pts)**: Unlocks the **4th Quarter Fire Knife Spinner Show** (`assets/fire_spinner_badge.jpg`) with spinning fire ring animation! 🔥
+    - **Secret Surprise #3 (450 Avg Pts)**: Unlocks the interactive **Polynesian Fire Knife Dancer Show** (`assets/fire_spinner_badge.jpg`), integrated directly from `fireDancer.html` with a custom CSS Polynesian dancer character, dual-flame spinning staff, canvas particle ember trails, and interactive high-arc knife tossing! 🔥
     - **Secret Surprise #4 (600 Avg Pts)**: Unlocks the ultimate **Cosmo Dance Party** (`assets/cosmo_head.jpg`)! 🐾
     - **Interactive Unwrapping**: Present boxes (`assets/gift_box.jpg`) stay grayed out until points are hit, then glow & shake for the family to unwrap! 🎁✨
 
