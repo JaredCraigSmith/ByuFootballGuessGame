@@ -1257,8 +1257,14 @@ function initDrumHypeEngine() {
   const hypeTitle = document.getElementById('hype-title');
   const bpmDisplay = document.getElementById('bpm-display');
   const closeBtn = document.getElementById('closeDrumBtn');
+  const turbAudio = document.getElementById('turbulenceAudio');
 
   if (!malletDrum || !clapDrum) return;
+
+  if (turbAudio) {
+    turbAudio.currentTime = 0;
+    turbAudio.play().catch(e => console.log("Turbulence audio waiting for user interaction", e));
+  }
 
   const hypeObjects = [
     { id: 'obj-ref', threshold: 20 },
@@ -1277,8 +1283,15 @@ function initDrumHypeEngine() {
   const updateUI = () => {
     if (hypeBar) hypeBar.style.width = `${drumHypeEnergy}%`;
 
+    const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
+
     if (hypeFrame && hypeTitle) {
-      if (drumHypeEnergy >= 90) {
+      if (drumHypeEnergy >= 95 && !is6sPassed) {
+        hypeFrame.classList.remove('flash-max');
+        hypeFrame.classList.add('flash-medium');
+        hypeTitle.textContent = "⏳ DROP AT 6S...";
+        hypeTitle.style.color = "#ffd700";
+      } else if (drumHypeEnergy >= 90) {
         hypeFrame.classList.remove('flash-medium');
         hypeFrame.classList.add('flash-max');
         hypeTitle.textContent = "🔥 MAXIMUM HYPE! 🔥";
@@ -1312,9 +1325,12 @@ function initDrumHypeEngine() {
     drumCurrentBPM = Math.min(300, Math.round(60000 / intervalMs));
     if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
 
+    const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
+    const maxAllowedEnergy = is6sPassed ? 100 : 95;
+
     if (drumCurrentBPM >= 80) {
       const gain = (drumCurrentBPM / 80) * 2.5;
-      drumHypeEnergy = Math.min(100, drumHypeEnergy + gain);
+      drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + gain);
     } else {
       drumHypeEnergy = Math.max(0, drumHypeEnergy - 2);
     }
@@ -1325,6 +1341,10 @@ function initDrumHypeEngine() {
   const handleTempoDrumHit = () => {
     const now = Date.now();
     playSynthesizedDrumSound();
+
+    if (turbAudio && turbAudio.paused) {
+      turbAudio.play().catch(() => {});
+    }
 
     const activeMallet = drumStrikeLeft ? malletLeft : malletRight;
     if (activeMallet) {
@@ -1351,9 +1371,17 @@ function initDrumHypeEngine() {
     handleTempoDrumHit();
   };
 
-  clapDrum.onclick = triggerClap;
+  clapDrum.onclick = () => {
+    if (turbAudio && turbAudio.paused) {
+      turbAudio.play().catch(() => {});
+    }
+    triggerClap();
+  };
   clapDrum.ontouchend = (e) => {
     e.preventDefault();
+    if (turbAudio && turbAudio.paused) {
+      turbAudio.play().catch(() => {});
+    }
     triggerClap();
   };
 
@@ -1361,7 +1389,7 @@ function initDrumHypeEngine() {
     closeBtn.onclick = stopDrumHypeEngine;
   }
 
-  // Energy decay loop
+  // Energy decay loop & 6s drop monitor
   if (!drumHypeInterval) {
     drumHypeInterval = setInterval(() => {
       const now = Date.now();
@@ -1369,8 +1397,13 @@ function initDrumHypeEngine() {
         drumHypeEnergy = Math.max(0, drumHypeEnergy - 4);
         drumCurrentBPM = Math.max(0, drumCurrentBPM - 15);
         if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
-        updateUI();
       }
+
+      const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
+      if (!is6sPassed && drumHypeEnergy > 95) {
+        drumHypeEnergy = 95;
+      }
+      updateUI();
     }, 150);
   }
 }
@@ -1384,6 +1417,12 @@ function stopDrumHypeEngine() {
     clearTimeout(drumAutoClapTimeout);
     drumAutoClapTimeout = null;
   }
+  const turbAudio = document.getElementById('turbulenceAudio');
+  if (turbAudio) {
+    turbAudio.pause();
+    turbAudio.currentTime = 0;
+  }
+
   drumHypeEnergy = 0;
   drumCurrentBPM = 0;
   drumLastHitTime = 0;
