@@ -875,48 +875,328 @@ body {
   animation: firePulse 1.2s infinite ease-in-out alternate;
 }
 
-.fire-spinner-ring {
-  width: 240px;
-  height: 240px;
-  max-width: 65vw;
-  max-height: 65vw;
-  border-radius: 50%;
-  padding: 8px;
-  background: linear-gradient(135deg, #FF4500 0%, #FFC72C 50%, #FF0000 100%);
-  box-shadow: 0 0 40px rgba(255, 69, 0, 0.9), 0 0 80px rgba(255, 199, 44, 0.8);
-  animation: fireRingSpin 3s infinite linear, fireRingGlow 1.5s infinite ease-in-out alternate;
+/* Polynesian Fire Knife Dancer Stage & Character (from fireDancer.html) */
+:root {
+  --skin: #a36538;
+  --skin-dark: #824d27;
+  --lavalava: #002d5f;
+  --tattoo: #3a2318;
+  --flame-outer: #ff4500;
+  --flame-inner: #ffcc00;
+  --flame-core: #ffffff;
 }
 
-.fire-spinner-img {
+.fire-stage {
+  position: relative;
+  width: 360px;
+  height: 360px;
+  max-width: 85vw;
+  max-height: 85vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fire-stage::after {
+  content: '';
+  position: absolute;
+  bottom: 30px;
+  width: 240px;
+  height: 36px;
+  background: radial-gradient(ellipse at center, rgba(255, 69, 0, 0.4) 0%, rgba(0,0,0,0) 70%);
+  border-radius: 50%;
+  z-index: 0;
+  animation: ambientGlow 0.15s infinite alternate ease-in-out;
+}
+
+#fireCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.fire-dancer {
+  position: relative;
+  width: 160px;
+  height: 240px;
+  z-index: 1;
+  cursor: pointer;
+  animation: bodyBob 0.6s infinite alternate ease-in-out;
+}
+
+/* Head & Hair */
+.fire-dancer .head {
+  position: absolute;
+  top: 15px;
+  left: 50px;
+  width: 60px;
+  height: 65px;
+  background: var(--skin);
+  border-radius: 30px 30px 25px 25px;
+  z-index: 4;
+}
+
+.fire-dancer .hair {
+  position: absolute;
+  top: -10px;
+  left: -8px;
+  width: 76px;
+  height: 50px;
+  background: #1a1a1a;
+  border-radius: 40px 40px 10px 10px;
+  z-index: -1;
+}
+
+.fire-dancer .hair-topknot {
+  position: absolute;
+  top: -20px;
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  background: #1a1a1a;
   border-radius: 50%;
-  object-fit: cover;
-  animation: fireInnerSpin 1.8s infinite linear reverse;
 }
 
-.fire-cheer-subtitle {
-  font-size: 1.15rem;
-  font-weight: 800;
+.fire-dancer .eye {
+  position: absolute;
+  top: 28px;
+  width: 7px;
+  height: 9px;
+  background: #1a1a1a;
+  border-radius: 50%;
+}
+
+.fire-dancer .eye.left { left: 14px; }
+.fire-dancer .eye.right { right: 14px; }
+
+.fire-dancer .smile {
+  position: absolute;
+  bottom: 12px;
+  left: 18px;
+  width: 24px;
+  height: 10px;
+  border-bottom: 3px solid #1a1a1a;
+  border-radius: 0 0 12px 12px;
+}
+
+.fire-dancer .headband {
+  position: absolute;
+  top: 18px;
+  left: -2px;
+  width: 64px;
+  height: 8px;
+  background: #38761d;
+  border-radius: 4px;
+}
+
+/* Torso & Tattoos */
+.fire-dancer .torso {
+  position: absolute;
+  top: 70px;
+  left: 45px;
+  width: 70px;
+  height: 85px;
+  background: var(--skin);
+  border-radius: 12px 12px 20px 20px;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.fire-dancer .torso::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 5px;
+  width: 30px;
+  height: 60px;
+  background: 
+    linear-gradient(135deg, var(--tattoo) 25%, transparent 25%),
+    linear-gradient(225deg, var(--tattoo) 25%, transparent 25%);
+  background-size: 10px 10px;
+  opacity: 0.4;
+}
+
+.fire-dancer .leaf-necklace {
+  position: absolute;
+  top: 70px;
+  left: 40px;
+  width: 80px;
+  height: 20px;
+  background: radial-gradient(circle, #38761d 40%, transparent 45%);
+  background-size: 16px 16px;
+  z-index: 4;
+}
+
+/* Lavalava (Skirt) */
+.fire-dancer .lavalava {
+  position: absolute;
+  top: 145px;
+  left: 40px;
+  width: 80px;
+  height: 55px;
+  background: var(--lavalava);
+  border-radius: 5px 5px 15px 15px;
+  z-index: 3;
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.15), rgba(255,255,255,0.15) 10px, transparent 10px, transparent 20px);
+}
+
+/* Legs */
+.fire-dancer .leg {
+  position: absolute;
+  top: 195px;
+  width: 22px;
+  height: 45px;
+  background: var(--skin-dark);
+  border-radius: 0 0 10px 10px;
+  z-index: 2;
+}
+
+.fire-dancer .leg.left {
+  left: 50px;
+  animation: legStepLeft 0.6s infinite alternate ease-in-out;
+}
+
+.fire-dancer .leg.right {
+  right: 50px;
+  animation: legStepRight 0.6s infinite alternate ease-in-out;
+}
+
+/* Arms holding the staff */
+.fire-dancer .arm {
+  position: absolute;
+  top: 78px;
+  width: 18px;
+  height: 45px;
+  background: var(--skin);
+  border-radius: 10px;
+  z-index: 4;
+}
+
+.fire-dancer .arm.left {
+  left: 32px;
+  transform: rotate(25deg);
+}
+
+.fire-dancer .arm.right {
+  right: 32px;
+  transform: rotate(-25deg);
+}
+
+/* Spinning Fire Knife Rig */
+.fire-knife-container {
+  position: absolute;
+  top: 30px;
+  left: 0;
+  width: 160px;
+  height: 160px;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: spinKnife 0.4s linear infinite;
+}
+
+.fire-knife-container .staff {
+  position: absolute;
+  width: 220px;
+  height: 6px;
+  background: #5c3a21;
+  border-radius: 3px;
+}
+
+.flame-end {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--flame-core);
+  box-shadow: 
+    0 0 10px var(--flame-inner),
+    0 0 20px var(--flame-outer),
+    0 0 35px var(--flame-outer);
+  animation: flicker 0.1s infinite alternate;
+}
+
+.flame-end.left { left: -10px; }
+.flame-end.right { right: -10px; }
+
+/* Throw State CSS */
+.fire-dancer.throwing #knife {
+  opacity: 0;
+}
+
+.fire-dancer.throwing .arm.left {
+  animation: armsRaise 1.6s ease-in-out forwards;
+}
+
+.fire-dancer.throwing .arm.right {
+  animation: armsRaiseRight 1.6s ease-in-out forwards;
+}
+
+.fire-hint {
+  position: absolute;
+  bottom: -4px;
+  width: 100%;
+  text-align: center;
   color: #FFC72C;
-  margin-top: 24px;
-  text-shadow: 0 0 10px rgba(255, 199, 44, 0.8);
+  font-size: 0.82rem;
+  font-weight: 800;
   letter-spacing: 0.5px;
+  pointer-events: none;
+  z-index: 10;
+  animation: hintFade 1.8s infinite alternate ease-in-out;
 }
 
-@keyframes fireRingSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.06); }
-  100% { transform: rotate(360deg) scale(1); }
+@keyframes spinKnife {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-@keyframes fireInnerSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(-360deg); }
+@keyframes bodyBob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
 }
 
-@keyframes firePulse {
-  0% { transform: scale(1); filter: brightness(1); }
-  100% { transform: scale(1.08); filter: brightness(1.3); }
+@keyframes legStepLeft {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(0.85) translateY(-5px); }
+}
+
+@keyframes legStepRight {
+  from { transform: scaleY(0.85) translateY(-5px); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes flicker {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes ambientGlow {
+  0% { opacity: 0.6; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes armsRaise {
+  0%   { transform: rotate(25deg); }
+  30%  { transform: rotate(-60deg) translateY(-10px); }
+  70%  { transform: rotate(-60deg) translateY(-10px); }
+  100% { transform: rotate(25deg); }
+}
+
+@keyframes armsRaiseRight {
+  0%   { transform: rotate(-25deg); }
+  30%  { transform: rotate(60deg) translateY(-10px); }
+  70%  { transform: rotate(60deg) translateY(-10px); }
+  100% { transform: rotate(-25deg); }
+}
+
+@keyframes hintFade {
+  from { opacity: 0.5; }
+  to   { opacity: 1; }
 }
 

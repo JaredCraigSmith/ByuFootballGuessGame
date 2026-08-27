@@ -441,6 +441,164 @@ function prepareCosmoDancerImage() {
   processImage('cosmoDanceImg', 'assets/cosmo_dancer.jpg');
 }
 
+// Polynesian Fire Knife Dancer Engine (integrated from C:\Main\Personal\Code\FunCss\fireDancer.html)
+let fireAnimFrame = null;
+let fireThrowing = false;
+let fireThrowTime = 0;
+const FIRE_THROW_DURATION = 1800; // ms
+let fireStick = null;
+let fireParticles = [];
+
+class FireEmber {
+  constructor(x, y, fast) {
+    this.x = x;
+    this.y = y;
+    this.size = Math.random() * 6 + 2;
+    this.speedX = (Math.random() - 0.5) * (fast ? 6 : 4);
+    this.speedY = (Math.random() - 0.5) * (fast ? 6 : 4) - 1;
+    this.color = ['#ffcc00', '#ff4500', '#ff8c00', '#ffffff'][Math.floor(Math.random() * 4)];
+    this.life = 1;
+    this.decay = Math.random() * 0.05 + 0.02;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    this.life -= this.decay;
+    if (this.size > 0.5) this.size -= 0.1;
+  }
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.life;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function initFireDancerEngine() {
+  const canvas = document.getElementById('fireCanvas');
+  const dancer = document.getElementById('fireDancerChar');
+  if (!canvas || !dancer) return;
+
+  const ctx = canvas.getContext('2d');
+
+  const createEmbers = () => {
+    if (fireThrowing) return;
+    const time = Date.now() * 0.0157;
+    const cx = 200, cy = 150, r = 100;
+    fireParticles.push(new FireEmber(cx + Math.cos(time) * r, cy + Math.sin(time) * r));
+    fireParticles.push(new FireEmber(cx - Math.cos(time) * r, cy - Math.sin(time) * r));
+  };
+
+  const catchBurst = () => {
+    for (let i = 0; i < 40; i++) {
+      fireParticles.push(new FireEmber(200, 150, true));
+    }
+  };
+
+  const drawAirborneStick = () => {
+    if (!fireStick) return;
+    const elapsed = Date.now() - fireThrowTime;
+    const progress = Math.min(elapsed / FIRE_THROW_DURATION, 1);
+
+    const catchY = 150;
+    const peakY = -60;
+    const arcY = catchY + (peakY - catchY) * Math.sin(progress * Math.PI);
+
+    fireStick.angle += fireStick.spin;
+    const x = 200;
+    const y = arcY;
+    const halfLen = 110;
+
+    if (y < canvas.height + 20) {
+      const ex1 = x + Math.cos(fireStick.angle) * halfLen;
+      const ey1 = y + Math.sin(fireStick.angle) * halfLen;
+      const ex2 = x - Math.cos(fireStick.angle) * halfLen;
+      const ey2 = y - Math.sin(fireStick.angle) * halfLen;
+      if (Math.random() < 0.8) fireParticles.push(new FireEmber(ex1, ey1, true));
+      if (Math.random() < 0.8) fireParticles.push(new FireEmber(ex2, ey2, true));
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(fireStick.angle);
+
+      ctx.strokeStyle = '#5c3a21';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-halfLen, 0);
+      ctx.lineTo(halfLen, 0);
+      ctx.stroke();
+
+      [-halfLen, halfLen].forEach(ex => {
+        const grad = ctx.createRadialGradient(ex, 0, 2, ex, 0, 20);
+        grad.addColorStop(0, 'rgba(255,255,255,1)');
+        grad.addColorStop(0.3, 'rgba(255,204,0,0.9)');
+        grad.addColorStop(1, 'rgba(255,69,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(ex, 0, 20, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.restore();
+    }
+  };
+
+  const animateFire = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    createEmbers();
+    drawAirborneStick();
+
+    for (let i = fireParticles.length - 1; i >= 0; i--) {
+      fireParticles[i].update();
+      fireParticles[i].draw(ctx);
+      if (fireParticles[i].life <= 0) fireParticles.splice(i, 1);
+    }
+
+    fireAnimFrame = requestAnimationFrame(animateFire);
+  };
+
+  const tossKnife = () => {
+    if (fireThrowing) return;
+    fireThrowing = true;
+    fireThrowTime = Date.now();
+    dancer.classList.add('throwing');
+    fireStick = { angle: 0, spin: 0.18 };
+
+    setTimeout(catchBurst, FIRE_THROW_DURATION);
+    setTimeout(() => {
+      fireThrowing = false;
+      fireStick = null;
+      dancer.classList.remove('throwing');
+    }, FIRE_THROW_DURATION + 80);
+  };
+
+  dancer.onclick = tossKnife;
+  dancer.ontouchend = (e) => {
+    e.preventDefault();
+    tossKnife();
+  };
+
+  if (!fireAnimFrame) {
+    animateFire();
+  }
+}
+
+function stopFireDancerEngine() {
+  if (fireAnimFrame) {
+    cancelAnimationFrame(fireAnimFrame);
+    fireAnimFrame = null;
+  }
+  fireParticles = [];
+  fireThrowing = false;
+  fireStick = null;
+  const dancer = document.getElementById('fireDancerChar');
+  if (dancer) dancer.classList.remove('throwing');
+}
+
 // Trigger 4th Quarter Fire Spinner Show (Secret Surprise #3 - Unlocked at 450 Avg Pts)
 let isFireSpinnerActive = false;
 
@@ -469,19 +627,22 @@ function triggerFireSpinner() {
   if (!overlay) return;
 
   overlay.style.display = 'flex';
+  initFireDancerEngine();
 
   const closeBtn = document.getElementById('closeFireSpinnerBtn');
   if (closeBtn) {
     closeBtn.onclick = () => {
       overlay.style.display = 'none';
+      stopFireDancerEngine();
       isFireSpinnerActive = false;
     };
   }
 
   setTimeout(() => {
     overlay.style.display = 'none';
+    stopFireDancerEngine();
     isFireSpinnerActive = false;
-  }, 5500);
+  }, 12000);
 }
 
 // Trigger Full Screen Dancing Cosmo Animation (Secret Surprise #4 - Unlocked at 600 Avg Pts)

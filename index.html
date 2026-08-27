@@ -472,11 +472,47 @@
   <div id="fireSpinnerOverlay" class="fire-spinner-overlay" style="display: none;">
     <div class="fire-spinner-content">
       <div class="fire-banner-title">🔥 4TH QUARTER FIRE KNIFE SHOW! 🔥</div>
-      <div class="fire-spinner-ring">
-        <img src="assets/fire_spinner_badge.jpg" alt="Fire Knife Spinner" class="fire-spinner-img" />
+      
+      <!-- Stage Glow & Character from fireDancer.html -->
+      <div class="fire-stage" id="fireStage">
+        <canvas id="fireCanvas" width="400" height="400"></canvas>
+
+        <div class="fire-dancer" id="fireDancerChar">
+          <!-- Head -->
+          <div class="head">
+            <div class="hair-topknot"></div>
+            <div class="hair"></div>
+            <div class="headband"></div>
+            <div class="eye left"></div>
+            <div class="eye right"></div>
+            <div class="smile"></div>
+          </div>
+
+          <div class="leaf-necklace"></div>
+
+          <!-- Upper Body -->
+          <div class="torso"></div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+
+          <!-- Lower Body -->
+          <div class="lavalava"></div>
+          <div class="leg left"></div>
+          <div class="leg right"></div>
+
+          <!-- Spinning Fire Knife -->
+          <div class="fire-knife-container" id="knife">
+            <div class="staff"></div>
+            <div class="flame-end left"></div>
+            <div class="flame-end right"></div>
+          </div>
+        </div>
+
+        <div class="fire-hint">TAP DANCER TO TOSS KNIFE HIGH! 🔥</div>
       </div>
+
       <div class="fire-cheer-subtitle">FEEL THE 4TH QUARTER HEAT! 💥</div>
-      <button id="closeFireSpinnerBtn" class="btn btn-gold" style="margin-top: 24px;">LET'S GO COUGARS! 🔥</button>
+      <button id="closeFireSpinnerBtn" class="btn btn-gold" style="margin-top: 14px;">LET'S GO COUGARS! 🔥</button>
     </div>
   </div>
 
