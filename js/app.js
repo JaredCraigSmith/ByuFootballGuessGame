@@ -480,7 +480,7 @@ class FireEmber {
 function initFireDancerEngine() {
   const canvas = document.getElementById('fireCanvas');
   const dancer = document.getElementById('fireDancerChar');
-  if (!canvas || !dancer) return;
+  if (!canvas || !dancer) return () => {};
 
   const ctx = canvas.getContext('2d');
 
@@ -585,6 +585,8 @@ function initFireDancerEngine() {
   if (!fireAnimFrame) {
     animateFire();
   }
+
+  return tossKnife;
 }
 
 function stopFireDancerEngine() {
@@ -627,22 +629,19 @@ function triggerFireSpinner() {
   if (!overlay) return;
 
   overlay.style.display = 'flex';
-  initFireDancerEngine();
+  const triggerToss = initFireDancerEngine();
 
-  const closeBtn = document.getElementById('closeFireSpinnerBtn');
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      overlay.style.display = 'none';
-      stopFireDancerEngine();
-      isFireSpinnerActive = false;
-    };
-  }
+  // Automatically perform high throw & catch sequence
+  setTimeout(() => {
+    if (triggerToss) triggerToss();
+  }, 250);
 
+  // Automatically dismiss after throw and catch sequence completes (~2.8s)
   setTimeout(() => {
     overlay.style.display = 'none';
     stopFireDancerEngine();
     isFireSpinnerActive = false;
-  }, 12000);
+  }, 2850);
 }
 
 // Trigger Full Screen Dancing Cosmo Animation (Secret Surprise #4 - Unlocked at 600 Avg Pts)
