@@ -62,7 +62,7 @@
     - **Secret Surprise #2 (300 Avg Pts)**: Unlocks the **BYU Pump Up Song** (`assets/music_badge.jpg`)! 🎵
     - **Secret Surprise #3 (450 Avg Pts)**: Unlocks the **Polynesian Fire Knife Dancer Show** (`assets/fire_spinner_badge.jpg`), featuring the clean CSS Polynesian dancer from `fireDancer.html` who automatically tosses the flaming staff high into the air, catches it with a spark explosion, and smoothly fades away! 🔥
     - **Secret Surprise #4 (600 Avg Pts)**: Unlocks the **LaVell Edwards Stadium Cougar Wave** (`assets/stadium_badge.jpg`), integrated directly from `Wave.html` featuring BYU endzones, midfield Block Y, stadium concrete seating bowl, and 1,600+ animated fan wave sprites, dynamically scaled for mobile phone viewports! 🌊
-    - **Secret Surprise #5 (750 Avg Pts)**: Unlocks the **BYU Game Day Drum Hype** (`assets/drum_badge.jpg`), integrated directly from `Drum.html` with synthesized kick bass & rhythm claps, Web Audio synthesis, real-time BPM tempo calculator, skewed Hype Meter, and animated stadium hype sprites, formatted for phone screens! 🥁
+    - **Secret Surprise #5 (750 Avg Pts)**: Unlocks the **BYU Game Day Drum Hype** (`assets/drum_badge.jpg`), integrated directly from `Drum.html` with `Turbulence.mp4` audio playback, 6-second drop hype cap, synthesized kick bass & rhythm claps, real-time BPM tempo calculator, skewed Hype Meter, and animated stadium hype sprites, formatted for phone screens! 🥁
     - **Interactive Unwrapping**: Present boxes (`assets/gift_box.jpg`) stay grayed out until points are hit, then glow & shake for the family to unwrap! 🎁✨
 
 
