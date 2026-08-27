@@ -146,7 +146,17 @@ const elements = {
   prizeProgressBar4: document.getElementById('prizeProgressBar4'),
   prizeProgressText4: document.getElementById('prizeProgressText4'),
   prizeStatusText4: document.getElementById('prizeStatusText4'),
-  prizeBtnLabel4: document.getElementById('prizeBtnLabel4')
+  prizeBtnLabel4: document.getElementById('prizeBtnLabel4'),
+
+  prizeCard5: document.getElementById('prizeCard5'),
+  prizeIcon5: document.getElementById('prizeIcon5'),
+  prizeBadge5: document.getElementById('prizeBadge5'),
+  prizeProgressBar5: document.getElementById('prizeProgressBar5'),
+  prizeProgressText5: document.getElementById('prizeProgressText5'),
+  prizeStatusText5: document.getElementById('prizeStatusText5'),
+  prizeBtnLabel5: document.getElementById('prizeBtnLabel5'),
+  stadiumWaveTrigger: document.getElementById('stadiumWaveTrigger'),
+  prizeBadgeImg5: document.getElementById('prizeBadgeImg5')
 };
 
 // Initialize Application
@@ -292,6 +302,16 @@ function setupEventListeners() {
   }
   if (elements.cosmoDanceTrigger) {
     elements.cosmoDanceTrigger.addEventListener('click', triggerCosmoDance);
+  }
+  if (elements.stadiumWaveTrigger) {
+    elements.stadiumWaveTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      triggerStadiumWave();
+    });
+    elements.stadiumWaveTrigger.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      triggerStadiumWave();
+    });
   }
 }
 
@@ -787,6 +807,282 @@ function populateWeeklySelector() {
   }
 }
 
+// LaVell Edwards Stadium Cougar Wave Engine (integrated from C:\Main\Personal\Code\FunCss\Wave.html)
+let waveAnimFrame = null;
+let wavePosition = 0;
+let waveSpeed = 0.035;
+let wavePaused = false;
+let waveDirection = 1;
+let waveFans = [];
+
+function initStadiumWaveEngine() {
+  const canvas = document.getElementById('stadiumWaveCanvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+
+  const resize = () => {
+    canvas.width = Math.min(window.innerWidth - 40, 950);
+    canvas.height = Math.min(window.innerHeight - 180, 600);
+  };
+  resize();
+
+  // Color Constants
+  const COLOR_FIELD = '#1e7b34';
+  const COLOR_EZ_BLUE = '#002E5D';
+  const COLOR_STADIUM_CONCRETE = '#334155';
+  const COLOR_WALL = '#1e293b';
+
+  const FAN_CLOTHES = ['#0062b8', '#002E5D', '#ffffff', '#0062b8', '#d97706', '#ffffff'];
+  const FAN_SKIN = ['#f8d7da', '#f5c6cb', '#e2e8f0', '#d4a373', '#8d5524', '#c68642'];
+
+  // Generate Stadium Fans Grid if empty
+  if (waveFans.length === 0) {
+    const rows = 14;
+    const fansPerRow = 120;
+
+    for (let r = 0; r < rows; r++) {
+      for (let i = 0; i < fansPerRow; i++) {
+        const angle = (i / fansPerRow) * Math.PI * 2;
+        const rx = 230 + r * 10.5;
+        const ry = 125 + r * 6.8;
+
+        const shirtColor = FAN_CLOTHES[Math.floor(Math.random() * FAN_CLOTHES.length)];
+        const skinColor = FAN_SKIN[Math.floor(Math.random() * FAN_SKIN.length)];
+        const heightOffset = Math.random() * 2;
+
+        waveFans.push({ angle, row: r, rx, ry, shirtColor, skinColor, heightOffset });
+      }
+    }
+    waveFans.sort((a, b) => a.ry - b.ry);
+  }
+
+  const drawField = (centerX, centerY) => {
+    ctx.save();
+    ctx.translate(centerX, centerY);
+
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 205, 105, 0, 0, Math.PI * 2);
+    ctx.fillStyle = COLOR_FIELD;
+    ctx.fill();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#0f5122';
+    ctx.stroke();
+
+    const fw = 250;
+    const fh = 105;
+    ctx.fillStyle = '#22863a';
+    ctx.fillRect(-fw/2, -fh/2, fw, fh);
+
+    ctx.fillStyle = COLOR_EZ_BLUE;
+    ctx.fillRect(-fw/2, -fh/2, 28, fh);
+    ctx.fillRect(fw/2 - 28, -fh/2, 28, fh);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    ctx.save();
+    ctx.translate(-fw/2 + 14, 0);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText("B Y U", 0, 0);
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(fw/2 - 14, 0);
+    ctx.rotate(Math.PI / 2);
+    ctx.fillText("BYU", 0, 0);
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.lineWidth = 1.5;
+    const numLines = 10;
+    const step = (fw - 56) / numLines;
+    for (let i = 1; i < numLines; i++) {
+      const x = -fw/2 + 28 + i * step;
+      ctx.beginPath();
+      ctx.moveTo(x, -fh/2);
+      ctx.lineTo(x, fh/2);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-fw/2, -fh/2, fw, fh);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 26px serif';
+    ctx.fillText("Y", 0, 2);
+
+    ctx.restore();
+  };
+
+  const drawStadiumStructure = (centerX, centerY) => {
+    ctx.save();
+    ctx.translate(centerX, centerY);
+
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 380, 225, 0, 0, Math.PI * 2);
+    ctx.fillStyle = COLOR_STADIUM_CONCRETE;
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = COLOR_WALL;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 218, 115, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#1e293b';
+    ctx.fill();
+
+    ctx.restore();
+  };
+
+  const renderWave = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2 + 8;
+
+    drawStadiumStructure(centerX, centerY);
+    drawField(centerX, centerY);
+
+    waveFans.forEach(fan => {
+      const x = centerX + Math.cos(fan.angle) * fan.rx;
+      const y = centerY + Math.sin(fan.angle) * fan.ry;
+
+      let diff = fan.angle - wavePosition;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+
+      const waveWidth = 0.55;
+      let waveHeight = 0;
+
+      if (Math.abs(diff) < waveWidth) {
+        const normalized = (diff + waveWidth) / (waveWidth * 2);
+        waveHeight = Math.sin(normalized * Math.PI) * 18;
+      }
+
+      const currentY = y - waveHeight - fan.heightOffset;
+      const isStanding = waveHeight > 3;
+
+      if (isStanding) {
+        ctx.beginPath();
+        ctx.ellipse(x, y + 2, 4, 2, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fill();
+      }
+
+      ctx.fillStyle = fan.shirtColor;
+      ctx.fillRect(x - 3, currentY - 5, 6, isStanding ? 8 : 6);
+
+      ctx.fillStyle = fan.skinColor;
+      ctx.beginPath();
+      ctx.arc(x, currentY - 8, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (isStanding) {
+        ctx.strokeStyle = fan.skinColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x - 2, currentY - 4);
+        ctx.lineTo(x - 6, currentY - (12 + waveHeight * 0.2));
+        ctx.moveTo(x + 2, currentY - 4);
+        ctx.lineTo(x + 6, currentY - (12 + waveHeight * 0.2));
+        ctx.stroke();
+      }
+    });
+
+    if (!wavePaused) {
+      wavePosition += waveSpeed * waveDirection;
+      if (wavePosition > Math.PI * 2) wavePosition -= Math.PI * 2;
+      if (wavePosition < 0) wavePosition += Math.PI * 2;
+    }
+
+    waveAnimFrame = requestAnimationFrame(renderWave);
+  };
+
+  // Wire Controls
+  const speedBtn = document.getElementById('waveSpeedBtn');
+  const reverseBtn = document.getElementById('waveReverseBtn');
+  const closeBtn = document.getElementById('closeWaveBtn');
+
+  const speeds = [
+    { label: 'Speed: Slow', val: 0.02 },
+    { label: 'Speed: Normal', val: 0.035 },
+    { label: 'Speed: Fast!', val: 0.06 }
+  ];
+  let speedIndex = 1;
+
+  if (speedBtn) {
+    speedBtn.onclick = () => {
+      speedIndex = (speedIndex + 1) % speeds.length;
+      waveSpeed = speeds[speedIndex].val;
+      speedBtn.innerText = speeds[speedIndex].label;
+    };
+  }
+
+  if (reverseBtn) {
+    reverseBtn.onclick = () => {
+      waveDirection *= -1;
+      reverseBtn.classList.toggle('active');
+    };
+  }
+
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      stopStadiumWaveEngine();
+    };
+  }
+
+  if (!waveAnimFrame) {
+    renderWave();
+  }
+}
+
+function stopStadiumWaveEngine() {
+  if (waveAnimFrame) {
+    cancelAnimationFrame(waveAnimFrame);
+    waveAnimFrame = null;
+  }
+  const overlay = document.getElementById('stadiumWaveOverlay');
+  if (overlay) overlay.style.display = 'none';
+  isStadiumWaveActive = false;
+}
+
+// Trigger LaVell Edwards Stadium Cougar Wave (Secret Surprise #5 - Unlocked at 750 Avg Pts)
+let isStadiumWaveActive = false;
+
+function triggerStadiumWave() {
+  const { avgScore } = getAccountAverageScore();
+  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
+  const isUnwrapped5 = localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true';
+
+  if (avgScore < 750) {
+    alert(`🔒 Secret Present #5 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 750 average points to unwrap this present!`);
+    return;
+  }
+
+  // If points reached but present not unwrapped yet, unwrap present!
+  if (!isUnwrapped5) {
+    localStorage.setItem(`byu_prize_unwrapped_5_${accId}`, 'true');
+    if (window.confetti) {
+      window.confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
+    }
+    renderPrizesView();
+    return;
+  }
+
+  if (isStadiumWaveActive) return;
+  isStadiumWaveActive = true;
+
+  const overlay = document.getElementById('stadiumWaveOverlay');
+  if (!overlay) return;
+
+  overlay.style.display = 'flex';
+  initStadiumWaveEngine();
+}
+
 // Calculate Family Account Average Score
 function getAccountAverageScore() {
   if (!state.currentAccount) return { avgScore: 0, playerCount: 0 };
@@ -817,6 +1113,7 @@ function renderPrizesView() {
   const isUnwrapped2 = localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true';
   const isUnwrapped3 = localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true';
   const isUnwrapped4 = localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true';
+  const isUnwrapped5 = localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true';
 
   if (elements.prizesAccountAvgScore) {
     elements.prizesAccountAvgScore.innerHTML = `${avgScore} <span style="font-size:0.9rem; color:var(--byu-gold);">avg pts</span>`;
@@ -1001,6 +1298,49 @@ function renderPrizesView() {
     if (badgeBox4) badgeBox4.className = 'prize-badge-box unlocked-badge';
     if (badgeImg4) badgeImg4.src = 'assets/cosmo_head.jpg';
     if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = '🐾 Secret Surprise #4 (Tap for Cosmo Dance!)';
+  }
+
+  // Surprise #5 (LaVell Edwards Stadium Cougar Wave - 750 Avg Pts)
+  const unlockThreshold5 = 750;
+  const isUnlocked5 = avgScore >= unlockThreshold5;
+  const pct5 = Math.min(100, Math.round((avgScore / unlockThreshold5) * 100));
+
+  if (elements.prizeProgressBar5) elements.prizeProgressBar5.style.width = `${pct5}%`;
+  if (elements.prizeProgressText5) elements.prizeProgressText5.textContent = `${avgScore} / ${unlockThreshold5} avg pts`;
+
+  const badgeBox5 = elements.stadiumWaveTrigger;
+  const badgeImg5 = elements.prizeBadgeImg5 || document.getElementById('prizeBadgeImg5');
+
+  if (!isUnlocked5) {
+    if (elements.prizeIcon5) elements.prizeIcon5.textContent = '🔒';
+    if (elements.prizeBadge5) {
+      elements.prizeBadge5.className = 'prize-badge locked';
+      elements.prizeBadge5.textContent = `Requires ${unlockThreshold5} Avg Pts`;
+    }
+    if (elements.prizeStatusText5) elements.prizeStatusText5.textContent = `Needs ${unlockThreshold5 - avgScore} more avg pts to unwrap`;
+    if (badgeBox5) badgeBox5.className = 'prize-badge-box locked';
+    if (badgeImg5) badgeImg5.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = `🔒 Locked Present (750 Avg Pts Needed)`;
+  } else if (!isUnwrapped5) {
+    if (elements.prizeIcon5) elements.prizeIcon5.textContent = '🎁';
+    if (elements.prizeBadge5) {
+      elements.prizeBadge5.className = 'prize-badge unlocked';
+      elements.prizeBadge5.textContent = 'READY TO UNWRAP!';
+    }
+    if (elements.prizeStatusText5) elements.prizeStatusText5.textContent = 'Points Reached! Tap Present to Unwrap!';
+    if (badgeBox5) badgeBox5.className = 'prize-badge-box ready-to-unwrap';
+    if (badgeImg5) badgeImg5.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
+  } else {
+    if (elements.prizeIcon5) elements.prizeIcon5.textContent = '✨';
+    if (elements.prizeBadge5) {
+      elements.prizeBadge5.className = 'prize-badge unlocked';
+      elements.prizeBadge5.textContent = 'UNLOCKED BADGE';
+    }
+    if (elements.prizeStatusText5) elements.prizeStatusText5.textContent = 'Unlocked Badge! Tap to launch Stadium Wave!';
+    if (badgeBox5) badgeBox5.className = 'prize-badge-box unlocked-badge';
+    if (badgeImg5) badgeImg5.src = 'assets/stadium_badge.jpg';
+    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = '🌊 Secret Surprise #5 (Tap for Stadium Wave!)';
   }
 }
 

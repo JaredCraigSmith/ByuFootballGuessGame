@@ -441,6 +441,34 @@
         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
           <span id="prizeProgressText4">0 / 600 avg pts</span>
           <span id="prizeStatusText4">Locked</span>
+      <!-- Surprise #5 Card (750 Avg Pts - LaVell Edwards Stadium Cougar Wave) -->
+      <div id="prizeCard5" class="card prize-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span id="prizeIcon5">🔒</span>
+            <span>Secret Surprise #5</span>
+          </h4>
+          <span id="prizeBadge5" class="prize-badge locked">Requires 750 Avg Pts</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
+          Reach a family average of <strong>750 points</strong> to unwrap the legendary LaVell Edwards Stadium Cougar Wave!
+        </p>
+
+        <!-- Single Image Badge Box -->
+        <div id="stadiumWaveTrigger" class="prize-badge-box locked" title="Secret Surprise #5">
+          <div class="badge-img-wrapper">
+            <img id="prizeBadgeImg5" src="assets/gift_box.jpg" alt="Surprise Badge 5" class="badge-img" />
+          </div>
+          <div id="prizeBtnLabel5" class="badge-sub-label">🔒 Locked Present (750 Avg Pts Needed)</div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="prize-progress-track" style="margin-top: 14px;">
+          <div id="prizeProgressBar5" class="prize-progress-fill" style="width: 0%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+          <span id="prizeProgressText5">0 / 750 avg pts</span>
+          <span id="prizeStatusText5">Locked</span>
         </div>
       </div>
     </section>
@@ -506,6 +534,22 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Stadium Cougar Wave Overlay (integrated from Wave.html) -->
+  <div id="stadiumWaveOverlay" class="stadium-wave-overlay" style="display: none;">
+    <div class="stadium-wave-header">
+      <h2>LAVELL EDWARDS STADIUM</h2>
+      <p>HOME OF THE BYU COUGARS • COUGAR NATION WAVE 🌊</p>
+    </div>
+    <div class="stadium-wave-wrapper">
+      <canvas id="stadiumWaveCanvas"></canvas>
+    </div>
+    <div class="stadium-wave-controls">
+      <button class="btn btn-navy" id="waveSpeedBtn" style="padding: 6px 14px; font-size: 0.8rem;">Speed: Normal</button>
+      <button class="btn btn-navy" id="waveReverseBtn" style="padding: 6px 14px; font-size: 0.8rem;">Reverse</button>
+      <button class="btn btn-gold" id="closeWaveBtn" style="padding: 6px 16px; font-size: 0.82rem;">CLOSE WAVE 🌊</button>
     </div>
   </div>
 
