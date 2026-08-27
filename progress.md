@@ -58,12 +58,11 @@
   - Added live status indicators (`🏆 FINISHED`, `🔴 LIVE IN PROGRESS`, `🗓️ UPCOMING`) across Admin Panel, Schedule View, Weekly Leaderboard, and Main Countdown Banner
   - Enhanced **Player Cell Styling**: Full cell cards in Overall Standings, Weekly Leaders, and My Guesses now display in each player's chosen color with custom background gradients, matching borders, and glowing shadows 🎨
   - Added **Family Account Prize Vault Tab (`🎁 Prizes`)**: Added a dedicated Prizes view where families track their account average score toward mystery surprise unlocks!
-    - **Secret Surprise #1 (150 Avg Pts)**: Unlocks **Fireworks Display** (`assets/fireworks_badge.jpg`)! 🎆
+    - **Secret Surprise #1 (150 Avg Pts)**: Unlocks the **Cosmo Mascot Dance Party** (`assets/cosmo_head.jpg`)! 🐾
     - **Secret Surprise #2 (300 Avg Pts)**: Unlocks the **BYU Pump Up Song** (`assets/music_badge.jpg`)! 🎵
     - **Secret Surprise #3 (450 Avg Pts)**: Unlocks the **Polynesian Fire Knife Dancer Show** (`assets/fire_spinner_badge.jpg`), featuring the clean CSS Polynesian dancer from `fireDancer.html` who automatically tosses the flaming staff high into the air, catches it with a spark explosion, and smoothly fades away! 🔥
-    - **Secret Surprise #4 (600 Avg Pts)**: Unlocks the **Cosmo Dance Party** (`assets/cosmo_head.jpg`)! 🐾
-    - **Secret Surprise #5 (750 Avg Pts)**: Unlocks the **LaVell Edwards Stadium Cougar Wave** (`assets/stadium_badge.jpg`), integrated directly from `Wave.html` featuring BYU endzones, midfield Block Y, stadium concrete seating bowl, and 1,600+ animated fan wave sprites, dynamically scaled for mobile phone viewports! 🌊
-    - **Secret Surprise #6 (900 Avg Pts)**: Unlocks the **BYU Game Day Drum Hype** (`assets/drum_badge.jpg`), integrated directly from `Drum.html` with synthesized kick bass & rhythm claps, Web Audio synthesis, real-time BPM tempo calculator, skewed Hype Meter, and animated stadium hype sprites, formatted for phone screens! 🥁
+    - **Secret Surprise #4 (600 Avg Pts)**: Unlocks the **LaVell Edwards Stadium Cougar Wave** (`assets/stadium_badge.jpg`), integrated directly from `Wave.html` featuring BYU endzones, midfield Block Y, stadium concrete seating bowl, and 1,600+ animated fan wave sprites, dynamically scaled for mobile phone viewports! 🌊
+    - **Secret Surprise #5 (750 Avg Pts)**: Unlocks the **BYU Game Day Drum Hype** (`assets/drum_badge.jpg`), integrated directly from `Drum.html` with synthesized kick bass & rhythm claps, Web Audio synthesis, real-time BPM tempo calculator, skewed Hype Meter, and animated stadium hype sprites, formatted for phone screens! 🥁
     - **Interactive Unwrapping**: Present boxes (`assets/gift_box.jpg`) stay grayed out until points are hit, then glow & shake for the family to unwrap! 🎁✨
 
 
