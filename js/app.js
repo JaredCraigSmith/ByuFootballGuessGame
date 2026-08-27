@@ -1230,46 +1230,57 @@ function playSynthesizedDrumSound() {
   noise.stop(drumAudioCtx.currentTime + 0.25);
 }
 
-function playSynthesizedClapSound() {
+function playSynthesizedGroupClapSound(intensity = 1.0) {
   initDrumAudioCtx();
   if (!drumAudioCtx) return;
 
   const now = drumAudioCtx.currentTime;
-  const bufferSize = drumAudioCtx.sampleRate * 0.2;
-  const buffer = drumAudioCtx.createBuffer(1, bufferSize, drumAudioCtx.sampleRate);
-  const data = buffer.getChannelData(0);
+  // Intensity scales clapper density: 5 claps at start -> 24 layered clappers with crowd spread at top!
+  const clapperCount = Math.round(5 + intensity * 8);
 
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
+  for (let c = 0; c < clapperCount; c++) {
+    // Micro-delay between crowd hands clapping (0ms to 55ms)
+    const microDelay = (c === 0) ? 0 : (Math.random() * 0.045 + (c * 0.002));
+    const clapTime = now + microDelay;
+
+    const bufferSize = drumAudioCtx.sampleRate * 0.22;
+    const buffer = drumAudioCtx.createBuffer(1, bufferSize, drumAudioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = drumAudioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = drumAudioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    // Varied center frequency across crowd members (800Hz to 1800Hz)
+    filter.frequency.value = 850 + Math.random() * 950;
+    filter.Q.value = 0.85 + Math.random() * 0.5;
+
+    const gain = drumAudioCtx.createGain();
+    const clapperVol = (0.07 + Math.random() * 0.06) * Math.min(1.6, 0.8 + intensity * 0.4);
+
+    gain.gain.setValueAtTime(0, clapTime);
+    gain.gain.setValueAtTime(clapperVol * 0.8, clapTime + 0.004);
+    gain.gain.setValueAtTime(clapperVol * 0.2, clapTime + 0.014);
+    gain.gain.setValueAtTime(clapperVol, clapTime + 0.024);
+    gain.gain.exponentialRampToValueAtTime(0.0001, clapTime + 0.16 + Math.random() * 0.06);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(drumAudioCtx.destination);
+
+    noise.start(clapTime);
+    noise.stop(clapTime + 0.25);
   }
-
-  const noise = drumAudioCtx.createBufferSource();
-  noise.buffer = buffer;
-
-  const filter = drumAudioCtx.createBiquadFilter();
-  filter.type = 'bandpass';
-  filter.frequency.value = 1200;
-  filter.Q.value = 1.0;
-
-  const gain = drumAudioCtx.createGain();
-
-  // Balanced stadium clap volume
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.setValueAtTime(0.28, now + 0.005);
-  gain.gain.setValueAtTime(0.08, now + 0.015);
-  gain.gain.setValueAtTime(0.32, now + 0.025);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-
-  noise.connect(filter);
-  filter.connect(gain);
-  gain.connect(drumAudioCtx.destination);
-
-  noise.start(now);
-  noise.stop(now + 0.22);
 }
 
 let drumConfettiFired = false;
 let drumReachedMax = false;
+let drumCadenceHitCount = 0;
+let drumFirstHitTime = 0;
 
 function initDrumHypeEngine() {
   const malletDrum = document.getElementById('mallet-drum');
@@ -1286,6 +1297,8 @@ function initDrumHypeEngine() {
 
   drumConfettiFired = false;
   drumReachedMax = false;
+  drumCadenceHitCount = 0;
+  drumFirstHitTime = 0;
 
   // Ensure audio is reset and ready, but NOT playing yet
   if (turbAudio) {
@@ -1299,6 +1312,8 @@ function initDrumHypeEngine() {
   const resetAfterMaxSong = () => {
     drumReachedMax = false;
     drumConfettiFired = false;
+    drumCadenceHitCount = 0;
+    drumFirstHitTime = 0;
     if (turbAudio) {
       turbAudio.currentTime = 0;
     }
@@ -1420,35 +1435,57 @@ function initDrumHypeEngine() {
     }
     drumStrikeLeft = !drumStrikeLeft;
 
-    let interval = 0;
-    if (drumLastHitTime > 0) {
-      interval = now - drumLastHitTime;
-      if (interval < 2500 && interval > 40) {
-        processTempo(interval);
+    // Reset cadence count if user paused for more than 2.5s
+    if (drumFirstHitTime > 0 && now - drumFirstHitTime > 2500) {
+      drumCadenceHitCount = 0;
+    }
+
+    drumCadenceHitCount++;
+
+    if (drumCadenceHitCount % 2 === 1) {
+      // Strike 1 of "Drum Drum Clap" measure!
+      drumFirstHitTime = now;
+
+      if (drumAutoClapTimeout) {
+        clearTimeout(drumAutoClapTimeout);
+        drumAutoClapTimeout = null;
+      }
+
+      if (drumLastHitTime > 0) {
+        const interval = now - drumLastHitTime;
+        if (interval < 2500 && interval > 40) {
+          processTempo(interval);
+        }
       } else {
-        // Tapped after a pause - give gentle boost
-        const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
-        const maxAllowedEnergy = is6sPassed ? 100 : 95;
-        drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + 3.0);
-        if (drumHypeEnergy >= 100) drumReachedMax = true;
+        // First tap
+        drumHypeEnergy = Math.min(95, drumHypeEnergy + 3.5);
         drumCurrentBPM = 60;
         if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
         updateUI();
       }
     } else {
-      // First tap
-      drumHypeEnergy = Math.min(95, drumHypeEnergy + 3.5);
-      drumCurrentBPM = 60;
-      if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
-      updateUI();
-    }
+      // Strike 2 of "Drum Drum Clap" measure!
+      const interval = now - drumFirstHitTime;
+      if (interval < 2500 && interval > 40) {
+        processTempo(interval);
+      } else {
+        const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
+        const maxAllowedEnergy = is6sPassed ? 100 : 95;
+        drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + 3.5);
+        if (drumHypeEnergy >= 100) drumReachedMax = true;
+        updateUI();
+      }
 
-    // Schedule automatic syncopated stadium handclap on the off-beat!
-    if (drumAutoClapTimeout) clearTimeout(drumAutoClapTimeout);
-    const clapDelay = (interval > 80 && interval < 1500) ? Math.max(60, Math.min(interval / 2, 280)) : 160;
-    drumAutoClapTimeout = setTimeout(() => {
-      playSynthesizedClapSound();
-    }, clapDelay);
+      // Schedule the crowd CLAP in rhythm (interval time after Strike 2)!
+      const clapDelay = Math.max(90, Math.min(interval, 1200));
+      const clapIntensity = (drumHypeEnergy >= 75 || drumReachedMax) ? 2.5 : (drumHypeEnergy >= 40 ? 1.6 : 1.0);
+
+      if (drumAutoClapTimeout) clearTimeout(drumAutoClapTimeout);
+      drumAutoClapTimeout = setTimeout(() => {
+        playSynthesizedGroupClapSound(clapIntensity);
+        drumAutoClapTimeout = null;
+      }, clapDelay);
+    }
 
     drumLastHitTime = now;
   };
@@ -1523,6 +1560,8 @@ function stopDrumHypeEngine() {
   drumLastHitTime = 0;
   drumConfettiFired = false;
   drumReachedMax = false;
+  drumCadenceHitCount = 0;
+  drumFirstHitTime = 0;
 
   const overlay = document.getElementById('drumHypeOverlay');
   if (overlay) overlay.style.display = 'none';
