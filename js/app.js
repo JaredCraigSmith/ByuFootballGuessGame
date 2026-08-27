@@ -1269,6 +1269,7 @@ function playSynthesizedClapSound() {
 }
 
 let drumConfettiFired = false;
+let drumReachedMax = false;
 
 function initDrumHypeEngine() {
   const malletDrum = document.getElementById('mallet-drum');
@@ -1284,12 +1285,35 @@ function initDrumHypeEngine() {
   if (!malletDrum) return;
 
   drumConfettiFired = false;
+  drumReachedMax = false;
 
   // Ensure audio is reset and ready, but NOT playing yet
   if (turbAudio) {
     turbAudio.pause();
     turbAudio.currentTime = 0;
+    turbAudio.onended = () => {
+      resetAfterMaxSong();
+    };
   }
+
+  const resetAfterMaxSong = () => {
+    drumReachedMax = false;
+    drumConfettiFired = false;
+    if (turbAudio) {
+      turbAudio.currentTime = 0;
+    }
+    // Animate meter smoothly back down to 0
+    let decayTimer = setInterval(() => {
+      drumHypeEnergy = Math.max(0, drumHypeEnergy - 5);
+      drumCurrentBPM = Math.max(0, drumCurrentBPM - 15);
+      if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
+      updateUI();
+      if (drumHypeEnergy <= 0) {
+        clearInterval(decayTimer);
+        drumLastHitTime = 0;
+      }
+    }, 40);
+  };
 
   const hypeObjects = [
     { id: 'obj-ref', threshold: 20 },
@@ -1305,7 +1329,7 @@ function initDrumHypeEngine() {
     const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
 
     if (hypeFrame && hypeTitle) {
-      if (drumHypeEnergy >= 100) {
+      if (drumHypeEnergy >= 100 || drumReachedMax) {
         hypeFrame.classList.remove('flash-medium');
         hypeFrame.classList.add('flash-max');
         hypeTitle.textContent = "🔥 MAXIMUM HYPE! 🔥";
@@ -1339,7 +1363,7 @@ function initDrumHypeEngine() {
     hypeObjects.forEach(obj => {
       const el = document.getElementById(obj.id);
       if (el) {
-        if (drumHypeEnergy >= obj.threshold) {
+        if (drumHypeEnergy >= obj.threshold || drumReachedMax) {
           el.classList.add('visible');
         } else {
           el.classList.remove('visible');
@@ -1370,6 +1394,10 @@ function initDrumHypeEngine() {
 
     drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + gain);
 
+    if (drumHypeEnergy >= 100) {
+      drumReachedMax = true;
+    }
+
     // Start music ONLY when close to max (energy >= 80)
     if (drumHypeEnergy >= 80 && turbAudio && turbAudio.paused) {
       connectTurbulenceAudioGain();
@@ -1399,7 +1427,10 @@ function initDrumHypeEngine() {
         processTempo(interval);
       } else {
         // Tapped after a pause - give gentle boost
-        drumHypeEnergy = Math.min(95, drumHypeEnergy + 3.0);
+        const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
+        const maxAllowedEnergy = is6sPassed ? 100 : 95;
+        drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + 3.0);
+        if (drumHypeEnergy >= 100) drumReachedMax = true;
         drumCurrentBPM = 60;
         if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
         updateUI();
@@ -1436,8 +1467,17 @@ function initDrumHypeEngine() {
   if (!drumHypeInterval) {
     drumHypeInterval = setInterval(() => {
       const now = Date.now();
+
+      // If user has reached MAX, they do NOT need to keep drumming!
+      if (drumReachedMax) {
+        // Check if song finished
+        if (turbAudio && turbAudio.ended) {
+          resetAfterMaxSong();
+        }
+        return;
+      }
       
-      // If user stopped drumming (more than 1.4s since last hit)
+      // If user stopped drumming before reaching MAX (more than 1.4s since last hit)
       if (drumLastHitTime > 0 && now - drumLastHitTime > 1400) {
         drumHypeEnergy = Math.max(0, drumHypeEnergy - 3.5);
         drumCurrentBPM = Math.max(0, drumCurrentBPM - 12);
@@ -1475,12 +1515,14 @@ function stopDrumHypeEngine() {
   if (turbAudio) {
     turbAudio.pause();
     turbAudio.currentTime = 0;
+    turbAudio.onended = null;
   }
 
   drumHypeEnergy = 0;
   drumCurrentBPM = 0;
   drumLastHitTime = 0;
   drumConfettiFired = false;
+  drumReachedMax = false;
 
   const overlay = document.getElementById('drumHypeOverlay');
   if (overlay) overlay.style.display = 'none';
