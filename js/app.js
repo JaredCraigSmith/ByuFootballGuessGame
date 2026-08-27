@@ -822,8 +822,11 @@ function initStadiumWaveEngine() {
   const ctx = canvas.getContext('2d');
 
   const resize = () => {
-    canvas.width = Math.min(window.innerWidth - 40, 950);
-    canvas.height = Math.min(window.innerHeight - 180, 600);
+    // Sized for phone & mobile screens
+    const availWidth = Math.min(window.innerWidth - 16, 950);
+    const availHeight = Math.min(window.innerHeight - 130, 600);
+    canvas.width = availWidth;
+    canvas.height = availHeight;
   };
   resize();
 
@@ -857,50 +860,52 @@ function initStadiumWaveEngine() {
     waveFans.sort((a, b) => a.ry - b.ry);
   }
 
-  const drawField = (centerX, centerY) => {
+  const drawField = (centerX, centerY, scale) => {
     ctx.save();
     ctx.translate(centerX, centerY);
 
     ctx.beginPath();
-    ctx.ellipse(0, 0, 205, 105, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 205 * scale, 105 * scale, 0, 0, Math.PI * 2);
     ctx.fillStyle = COLOR_FIELD;
     ctx.fill();
-    ctx.lineWidth = 4;
+    ctx.lineWidth = Math.max(2, 4 * scale);
     ctx.strokeStyle = '#0f5122';
     ctx.stroke();
 
-    const fw = 250;
-    const fh = 105;
+    const fw = 250 * scale;
+    const fh = 105 * scale;
     ctx.fillStyle = '#22863a';
     ctx.fillRect(-fw/2, -fh/2, fw, fh);
 
+    const ezWidth = 28 * scale;
     ctx.fillStyle = COLOR_EZ_BLUE;
-    ctx.fillRect(-fw/2, -fh/2, 28, fh);
-    ctx.fillRect(fw/2 - 28, -fh/2, 28, fh);
+    ctx.fillRect(-fw/2, -fh/2, ezWidth, fh);
+    ctx.fillRect(fw/2 - ezWidth, -fh/2, ezWidth, fh);
 
+    const fontSize = Math.max(9, Math.round(13 * scale));
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 13px sans-serif';
+    ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
     ctx.save();
-    ctx.translate(-fw/2 + 14, 0);
+    ctx.translate(-fw/2 + ezWidth / 2, 0);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText("B Y U", 0, 0);
     ctx.restore();
 
     ctx.save();
-    ctx.translate(fw/2 - 14, 0);
+    ctx.translate(fw/2 - ezWidth / 2, 0);
     ctx.rotate(Math.PI / 2);
     ctx.fillText("BYU", 0, 0);
     ctx.restore();
 
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = Math.max(1, 1.5 * scale);
     const numLines = 10;
-    const step = (fw - 56) / numLines;
+    const step = (fw - ezWidth * 2) / numLines;
     for (let i = 1; i < numLines; i++) {
-      const x = -fw/2 + 28 + i * step;
+      const x = -fw/2 + ezWidth + i * step;
       ctx.beginPath();
       ctx.moveTo(x, -fh/2);
       ctx.lineTo(x, fh/2);
@@ -908,30 +913,31 @@ function initStadiumWaveEngine() {
     }
 
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = Math.max(1.5, 2 * scale);
     ctx.strokeRect(-fw/2, -fh/2, fw, fh);
 
+    const yFontSize = Math.max(14, Math.round(26 * scale));
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px serif';
-    ctx.fillText("Y", 0, 2);
+    ctx.font = `bold ${yFontSize}px serif`;
+    ctx.fillText("Y", 0, 2 * scale);
 
     ctx.restore();
   };
 
-  const drawStadiumStructure = (centerX, centerY) => {
+  const drawStadiumStructure = (centerX, centerY, scale) => {
     ctx.save();
     ctx.translate(centerX, centerY);
 
     ctx.beginPath();
-    ctx.ellipse(0, 0, 380, 225, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 380 * scale, 225 * scale, 0, 0, Math.PI * 2);
     ctx.fillStyle = COLOR_STADIUM_CONCRETE;
     ctx.fill();
-    ctx.lineWidth = 5;
+    ctx.lineWidth = Math.max(3, 5 * scale);
     ctx.strokeStyle = COLOR_WALL;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.ellipse(0, 0, 218, 115, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 218 * scale, 115 * scale, 0, 0, Math.PI * 2);
     ctx.fillStyle = '#1e293b';
     ctx.fill();
 
@@ -942,14 +948,15 @@ function initStadiumWaveEngine() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2 + 8;
+    const centerY = canvas.height / 2 + (4 * (canvas.height / 500));
+    const scale = Math.min(canvas.width / 800, canvas.height / 480);
 
-    drawStadiumStructure(centerX, centerY);
-    drawField(centerX, centerY);
+    drawStadiumStructure(centerX, centerY, scale);
+    drawField(centerX, centerY, scale);
 
     waveFans.forEach(fan => {
-      const x = centerX + Math.cos(fan.angle) * fan.rx;
-      const y = centerY + Math.sin(fan.angle) * fan.ry;
+      const x = centerX + Math.cos(fan.angle) * (fan.rx * scale);
+      const y = centerY + Math.sin(fan.angle) * (fan.ry * scale);
 
       let diff = fan.angle - wavePosition;
       while (diff < -Math.PI) diff += Math.PI * 2;
@@ -960,35 +967,38 @@ function initStadiumWaveEngine() {
 
       if (Math.abs(diff) < waveWidth) {
         const normalized = (diff + waveWidth) / (waveWidth * 2);
-        waveHeight = Math.sin(normalized * Math.PI) * 18;
+        waveHeight = Math.sin(normalized * Math.PI) * (18 * scale);
       }
 
-      const currentY = y - waveHeight - fan.heightOffset;
-      const isStanding = waveHeight > 3;
+      const currentY = y - waveHeight - (fan.heightOffset * scale);
+      const isStanding = waveHeight > (3 * scale);
 
       if (isStanding) {
         ctx.beginPath();
-        ctx.ellipse(x, y + 2, 4, 2, 0, 0, Math.PI * 2);
+        ctx.ellipse(x, y + (2 * scale), 4 * scale, 2 * scale, 0, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.fill();
       }
 
+      const fanW = Math.max(3, 6 * scale);
+      const fanH = Math.max(4, (isStanding ? 8 : 6) * scale);
       ctx.fillStyle = fan.shirtColor;
-      ctx.fillRect(x - 3, currentY - 5, 6, isStanding ? 8 : 6);
+      ctx.fillRect(x - fanW / 2, currentY - fanH / 2, fanW, fanH);
 
+      const headRadius = Math.max(1.8, 3 * scale);
       ctx.fillStyle = fan.skinColor;
       ctx.beginPath();
-      ctx.arc(x, currentY - 8, 3, 0, Math.PI * 2);
+      ctx.arc(x, currentY - fanH / 2 - headRadius, headRadius, 0, Math.PI * 2);
       ctx.fill();
 
       if (isStanding) {
         ctx.strokeStyle = fan.skinColor;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = Math.max(1, 1.5 * scale);
         ctx.beginPath();
-        ctx.moveTo(x - 2, currentY - 4);
-        ctx.lineTo(x - 6, currentY - (12 + waveHeight * 0.2));
-        ctx.moveTo(x + 2, currentY - 4);
-        ctx.lineTo(x + 6, currentY - (12 + waveHeight * 0.2));
+        ctx.moveTo(x - (2 * scale), currentY - (4 * scale));
+        ctx.lineTo(x - (6 * scale), currentY - ((12 * scale) + waveHeight * 0.2));
+        ctx.moveTo(x + (2 * scale), currentY - (4 * scale));
+        ctx.lineTo(x + (6 * scale), currentY - ((12 * scale) + waveHeight * 0.2));
         ctx.stroke();
       }
     });
