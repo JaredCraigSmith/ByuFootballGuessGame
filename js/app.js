@@ -1155,6 +1155,8 @@ let drumHypeInterval = null;
 let drumHypeEnergy = 0;
 let drumCurrentBPM = 0;
 let isDrumHypeActive = false;
+let turbMediaSource = null;
+let turbGainNode = null;
 
 function initDrumAudioCtx() {
   if (!drumAudioCtx) {
@@ -1162,6 +1164,23 @@ function initDrumAudioCtx() {
   }
   if (drumAudioCtx.state === 'suspended') {
     drumAudioCtx.resume();
+  }
+}
+
+function connectTurbulenceAudioGain() {
+  const turbAudio = document.getElementById('turbulenceAudio');
+  if (!turbAudio) return;
+  initDrumAudioCtx();
+  if (drumAudioCtx && !turbMediaSource) {
+    try {
+      turbMediaSource = drumAudioCtx.createMediaElementSource(turbAudio);
+      turbGainNode = drumAudioCtx.createGain();
+      turbGainNode.gain.value = 2.4; // 240% volume boost for soundtrack
+      turbMediaSource.connect(turbGainNode);
+      turbGainNode.connect(drumAudioCtx.destination);
+    } catch (e) {
+      console.log("MediaElementSource note:", e);
+    }
   }
 }
 
@@ -1173,16 +1192,17 @@ function playSynthesizedDrumSound() {
   const oscGain = drumAudioCtx.createGain();
 
   osc.type = 'sine';
-  osc.frequency.setValueAtTime(90, drumAudioCtx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(0.01, drumAudioCtx.currentTime + 0.35);
+  osc.frequency.setValueAtTime(85, drumAudioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(0.01, drumAudioCtx.currentTime + 0.3);
 
-  oscGain.gain.setValueAtTime(1.5, drumAudioCtx.currentTime);
-  oscGain.gain.exponentialRampToValueAtTime(0.001, drumAudioCtx.currentTime + 0.35);
+  // Balanced level so music stays loud and clear
+  oscGain.gain.setValueAtTime(0.38, drumAudioCtx.currentTime);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, drumAudioCtx.currentTime + 0.3);
 
   osc.connect(oscGain);
   oscGain.connect(drumAudioCtx.destination);
 
-  const bufferSize = drumAudioCtx.sampleRate * 0.25;
+  const bufferSize = drumAudioCtx.sampleRate * 0.2;
   const buffer = drumAudioCtx.createBuffer(1, bufferSize, drumAudioCtx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
@@ -1194,11 +1214,11 @@ function playSynthesizedDrumSound() {
 
   const filter = drumAudioCtx.createBiquadFilter();
   filter.type = 'lowpass';
-  filter.frequency.value = 400;
+  filter.frequency.value = 350;
 
   const noiseGain = drumAudioCtx.createGain();
-  noiseGain.gain.setValueAtTime(1.0, drumAudioCtx.currentTime);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, drumAudioCtx.currentTime + 0.3);
+  noiseGain.gain.setValueAtTime(0.18, drumAudioCtx.currentTime);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, drumAudioCtx.currentTime + 0.25);
 
   noise.connect(filter);
   filter.connect(noiseGain);
@@ -1206,8 +1226,8 @@ function playSynthesizedDrumSound() {
 
   osc.start();
   noise.start();
-  osc.stop(drumAudioCtx.currentTime + 0.35);
-  noise.stop(drumAudioCtx.currentTime + 0.3);
+  osc.stop(drumAudioCtx.currentTime + 0.3);
+  noise.stop(drumAudioCtx.currentTime + 0.25);
 }
 
 function playSynthesizedClapSound() {
@@ -1215,7 +1235,7 @@ function playSynthesizedClapSound() {
   if (!drumAudioCtx) return;
 
   const now = drumAudioCtx.currentTime;
-  const bufferSize = drumAudioCtx.sampleRate * 0.25;
+  const bufferSize = drumAudioCtx.sampleRate * 0.2;
   const buffer = drumAudioCtx.createBuffer(1, bufferSize, drumAudioCtx.sampleRate);
   const data = buffer.getChannelData(0);
 
@@ -1233,18 +1253,19 @@ function playSynthesizedClapSound() {
 
   const gain = drumAudioCtx.createGain();
 
+  // Balanced stadium clap volume
   gain.gain.setValueAtTime(0, now);
-  gain.gain.setValueAtTime(1.0, now + 0.005);
-  gain.gain.setValueAtTime(0.2, now + 0.015);
-  gain.gain.setValueAtTime(1.2, now + 0.025);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+  gain.gain.setValueAtTime(0.28, now + 0.005);
+  gain.gain.setValueAtTime(0.08, now + 0.015);
+  gain.gain.setValueAtTime(0.32, now + 0.025);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
 
   noise.connect(filter);
   filter.connect(gain);
   gain.connect(drumAudioCtx.destination);
 
   noise.start(now);
-  noise.stop(now + 0.25);
+  noise.stop(now + 0.22);
 }
 
 let drumConfettiFired = false;
@@ -1351,6 +1372,7 @@ function initDrumHypeEngine() {
 
     // Start music ONLY when close to max (energy >= 80)
     if (drumHypeEnergy >= 80 && turbAudio && turbAudio.paused) {
+      connectTurbulenceAudioGain();
       turbAudio.currentTime = 0;
       turbAudio.play().catch(e => console.log("Audio play allowed on user action", e));
     }
@@ -1361,6 +1383,7 @@ function initDrumHypeEngine() {
   const handleTempoDrumHit = () => {
     const now = Date.now();
     playSynthesizedDrumSound();
+    connectTurbulenceAudioGain();
 
     const activeMallet = drumStrikeLeft ? malletLeft : malletRight;
     if (activeMallet) {
@@ -1369,8 +1392,9 @@ function initDrumHypeEngine() {
     }
     drumStrikeLeft = !drumStrikeLeft;
 
+    let interval = 0;
     if (drumLastHitTime > 0) {
-      const interval = now - drumLastHitTime;
+      interval = now - drumLastHitTime;
       if (interval < 2500 && interval > 40) {
         processTempo(interval);
       } else {
@@ -1387,6 +1411,13 @@ function initDrumHypeEngine() {
       if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
       updateUI();
     }
+
+    // Schedule automatic syncopated stadium handclap on the off-beat!
+    if (drumAutoClapTimeout) clearTimeout(drumAutoClapTimeout);
+    const clapDelay = (interval > 80 && interval < 1500) ? Math.max(60, Math.min(interval / 2, 280)) : 160;
+    drumAutoClapTimeout = setTimeout(() => {
+      playSynthesizedClapSound();
+    }, clapDelay);
 
     drumLastHitTime = now;
   };
