@@ -1149,39 +1149,6 @@ function stopStadiumWaveEngine() {
   isStadiumWaveActive = false;
 }
 
-// Trigger LaVell Edwards Stadium Cougar Wave (Secret Surprise #5 - Unlocked at 750 Avg Pts)
-let isStadiumWaveActive = false;
-
-function triggerStadiumWave() {
-  const { avgScore } = getAccountAverageScore();
-  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
-  const isUnwrapped5 = localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true';
-
-  if (avgScore < 750) {
-    alert(`🔒 Secret Present #5 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 750 average points to unwrap this present!`);
-    return;
-  }
-
-  // If points reached but present not unwrapped yet, unwrap present!
-  if (!isUnwrapped5) {
-    localStorage.setItem(`byu_prize_unwrapped_5_${accId}`, 'true');
-    if (window.confetti) {
-      window.confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
-    }
-    renderPrizesView();
-    return;
-  }
-
-  if (isStadiumWaveActive) return;
-  isStadiumWaveActive = true;
-
-  const overlay = document.getElementById('stadiumWaveOverlay');
-  if (!overlay) return;
-
-  overlay.style.display = 'flex';
-  initStadiumWaveEngine();
-}
-
 // BYU Game Day Drum Hype Engine (integrated from C:\Main\Personal\Code\FunCss\Drum.html)
 let drumAudioCtx = null;
 let drumStrikeLeft = true;
@@ -1427,37 +1394,6 @@ function stopDrumHypeEngine() {
   const overlay = document.getElementById('drumHypeOverlay');
   if (overlay) overlay.style.display = 'none';
   isDrumHypeActive = false;
-}
-
-// Trigger BYU Game Day Drum Hype (Secret Surprise #6 - Unlocked at 900 Avg Pts)
-function triggerDrumHype() {
-  const { avgScore } = getAccountAverageScore();
-  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
-  const isUnwrapped6 = localStorage.getItem(`byu_prize_unwrapped_6_${accId}`) === 'true';
-
-  if (avgScore < 900) {
-    alert(`🔒 Secret Present #6 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 900 average points to unwrap this present!`);
-    return;
-  }
-
-  // If points reached but present not unwrapped yet, unwrap present!
-  if (!isUnwrapped6) {
-    localStorage.setItem(`byu_prize_unwrapped_6_${accId}`, 'true');
-    if (window.confetti) {
-      window.confetti({ particleCount: 250, spread: 130, origin: { y: 0.6 } });
-    }
-    renderPrizesView();
-    return;
-  }
-
-  if (isDrumHypeActive) return;
-  isDrumHypeActive = true;
-
-  const overlay = document.getElementById('drumHypeOverlay');
-  if (!overlay) return;
-
-  overlay.style.display = 'flex';
-  initDrumHypeEngine();
 }
 
 // Calculate Family Account Average Score
