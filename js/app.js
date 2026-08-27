@@ -754,8 +754,6 @@ function triggerCosmoDance() {
 }
 
 // Trigger LaVell Edwards Stadium Cougar Wave (Secret Surprise #4 - Unlocked at 600 Avg Pts)
-let isStadiumWaveActive = false;
-
 function triggerStadiumWave() {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
@@ -787,8 +785,6 @@ function triggerStadiumWave() {
 }
 
 // Trigger BYU Game Day Drum Hype (Secret Surprise #5 - Unlocked at 750 Avg Pts)
-let isDrumHypeActive = false;
-
 function triggerDrumHype() {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
@@ -897,6 +893,7 @@ function populateWeeklySelector() {
 }
 
 // LaVell Edwards Stadium Cougar Wave Engine (integrated from C:\Main\Personal\Code\FunCss\Wave.html)
+let isStadiumWaveActive = false;
 let waveAnimFrame = null;
 let wavePosition = 0;
 let waveSpeed = 0.035;
