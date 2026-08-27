@@ -58,7 +58,10 @@
 
         <form id="loginForm">
           <div class="form-group" style="text-align: left;">
-            <label class="form-label" for="accountSelect">Select Your Shared Family Account</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" for="accountSelect" style="margin-bottom: 0;">Select Your Shared Family Account</label>
+              <button type="button" id="refreshAccountsBtn" style="background: none; border: none; color: var(--byu-gold); cursor: pointer; font-size: 0.78rem; font-weight: 600;">🔄 Refresh</button>
+            </div>
             <select id="accountSelect" class="form-control" required>
               <option value="">-- Choose Shared Family Account --</option>
             </select>

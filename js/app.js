@@ -37,6 +37,7 @@ const elements = {
   views: document.querySelectorAll('.view'),
   accountSelect: document.getElementById('accountSelect'),
   accountPin: document.getElementById('accountPin'),
+  refreshAccountsBtn: document.getElementById('refreshAccountsBtn'),
   loginForm: document.getElementById('loginForm'),
   createAccountForm: document.getElementById('createAccountForm'),
   newAccountName: document.getElementById('newAccountName'),
@@ -176,13 +177,13 @@ async function init() {
 }
 
 // Load Data from Supabase API
-async function loadData() {
+async function loadData(forceRefresh = false) {
   try {
     const [accs, plys, gms, gss] = await Promise.all([
-      SupabaseAPI.getAccounts(),
-      SupabaseAPI.getPlayers(),
-      SupabaseAPI.getGames(),
-      SupabaseAPI.getGuesses()
+      SupabaseAPI.getAccounts(forceRefresh),
+      SupabaseAPI.getPlayers(forceRefresh),
+      SupabaseAPI.getGames(forceRefresh),
+      SupabaseAPI.getGuesses(forceRefresh)
     ]);
     state.accounts = accs || [];
     state.players = plys || [];
@@ -202,6 +203,16 @@ function setupEventListeners() {
       switchView(viewId);
     });
   });
+
+  if (elements.refreshAccountsBtn) {
+    elements.refreshAccountsBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      elements.refreshAccountsBtn.textContent = '⌛ Refreshing...';
+      await loadData(true);
+      renderAccountsDropdown();
+      elements.refreshAccountsBtn.textContent = '🔄 Refresh';
+    });
+  }
 
   // Leaderboard Sub Tabs & Weekly Game Select
   if (elements.btnOverallStandings) {
@@ -1722,6 +1733,12 @@ function switchView(viewId) {
   const activeNav = Array.from(elements.navItems).find(n => n.getAttribute('data-view') === viewId);
   if (activeNav) activeNav.classList.add('active');
 
+  if (viewId === 'loginView') {
+    renderAccountsDropdown();
+    if (!state.accounts || state.accounts.length === 0) {
+      loadData(true).then(() => renderAccountsDropdown());
+    }
+  }
   if (viewId === 'leaderboardView') renderLeaderboard();
   if (viewId === 'guessesView') renderGuessesView();
   if (viewId === 'gamesView') renderSchedule();
@@ -1735,7 +1752,7 @@ function restoreSession() {
   if (savedAcc) {
     try {
       const parsed = JSON.parse(savedAcc);
-      const matched = state.accounts.find(a => a.id === parsed.id && a.pin === parsed.pin);
+      const matched = state.accounts.find(a => String(a.id) === String(parsed.id) && String(a.pin) === String(parsed.pin));
       if (matched) {
         setLoggedInUser(matched);
         return;
@@ -1770,7 +1787,22 @@ function handleLogout() {
 
 // Render Accounts Dropdown
 function renderAccountsDropdown() {
-  elements.accountSelect.innerHTML = '<option value="">-- Choose Shared Family Account --</option>';
+  if (!elements.accountSelect) return;
+  elements.accountSelect.innerHTML = '';
+
+  if (!state.accounts || state.accounts.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = "";
+    opt.textContent = "-- No Accounts Found (Tap 🔄 to retry) --";
+    elements.accountSelect.appendChild(opt);
+    return;
+  }
+
+  const defaultOpt = document.createElement('option');
+  defaultOpt.value = "";
+  defaultOpt.textContent = "-- Choose Shared Family Account --";
+  elements.accountSelect.appendChild(defaultOpt);
+
   state.accounts.forEach(acc => {
     const opt = document.createElement('option');
     opt.value = acc.id;
@@ -1782,15 +1814,22 @@ function renderAccountsDropdown() {
 // Login Handler
 function handleLogin(e) {
   e.preventDefault();
-  const accId = parseInt(elements.accountSelect.value, 10);
-  const pinInput = parseInt(elements.accountPin.value, 10);
+  const rawAccValue = elements.accountSelect ? elements.accountSelect.value : '';
+  if (!rawAccValue) {
+    alert('Please select your shared family account from the dropdown list!');
+    return;
+  }
 
-  const acc = state.accounts.find(a => a.id === accId);
-  if (acc && acc.pin === pinInput) {
+  const accId = parseInt(rawAccValue, 10);
+  const pinRaw = elements.accountPin ? elements.accountPin.value.trim() : '';
+  const pinInput = parseInt(pinRaw, 10);
+
+  const acc = state.accounts.find(a => a.id === accId || String(a.id) === String(rawAccValue));
+  if (acc && (acc.pin === pinInput || String(acc.pin) === pinRaw || String(acc.pin) === String(pinInput))) {
     setLoggedInUser(acc);
     elements.accountPin.value = '';
   } else {
-    alert('Invalid Account or PIN. Please try again!');
+    alert('Invalid Account or PIN. Please check your PIN and try again!');
   }
 }
 

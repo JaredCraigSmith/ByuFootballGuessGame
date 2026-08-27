@@ -34,9 +34,20 @@ export const SupabaseAPI = {
       const data = await res.json();
       cache.accounts = data;
       cache.lastFetch.accounts = Date.now();
+      try { localStorage.setItem('byu_guess_accounts_backup', JSON.stringify(data)); } catch (e) {}
       return data;
     } catch (err) {
       console.error('Error fetching accounts:', err);
+      try {
+        const backup = localStorage.getItem('byu_guess_accounts_backup');
+        if (backup) {
+          const parsed = JSON.parse(backup);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            cache.accounts = parsed;
+            return parsed;
+          }
+        }
+      } catch (e) {}
       return cache.accounts || [];
     }
   },
