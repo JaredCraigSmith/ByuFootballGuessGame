@@ -1418,15 +1418,15 @@ body {
 
 .drum {
   position: relative;
-  width: 155px;
-  height: 155px;
+  width: 185px;
+  height: 185px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e6e6e6 70%, #cccccc 100%);
   border: 10px solid #002E5D;
   box-shadow: 
-    0 10px 20px rgba(0,0,0,0.6),
+    0 10px 25px rgba(0,0,0,0.6),
     inset 0 0 0 3px #ffffff,
-    inset 0 0 12px rgba(0,0,0,0.2);
+    inset 0 0 14px rgba(0,0,0,0.25);
   cursor: pointer;
   user-select: none;
   touch-action: manipulation;
