@@ -1331,11 +1331,11 @@ function initDrumHypeEngine() {
   };
 
   const hypeObjects = [
-    { id: 'obj-ref', threshold: 20 },
-    { id: 'obj-flag', threshold: 40 },
-    { id: 'obj-cheer', threshold: 60 },
-    { id: 'obj-player', threshold: 80 },
-    { id: 'obj-cosmo', threshold: 95 }
+    { id: 'obj-gif1', threshold: 20 },
+    { id: 'obj-gif2', threshold: 40 },
+    { id: 'obj-gif3', threshold: 60 },
+    { id: 'obj-gif4', threshold: 80 },
+    { id: 'obj-gif5', threshold: 95 }
   ];
 
   const updateUI = () => {

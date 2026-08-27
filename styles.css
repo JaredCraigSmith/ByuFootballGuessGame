@@ -1489,42 +1489,120 @@ body {
 }
 
 #hype-zone {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  z-index: 1;
+  z-index: 5;
+  overflow: hidden;
 }
 
-.hype-obj {
+.hype-gif-card {
   position: absolute;
-  font-size: 3.8rem;
   opacity: 0;
-  transform: scale(0.5) translateY(40px);
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  transform: scale(0.3) translateY(30px);
+  transition: opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 3px solid #ffd700;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85), 0 0 16px rgba(255, 215, 0, 0.45);
+  background: #000;
 }
 
-.hype-obj.visible {
+.hype-gif-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hype-gif-card.visible {
   opacity: 1;
   transform: scale(1) translateY(0);
 }
 
-#obj-ref { bottom: 12%; left: 4%; }
-#obj-ref.visible { animation: refDance 1s ease-in-out infinite alternate; }
+/* Position the 5 GIF hype cards around the drum stage */
+#obj-gif1 {
+  bottom: 12%;
+  left: 4%;
+  width: 105px;
+  height: 105px;
+}
+#obj-gif1.visible {
+  animation: gifFloat1 2.2s ease-in-out infinite alternate;
+}
 
-#obj-flag { top: 18%; right: 6%; transform-origin: bottom center; }
-#obj-flag.visible { animation: flagWave 2s ease-in-out infinite alternate; }
+#obj-gif2 {
+  bottom: 12%;
+  right: 4%;
+  width: 105px;
+  height: 105px;
+}
+#obj-gif2.visible {
+  animation: gifFloat2 2.4s ease-in-out infinite alternate;
+}
 
-#obj-cheer { bottom: 18%; right: 4%; }
-#obj-cheer.visible { animation: cheerJump 0.6s ease-out infinite alternate; }
+#obj-gif3 {
+  top: 14%;
+  left: 4%;
+  width: 110px;
+  height: 110px;
+}
+#obj-gif3.visible {
+  animation: gifFloat3 2s ease-in-out infinite alternate;
+}
 
-#obj-cosmo { top: 12%; left: 6%; font-size: 4.5rem; }
-#obj-cosmo.visible { animation: cosmoHype 1.5s linear infinite; }
+#obj-gif4 {
+  top: 14%;
+  right: 4%;
+  width: 110px;
+  height: 110px;
+}
+#obj-gif4.visible {
+  animation: gifFloat4 2.1s ease-in-out infinite alternate;
+}
 
-#obj-player { bottom: 35%; right: 8%; }
-#obj-player.visible { animation: playerFlex 1.2s ease-in-out infinite alternate; }
+#obj-gif5 {
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.3);
+  width: 140px;
+  height: 80px;
+  border-color: #ffffff;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.9), 0 0 45px rgba(0, 85, 165, 0.9);
+}
+#obj-gif5.visible {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  animation: gifPulseTop 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes gifFloat1 {
+  0% { transform: translateY(0) rotate(-4deg); }
+  100% { transform: translateY(-10px) rotate(2deg); }
+}
+
+@keyframes gifFloat2 {
+  0% { transform: translateY(0) rotate(4deg); }
+  100% { transform: translateY(-10px) rotate(-2deg); }
+}
+
+@keyframes gifFloat3 {
+  0% { transform: translateY(0) rotate(-3deg); }
+  100% { transform: translateY(-8px) rotate(3deg); }
+}
+
+@keyframes gifFloat4 {
+  0% { transform: translateY(0) rotate(3deg); }
+  100% { transform: translateY(-8px) rotate(-3deg); }
+}
+
+@keyframes gifPulseTop {
+  0% { transform: translateX(-50%) scale(1); }
+  100% { transform: translateX(-50%) scale(1.08); }
+}
 
 @keyframes mediumPulse {
   0% { box-shadow: 0 0 20px rgba(0, 132, 255, 0.5); }
@@ -1536,30 +1614,10 @@ body {
   100% { box-shadow: 0 0 55px rgba(255, 255, 255, 1); }
 }
 
-@keyframes refDance {
-  0% { transform: translateY(0) rotate(-5deg); }
-  100% { transform: translateY(-20px) rotate(5deg); }
-}
-
-@keyframes flagWave {
-  0% { transform: skewX(-5deg) rotate(-5deg); }
-  100% { transform: skewX(10deg) rotate(5deg); }
-}
-
-@keyframes cheerJump {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-40px) scale(1.05); }
-}
-
-@keyframes cosmoHype {
-  0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.1) rotate(5deg); }
-  100% { transform: scale(1) rotate(0deg); }
-}
-
-@keyframes playerFlex {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.1) translateX(10px); }
+@media (min-width: 600px) {
+  #obj-gif1, #obj-gif2 { width: 135px; height: 135px; }
+  #obj-gif3, #obj-gif4 { width: 145px; height: 145px; }
+  #obj-gif5 { width: 180px; height: 105px; }
 }
 
 @media (max-width: 380px) {
