@@ -156,7 +156,17 @@ const elements = {
   prizeStatusText5: document.getElementById('prizeStatusText5'),
   prizeBtnLabel5: document.getElementById('prizeBtnLabel5'),
   stadiumWaveTrigger: document.getElementById('stadiumWaveTrigger'),
-  prizeBadgeImg5: document.getElementById('prizeBadgeImg5')
+  prizeBadgeImg5: document.getElementById('prizeBadgeImg5'),
+
+  prizeCard6: document.getElementById('prizeCard6'),
+  prizeIcon6: document.getElementById('prizeIcon6'),
+  prizeBadge6: document.getElementById('prizeBadge6'),
+  prizeProgressBar6: document.getElementById('prizeProgressBar6'),
+  prizeProgressText6: document.getElementById('prizeProgressText6'),
+  prizeStatusText6: document.getElementById('prizeStatusText6'),
+  prizeBtnLabel6: document.getElementById('prizeBtnLabel6'),
+  drumHypeTrigger: document.getElementById('drumHypeTrigger'),
+  prizeBadgeImg6: document.getElementById('prizeBadgeImg6')
 };
 
 // Initialize Application
@@ -311,6 +321,16 @@ function setupEventListeners() {
     elements.stadiumWaveTrigger.addEventListener('touchend', (e) => {
       e.preventDefault();
       triggerStadiumWave();
+    });
+  }
+  if (elements.drumHypeTrigger) {
+    elements.drumHypeTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      triggerDrumHype();
+    });
+    elements.drumHypeTrigger.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      triggerDrumHype();
     });
   }
 }
@@ -1093,6 +1113,284 @@ function triggerStadiumWave() {
   initStadiumWaveEngine();
 }
 
+// BYU Game Day Drum Hype Engine (integrated from C:\Main\Personal\Code\FunCss\Drum.html)
+let drumAudioCtx = null;
+let drumStrikeLeft = true;
+let drumLastHitTime = 0;
+let drumAutoClapTimeout = null;
+let drumHypeInterval = null;
+let drumHypeEnergy = 0;
+let drumCurrentBPM = 0;
+let isDrumHypeActive = false;
+
+function initDrumAudioCtx() {
+  if (!drumAudioCtx) {
+    drumAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (drumAudioCtx.state === 'suspended') {
+    drumAudioCtx.resume();
+  }
+}
+
+function playSynthesizedDrumSound() {
+  initDrumAudioCtx();
+  if (!drumAudioCtx) return;
+
+  const osc = drumAudioCtx.createOscillator();
+  const oscGain = drumAudioCtx.createGain();
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(90, drumAudioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(0.01, drumAudioCtx.currentTime + 0.35);
+
+  oscGain.gain.setValueAtTime(1.5, drumAudioCtx.currentTime);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, drumAudioCtx.currentTime + 0.35);
+
+  osc.connect(oscGain);
+  oscGain.connect(drumAudioCtx.destination);
+
+  const bufferSize = drumAudioCtx.sampleRate * 0.25;
+  const buffer = drumAudioCtx.createBuffer(1, bufferSize, drumAudioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const noise = drumAudioCtx.createBufferSource();
+  noise.buffer = buffer;
+
+  const filter = drumAudioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 400;
+
+  const noiseGain = drumAudioCtx.createGain();
+  noiseGain.gain.setValueAtTime(1.0, drumAudioCtx.currentTime);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, drumAudioCtx.currentTime + 0.3);
+
+  noise.connect(filter);
+  filter.connect(noiseGain);
+  noiseGain.connect(drumAudioCtx.destination);
+
+  osc.start();
+  noise.start();
+  osc.stop(drumAudioCtx.currentTime + 0.35);
+  noise.stop(drumAudioCtx.currentTime + 0.3);
+}
+
+function playSynthesizedClapSound() {
+  initDrumAudioCtx();
+  if (!drumAudioCtx) return;
+
+  const now = drumAudioCtx.currentTime;
+  const bufferSize = drumAudioCtx.sampleRate * 0.25;
+  const buffer = drumAudioCtx.createBuffer(1, bufferSize, drumAudioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const noise = drumAudioCtx.createBufferSource();
+  noise.buffer = buffer;
+
+  const filter = drumAudioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 1200;
+  filter.Q.value = 1.0;
+
+  const gain = drumAudioCtx.createGain();
+
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.setValueAtTime(1.0, now + 0.005);
+  gain.gain.setValueAtTime(0.2, now + 0.015);
+  gain.gain.setValueAtTime(1.2, now + 0.025);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(drumAudioCtx.destination);
+
+  noise.start(now);
+  noise.stop(now + 0.25);
+}
+
+function initDrumHypeEngine() {
+  const malletDrum = document.getElementById('mallet-drum');
+  const clapDrum = document.getElementById('clap-drum');
+  const malletLeft = document.getElementById('mallet-left');
+  const malletRight = document.getElementById('mallet-right');
+  const hypeBar = document.getElementById('hype-bar');
+  const hypeFrame = document.getElementById('hype-meter-frame');
+  const hypeTitle = document.getElementById('hype-title');
+  const bpmDisplay = document.getElementById('bpm-display');
+  const closeBtn = document.getElementById('closeDrumBtn');
+
+  if (!malletDrum || !clapDrum) return;
+
+  const hypeObjects = [
+    { id: 'obj-ref', threshold: 20 },
+    { id: 'obj-flag', threshold: 40 },
+    { id: 'obj-cheer', threshold: 60 },
+    { id: 'obj-player', threshold: 80 },
+    { id: 'obj-cosmo', threshold: 95 }
+  ];
+
+  const triggerClap = () => {
+    playSynthesizedClapSound();
+    clapDrum.classList.add('auto-hit');
+    setTimeout(() => clapDrum.classList.remove('auto-hit'), 120);
+  };
+
+  const updateUI = () => {
+    if (hypeBar) hypeBar.style.width = `${drumHypeEnergy}%`;
+
+    if (hypeFrame && hypeTitle) {
+      if (drumHypeEnergy >= 90) {
+        hypeFrame.classList.remove('flash-medium');
+        hypeFrame.classList.add('flash-max');
+        hypeTitle.textContent = "🔥 MAXIMUM HYPE! 🔥";
+        hypeTitle.style.color = "#ffd700";
+      } else if (drumHypeEnergy >= 60) {
+        hypeFrame.classList.remove('flash-max');
+        hypeFrame.classList.add('flash-medium');
+        hypeTitle.textContent = "⚡ GETTING WILD! ⚡";
+        hypeTitle.style.color = "#00b7ff";
+      } else {
+        hypeFrame.classList.remove('flash-medium', 'flash-max');
+        hypeTitle.textContent = "STADIUM ENERGY";
+        hypeTitle.style.color = "#0084ff";
+      }
+    }
+
+    hypeObjects.forEach(obj => {
+      const el = document.getElementById(obj.id);
+      if (el) {
+        if (drumHypeEnergy >= obj.threshold) {
+          el.classList.add('visible');
+        } else {
+          el.classList.remove('visible');
+        }
+      }
+    });
+  };
+
+  const processTempo = (intervalMs) => {
+    if (intervalMs <= 0) return;
+    drumCurrentBPM = Math.min(300, Math.round(60000 / intervalMs));
+    if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
+
+    if (drumCurrentBPM >= 80) {
+      const gain = (drumCurrentBPM / 80) * 2.5;
+      drumHypeEnergy = Math.min(100, drumHypeEnergy + gain);
+    } else {
+      drumHypeEnergy = Math.max(0, drumHypeEnergy - 2);
+    }
+
+    updateUI();
+  };
+
+  const handleTempoDrumHit = () => {
+    const now = Date.now();
+    playSynthesizedDrumSound();
+
+    const activeMallet = drumStrikeLeft ? malletLeft : malletRight;
+    if (activeMallet) {
+      activeMallet.classList.add('strike');
+      setTimeout(() => activeMallet.classList.remove('strike'), 100);
+    }
+    drumStrikeLeft = !drumStrikeLeft;
+
+    if (drumLastHitTime > 0) {
+      const interval = now - drumLastHitTime;
+      if (interval > 50) {
+        processTempo(interval);
+        if (drumAutoClapTimeout) clearTimeout(drumAutoClapTimeout);
+        drumAutoClapTimeout = setTimeout(triggerClap, interval);
+      }
+    }
+
+    drumLastHitTime = now;
+  };
+
+  malletDrum.onclick = handleTempoDrumHit;
+  malletDrum.ontouchend = (e) => {
+    e.preventDefault();
+    handleTempoDrumHit();
+  };
+
+  clapDrum.onclick = triggerClap;
+  clapDrum.ontouchend = (e) => {
+    e.preventDefault();
+    triggerClap();
+  };
+
+  if (closeBtn) {
+    closeBtn.onclick = stopDrumHypeEngine;
+  }
+
+  // Energy decay loop
+  if (!drumHypeInterval) {
+    drumHypeInterval = setInterval(() => {
+      const now = Date.now();
+      if (drumLastHitTime > 0 && now - drumLastHitTime > 800) {
+        drumHypeEnergy = Math.max(0, drumHypeEnergy - 4);
+        drumCurrentBPM = Math.max(0, drumCurrentBPM - 15);
+        if (bpmDisplay) bpmDisplay.textContent = `BPM: ${drumCurrentBPM}`;
+        updateUI();
+      }
+    }, 150);
+  }
+}
+
+function stopDrumHypeEngine() {
+  if (drumHypeInterval) {
+    clearInterval(drumHypeInterval);
+    drumHypeInterval = null;
+  }
+  if (drumAutoClapTimeout) {
+    clearTimeout(drumAutoClapTimeout);
+    drumAutoClapTimeout = null;
+  }
+  drumHypeEnergy = 0;
+  drumCurrentBPM = 0;
+  drumLastHitTime = 0;
+
+  const overlay = document.getElementById('drumHypeOverlay');
+  if (overlay) overlay.style.display = 'none';
+  isDrumHypeActive = false;
+}
+
+// Trigger BYU Game Day Drum Hype (Secret Surprise #6 - Unlocked at 900 Avg Pts)
+function triggerDrumHype() {
+  const { avgScore } = getAccountAverageScore();
+  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
+  const isUnwrapped6 = localStorage.getItem(`byu_prize_unwrapped_6_${accId}`) === 'true';
+
+  if (avgScore < 900) {
+    alert(`🔒 Secret Present #6 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 900 average points to unwrap this present!`);
+    return;
+  }
+
+  // If points reached but present not unwrapped yet, unwrap present!
+  if (!isUnwrapped6) {
+    localStorage.setItem(`byu_prize_unwrapped_6_${accId}`, 'true');
+    if (window.confetti) {
+      window.confetti({ particleCount: 250, spread: 130, origin: { y: 0.6 } });
+    }
+    renderPrizesView();
+    return;
+  }
+
+  if (isDrumHypeActive) return;
+  isDrumHypeActive = true;
+
+  const overlay = document.getElementById('drumHypeOverlay');
+  if (!overlay) return;
+
+  overlay.style.display = 'flex';
+  initDrumHypeEngine();
+}
+
 // Calculate Family Account Average Score
 function getAccountAverageScore() {
   if (!state.currentAccount) return { avgScore: 0, playerCount: 0 };
@@ -1124,6 +1422,7 @@ function renderPrizesView() {
   const isUnwrapped3 = localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true';
   const isUnwrapped4 = localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true';
   const isUnwrapped5 = localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true';
+  const isUnwrapped6 = localStorage.getItem(`byu_prize_unwrapped_6_${accId}`) === 'true';
 
   if (elements.prizesAccountAvgScore) {
     elements.prizesAccountAvgScore.innerHTML = `${avgScore} <span style="font-size:0.9rem; color:var(--byu-gold);">avg pts</span>`;
@@ -1351,6 +1650,49 @@ function renderPrizesView() {
     if (badgeBox5) badgeBox5.className = 'prize-badge-box unlocked-badge';
     if (badgeImg5) badgeImg5.src = 'assets/stadium_badge.jpg';
     if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = '🌊 Secret Surprise #5 (Tap for Stadium Wave!)';
+  }
+
+  // Surprise #6 (BYU Game Day Drum Hype - 900 Avg Pts)
+  const unlockThreshold6 = 900;
+  const isUnlocked6 = avgScore >= unlockThreshold6;
+  const pct6 = Math.min(100, Math.round((avgScore / unlockThreshold6) * 100));
+
+  if (elements.prizeProgressBar6) elements.prizeProgressBar6.style.width = `${pct6}%`;
+  if (elements.prizeProgressText6) elements.prizeProgressText6.textContent = `${avgScore} / ${unlockThreshold6} avg pts`;
+
+  const badgeBox6 = elements.drumHypeTrigger;
+  const badgeImg6 = elements.prizeBadgeImg6 || document.getElementById('prizeBadgeImg6');
+
+  if (!isUnlocked6) {
+    if (elements.prizeIcon6) elements.prizeIcon6.textContent = '🔒';
+    if (elements.prizeBadge6) {
+      elements.prizeBadge6.className = 'prize-badge locked';
+      elements.prizeBadge6.textContent = `Requires ${unlockThreshold6} Avg Pts`;
+    }
+    if (elements.prizeStatusText6) elements.prizeStatusText6.textContent = `Needs ${unlockThreshold6 - avgScore} more avg pts to unwrap`;
+    if (badgeBox6) badgeBox6.className = 'prize-badge-box locked';
+    if (badgeImg6) badgeImg6.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel6) elements.prizeBtnLabel6.textContent = `🔒 Locked Present (900 Avg Pts Needed)`;
+  } else if (!isUnwrapped6) {
+    if (elements.prizeIcon6) elements.prizeIcon6.textContent = '🎁';
+    if (elements.prizeBadge6) {
+      elements.prizeBadge6.className = 'prize-badge unlocked';
+      elements.prizeBadge6.textContent = 'READY TO UNWRAP!';
+    }
+    if (elements.prizeStatusText6) elements.prizeStatusText6.textContent = 'Points Reached! Tap Present to Unwrap!';
+    if (badgeBox6) badgeBox6.className = 'prize-badge-box ready-to-unwrap';
+    if (badgeImg6) badgeImg6.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel6) elements.prizeBtnLabel6.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
+  } else {
+    if (elements.prizeIcon6) elements.prizeIcon6.textContent = '✨';
+    if (elements.prizeBadge6) {
+      elements.prizeBadge6.className = 'prize-badge unlocked';
+      elements.prizeBadge6.textContent = 'UNLOCKED BADGE';
+    }
+    if (elements.prizeStatusText6) elements.prizeStatusText6.textContent = 'Unlocked Badge! Tap to launch Drum Show!';
+    if (badgeBox6) badgeBox6.className = 'prize-badge-box unlocked-badge';
+    if (badgeImg6) badgeImg6.src = 'assets/drum_badge.jpg';
+    if (elements.prizeBtnLabel6) elements.prizeBtnLabel6.textContent = '🥁 Secret Surprise #6 (Tap for Drum Show!)';
   }
 }
 

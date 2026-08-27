@@ -1286,3 +1286,289 @@ body {
   }
 }
 
+/* BYU Game Day Drum Hype Overlay (integrated from Drum.html, formatted for phone screens) */
+.drum-hype-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background: linear-gradient(135deg, #001f3f 0%, #000c1a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 16px 12px;
+  overflow: hidden;
+  animation: fadeIn 0.4s ease;
+}
+
+.drum-hype-main-title {
+  font-size: 1.35rem;
+  letter-spacing: 1px;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0px #002E5D, 4px 4px 0px rgba(0,0,0,0.5);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.drum-hype-container {
+  width: 100%;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 20;
+}
+
+.drum-hype-container .hype-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 4px;
+}
+
+.drum-hype-container .hype-title {
+  font-size: 1rem;
+  letter-spacing: 2px;
+  color: #0084ff;
+  text-shadow: 0 0 10px rgba(0, 132, 255, 0.6);
+  text-transform: uppercase;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.drum-hype-container #bpm-display {
+  font-size: 0.95rem;
+  color: #a0a0a0;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.drum-hype-container #hype-meter-frame {
+  width: 100%;
+  height: 38px;
+  background: rgba(0, 11, 24, 0.9);
+  border: 3px solid #0055a5;
+  border-radius: 8px;
+  padding: 3px;
+  position: relative;
+  box-shadow: 
+    0 0 20px rgba(0, 85, 165, 0.4),
+    inset 0 0 15px rgba(0,0,0,0.9);
+  transform: skewX(-10deg);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.drum-hype-container #hype-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #002E5D 0%, #0055a5 50%, #ffffff 100%);
+  border-radius: 4px;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+  position: relative;
+}
+
+.drum-hype-container #hype-meter-frame.flash-medium {
+  border-color: #0084ff;
+  animation: mediumPulse 0.6s infinite alternate;
+}
+
+.drum-hype-container #hype-meter-frame.flash-max {
+  border-color: #ffd700;
+  animation: maxStrobe 0.15s infinite alternate;
+}
+
+.drum-hype-container #hype-meter-frame.flash-max #hype-bar {
+  background: linear-gradient(90deg, #0055a5 0%, #ffd700 50%, #ffffff 100%);
+}
+
+.drum-stage {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
+  margin-top: 1.2rem;
+  max-width: 95vw;
+}
+
+.drum-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.drum-container .label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.drum {
+  position: relative;
+  width: 155px;
+  height: 155px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e6e6e6 70%, #cccccc 100%);
+  border: 10px solid #002E5D;
+  box-shadow: 
+    0 10px 20px rgba(0,0,0,0.6),
+    inset 0 0 0 3px #ffffff,
+    inset 0 0 12px rgba(0,0,0,0.2);
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.05s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drum:active {
+  transform: scale(0.95);
+}
+
+.drum .mallet {
+  position: absolute;
+  top: -24px;
+  width: 10px;
+  height: 80px;
+  background: #002E5D;
+  border-radius: 5px;
+  transform-origin: top center;
+  transition: transform 0.08s ease-out;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.drum .mallet::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border: 2px solid #002E5D;
+  border-radius: 50%;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.3);
+}
+
+.drum .mallet-left { left: 20px; transform: rotate(-35deg); }
+.drum .mallet-right { right: 20px; transform: rotate(35deg); }
+
+.drum .mallet-left.strike { transform: rotate(15deg) translateY(15px); }
+.drum .mallet-right.strike { transform: rotate(-15deg) translateY(15px); }
+
+.drum.clap-drum {
+  background: radial-gradient(circle at 30% 30%, #002E5D 0%, #001a36 70%, #001124 100%);
+  border-color: #ffffff;
+}
+
+.drum.clap-drum.auto-hit {
+  transform: scale(0.93);
+  border-color: #0084ff;
+}
+
+.drum .clap-icon {
+  font-size: 2.8rem;
+  pointer-events: none;
+}
+
+#hype-zone {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hype-obj {
+  position: absolute;
+  font-size: 3.8rem;
+  opacity: 0;
+  transform: scale(0.5) translateY(40px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.hype-obj.visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+#obj-ref { bottom: 12%; left: 4%; }
+#obj-ref.visible { animation: refDance 1s ease-in-out infinite alternate; }
+
+#obj-flag { top: 18%; right: 6%; transform-origin: bottom center; }
+#obj-flag.visible { animation: flagWave 2s ease-in-out infinite alternate; }
+
+#obj-cheer { bottom: 18%; right: 4%; }
+#obj-cheer.visible { animation: cheerJump 0.6s ease-out infinite alternate; }
+
+#obj-cosmo { top: 12%; left: 6%; font-size: 4.5rem; }
+#obj-cosmo.visible { animation: cosmoHype 1.5s linear infinite; }
+
+#obj-player { bottom: 35%; right: 8%; }
+#obj-player.visible { animation: playerFlex 1.2s ease-in-out infinite alternate; }
+
+@keyframes mediumPulse {
+  0% { box-shadow: 0 0 20px rgba(0, 132, 255, 0.5); }
+  100% { box-shadow: 0 0 35px rgba(0, 183, 255, 0.9); }
+}
+
+@keyframes maxStrobe {
+  0% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
+  100% { box-shadow: 0 0 55px rgba(255, 255, 255, 1); }
+}
+
+@keyframes refDance {
+  0% { transform: translateY(0) rotate(-5deg); }
+  100% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes flagWave {
+  0% { transform: skewX(-5deg) rotate(-5deg); }
+  100% { transform: skewX(10deg) rotate(5deg); }
+}
+
+@keyframes cheerJump {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-40px) scale(1.05); }
+}
+
+@keyframes cosmoHype {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes playerFlex {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1) translateX(10px); }
+}
+
+@media (max-width: 380px) {
+  .drum {
+    width: 130px;
+    height: 130px;
+  }
+  .drum-stage {
+    gap: 1rem;
+  }
+}
+

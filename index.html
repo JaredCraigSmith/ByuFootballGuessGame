@@ -438,9 +438,8 @@
         <div class="prize-progress-track" style="margin-top: 14px;">
           <div id="prizeProgressBar4" class="prize-progress-fill" style="width: 0%;"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
-          <span id="prizeProgressText4">0 / 600 avg pts</span>
-          <span id="prizeStatusText4">Locked</span>
+      </div>
+
       <!-- Surprise #5 Card (750 Avg Pts - LaVell Edwards Stadium Cougar Wave) -->
       <div id="prizeCard5" class="card prize-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -469,6 +468,37 @@
         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
           <span id="prizeProgressText5">0 / 750 avg pts</span>
           <span id="prizeStatusText5">Locked</span>
+        </div>
+      </div>
+
+      <!-- Surprise #6 Card (900 Avg Pts - BYU Game Day Drum Hype) -->
+      <div id="prizeCard6" class="card prize-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span id="prizeIcon6">🔒</span>
+            <span>Secret Surprise #6</span>
+          </h4>
+          <span id="prizeBadge6" class="prize-badge locked">Requires 900 Avg Pts</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
+          Reach a family average of <strong>900 points</strong> to unwrap the BYU Game Day Drum Hype simulator!
+        </p>
+
+        <!-- Single Image Badge Box -->
+        <div id="drumHypeTrigger" class="prize-badge-box locked" title="Secret Surprise #6">
+          <div class="badge-img-wrapper">
+            <img id="prizeBadgeImg6" src="assets/gift_box.jpg" alt="Surprise Badge 6" class="badge-img" />
+          </div>
+          <div id="prizeBtnLabel6" class="badge-sub-label">🔒 Locked Present (900 Avg Pts Needed)</div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="prize-progress-track" style="margin-top: 14px;">
+          <div id="prizeProgressBar6" class="prize-progress-fill" style="width: 0%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+          <span id="prizeProgressText6">0 / 900 avg pts</span>
+          <span id="prizeStatusText6">Locked</span>
         </div>
       </div>
     </section>
@@ -551,6 +581,48 @@
       <button class="btn btn-navy" id="waveReverseBtn" style="padding: 6px 14px; font-size: 0.8rem;">Reverse</button>
       <button class="btn btn-gold" id="closeWaveBtn" style="padding: 6px 16px; font-size: 0.82rem;">CLOSE WAVE 🌊</button>
     </div>
+  </div>
+
+  <!-- BYU Game Day Drum Hype Overlay (integrated from Drum.html, formatted for phone screens) -->
+  <div id="drumHypeOverlay" class="drum-hype-overlay" style="display: none;">
+    <h2 class="drum-hype-main-title">BYU GAME DAY DRUMS 🥁</h2>
+
+    <div id="hype-container" class="drum-hype-container">
+      <div class="hype-header">
+        <div class="hype-title" id="hype-title">STADIUM ENERGY</div>
+        <div id="bpm-display">BPM: 0</div>
+      </div>
+      <div id="hype-meter-frame">
+        <div id="hype-bar"></div>
+      </div>
+    </div>
+
+    <div class="drum-stage">
+      <div class="drum-container">
+        <div class="drum" id="mallet-drum">
+          <div class="mallet mallet-left" id="mallet-left"></div>
+          <div class="mallet mallet-right" id="mallet-right"></div>
+        </div>
+        <div class="label">TEMPO DRUM</div>
+      </div>
+
+      <div class="drum-container">
+        <div class="drum clap-drum" id="clap-drum">
+          <span class="clap-icon">👏</span>
+        </div>
+        <div class="label">RHYTHM CLAP</div>
+      </div>
+    </div>
+
+    <div id="hype-zone">
+      <div class="hype-obj" id="obj-ref">🕺</div>
+      <div class="hype-obj" id="obj-flag">🏳️</div>
+      <div class="hype-obj" id="obj-cheer">📣</div>
+      <div class="hype-obj" id="obj-player">🏈</div>
+      <div class="hype-obj" id="obj-cosmo">😼</div>
+    </div>
+
+    <button id="closeDrumBtn" class="btn btn-gold" style="margin-top: 10px; z-index: 30; padding: 8px 20px; font-size: 0.85rem;">CLOSE DRUM SHOW 🥁</button>
   </div>
 
   <script type="module" src="js/app.js?v=2"></script>
