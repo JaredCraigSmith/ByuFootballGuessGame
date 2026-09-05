@@ -58,11 +58,19 @@
   - Added live status indicators (`🏆 FINISHED`, `🔴 LIVE IN PROGRESS`, `🗓️ UPCOMING`) across Admin Panel, Schedule View, Weekly Leaderboard, and Main Countdown Banner
   - Enhanced **Player Cell Styling**: Full cell cards in Overall Standings, Weekly Leaders, and My Guesses now display in each player's chosen color with custom background gradients, matching borders, and glowing shadows 🎨
   - Added **Family Account Prize Vault Tab (`🎁 Prizes`)**: Added a dedicated Prizes view where families track their account average score toward mystery surprise unlocks!
-    - **Secret Surprise #1 (150 Avg Pts)**: Unlocks the **Cosmo Mascot Dance Party** (`assets/cosmo_head.jpg`)! 🐾
+    - **Secret Surprise #1 (1 Avg Pt)**: Unlocks the **Cosmo Mascot Dance Party** (`assets/cosmo_head.jpg`)! 🐾
     - **Secret Surprise #2 (300 Avg Pts)**: Unlocks the **BYU Pump Up Song** (`assets/music_badge.jpg`)! 🎵
-    - **Secret Surprise #3 (450 Avg Pts)**: Unlocks the **Polynesian Fire Knife Dancer Show** (`assets/fire_spinner_badge.jpg`), featuring the clean CSS Polynesian dancer from `fireDancer.html` who automatically tosses the flaming staff high into the air, catches it with a spark explosion, and smoothly fades away! 🔥
-    - **Secret Surprise #4 (600 Avg Pts)**: Unlocks the **LaVell Edwards Stadium Cougar Wave** (`assets/stadium_badge.jpg`), integrated directly from `Wave.html` featuring BYU endzones, midfield Block Y, stadium concrete seating bowl, and 1,600+ animated fan wave sprites, dynamically scaled for mobile phone viewports! 🌊
-    - **Secret Surprise #5 (750 Avg Pts)**: Unlocks the **BYU Game Day Drum Hype** (`assets/drum_badge.jpg`), integrated directly from `Drum.html` with amplified `Turbulence.mp4` audio playback, tempo-matched **"Drum Drum Clap" stadium cadence**, dynamic **animated BYU Football & Dance GIFs** popping up as tempo accelerates (20%, 40%, 60%, 80%, 95%), multi-layered **stadium group crowd clap audio synthesis** (scaling up to 24 layered clappers with crowd spread at the top), lenient low-tempo ramp, 6-second drop hold-off for 100% MAXIMUM HYPE (locking celebration without requiring continued drumming), and smooth meter reset once the song ends! 🥁
-    - **Interactive Unwrapping**: Present boxes (`assets/gift_box.jpg`) stay grayed out until points are hit, then glow & shake for the family to unwrap! 🎁✨
+    - **Secret Surprise #3 (900 Avg Pts)**: Unlocks the **Polynesian Fire Knife Dancer Show** (`assets/fire_spinner_badge.jpg`), featuring the clean CSS Polynesian dancer from `fireDancer.html` who automatically tosses the flaming staff high into the air, catches it with a spark explosion, and smoothly fades away! 🔥
+    - **Secret Surprise #4 (1500 Avg Pts)**: Unlocks the **LaVell Edwards Stadium Cougar Wave** (`assets/stadium_badge.jpg`), integrated directly from `Wave.html` featuring BYU endzones, midfield Block Y, stadium concrete seating bowl, and 1,600+ animated fan wave sprites, dynamically scaled for mobile phone viewports! 🌊
+    - **Secret Surprise #5 (2500 Avg Pts)**: Unlocks the **BYU Game Day Drum Hype** (`assets/drum_badge.jpg`), featuring the interactive LaVell Edwards Stadium kick-off drum hype simulator! 🥁
+- [x] **Phase 6: Admin Point System Reference & Cumulative Score Matrix**
+  - **Admin Sub-Tabs**: Added tab navigation between `🎮 Games & Live Scores` and `📊 Point System Tables`.
+  - **Table 1: Single-Game Point Payouts**: 14 game index columns with multiplier badges (×1.00 to ×2.95) across score differences (0, 7, 14, 21, 28, 35+).
+  - **Table 2: Cumulative Point Progression Matrix**: Running cumulative point total across all 14 games.
+  - **Rule Toggles**: One-click toggles for Winner Bonus (+5 vs +0), Index Base (0-based vs 1-based), and Official Drop Rules (Game 3 drop 1, Game 4+ drop 2 lowest).
+  - **Custom Diff Adder**: Dynamically add and remove arbitrary score differentials to the matrix tables.
+  - **Sticky Side Column**: `Score Diff` labels remain anchored on the left during horizontal scrolling on mobile screens.
+  - **Interactive Score Simulator**: Real-time calculator sandbox breaking down raw points, multiplier, single-game payout, and season projection.
+
 
 

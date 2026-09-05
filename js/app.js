@@ -7,7 +7,9 @@ import {
   savePlayerColor, 
   PRESET_PLAYER_COLORS,
   isGameFinished,
-  hexToRgba
+  hexToRgba,
+  calculatePointsFromDiff,
+  calculateCumulativePoints
 } from './scoring.js?v=2';
 
 // Application State
@@ -24,6 +26,16 @@ const state = {
   editingPlayerColor: PRESET_PLAYER_COLORS[0],
   countdownInterval: null
 };
+
+// Admin Scoring Matrix State
+const scoringState = {
+  adminActiveTab: 'games', // 'games' or 'scoring'
+  winnerBonus: true,
+  zeroIndexed: true,
+  applyDrops: false,
+  scoreDiffs: [0, 7, 14, 21, 28, 35]
+};
+
 
 // Helper for Team Logo URLs
 function getTeamLogoUrl(teamName) {
@@ -98,6 +110,29 @@ const elements = {
   adminStartDate: document.getElementById('adminStartDate'),
   adminStartTime: document.getElementById('adminStartTime'),
   adminScoreList: document.getElementById('adminScoreList'),
+
+  // Admin Sub-Tabs & Scoring Matrix
+  btnAdminGames: document.getElementById('btnAdminGames'),
+  btnAdminScoring: document.getElementById('btnAdminScoring'),
+  adminGamesSubView: document.getElementById('adminGamesSubView'),
+  adminScoringSubView: document.getElementById('adminScoringSubView'),
+  toggleWinnerBonusBtn: document.getElementById('toggleWinnerBonusBtn'),
+  toggleIndexBaseBtn: document.getElementById('toggleIndexBaseBtn'),
+  toggleDropsBtn: document.getElementById('toggleDropsBtn'),
+  addCustomDiffForm: document.getElementById('addCustomDiffForm'),
+  customDiffInput: document.getElementById('customDiffInput'),
+  resetDiffsBtn: document.getElementById('resetDiffsBtn'),
+  diffChipsContainer: document.getElementById('diffChipsContainer'),
+  gamePointsMatrixTable: document.getElementById('gamePointsMatrixTable'),
+  cumulativeMatrixTable: document.getElementById('cumulativeMatrixTable'),
+  calcDiffInput: document.getElementById('calcDiffInput'),
+  calcGameInput: document.getElementById('calcGameInput'),
+  calcWinnerBonusInput: document.getElementById('calcWinnerBonusInput'),
+  calcRawPoints: document.getElementById('calcRawPoints'),
+  calcMultiplier: document.getElementById('calcMultiplier'),
+  calcFinalScore: document.getElementById('calcFinalScore'),
+  calcCumulativeScore: document.getElementById('calcCumulativeScore'),
+
 
   // Cosmo Easter Egg & Music Controls
   brandLogo: document.getElementById('brandLogo'),
@@ -265,7 +300,77 @@ function setupEventListeners() {
   }
 
   // Admin
-  elements.adminAddGameForm.addEventListener('submit', handleAdminAddGame);
+  if (elements.adminAddGameForm) {
+    elements.adminAddGameForm.addEventListener('submit', handleAdminAddGame);
+  }
+  if (elements.btnAdminGames) {
+    elements.btnAdminGames.addEventListener('click', () => setAdminSubTab('games'));
+  }
+  if (elements.btnAdminScoring) {
+    elements.btnAdminScoring.addEventListener('click', () => setAdminSubTab('scoring'));
+  }
+  if (elements.toggleWinnerBonusBtn) {
+    elements.toggleWinnerBonusBtn.addEventListener('click', () => {
+      scoringState.winnerBonus = !scoringState.winnerBonus;
+      elements.toggleWinnerBonusBtn.className = scoringState.winnerBonus ? 'control-toggle-btn active' : 'control-toggle-btn';
+      elements.toggleWinnerBonusBtn.innerHTML = scoringState.winnerBonus 
+        ? '<span>🏆 Winner Bonus: ON (+5)</span>' 
+        : '<span>❌ Winner Bonus: OFF (+0)</span>';
+      renderAdminScoringTables();
+    });
+  }
+  if (elements.toggleIndexBaseBtn) {
+    elements.toggleIndexBaseBtn.addEventListener('click', () => {
+      scoringState.zeroIndexed = !scoringState.zeroIndexed;
+      elements.toggleIndexBaseBtn.className = 'control-toggle-btn active';
+      elements.toggleIndexBaseBtn.innerHTML = scoringState.zeroIndexed 
+        ? '<span>🔢 Index Base: 0-based (Game 1 = ×1.00)</span>' 
+        : '<span>🔢 Index Base: 1-based (Game 1 = ×1.15)</span>';
+      renderAdminScoringTables();
+    });
+  }
+  if (elements.toggleDropsBtn) {
+    elements.toggleDropsBtn.addEventListener('click', () => {
+      scoringState.applyDrops = !scoringState.applyDrops;
+      elements.toggleDropsBtn.className = scoringState.applyDrops ? 'control-toggle-btn active' : 'control-toggle-btn';
+      elements.toggleDropsBtn.innerHTML = scoringState.applyDrops 
+        ? '<span>🧹 Drop Rules: ON (G3 drop 1, G4+ drop 2)</span>' 
+        : '<span>🧹 Drop Rules: OFF (Raw Sum)</span>';
+      renderAdminScoringTables();
+    });
+  }
+  if (elements.addCustomDiffForm) {
+    elements.addCustomDiffForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = parseInt(elements.customDiffInput.value, 10);
+      if (!isNaN(val) && val >= 0) {
+        if (!scoringState.scoreDiffs.includes(val)) {
+          scoringState.scoreDiffs.push(val);
+          scoringState.scoreDiffs.sort((a, b) => a - b);
+          elements.customDiffInput.value = '';
+          renderAdminScoringTables();
+        } else {
+          alert(`Score differential ${val} is already in the table.`);
+        }
+      }
+    });
+  }
+  if (elements.resetDiffsBtn) {
+    elements.resetDiffsBtn.addEventListener('click', () => {
+      scoringState.scoreDiffs = [0, 7, 14, 21, 28, 35];
+      renderAdminScoringTables();
+    });
+  }
+  if (elements.calcDiffInput) {
+    elements.calcDiffInput.addEventListener('input', updateLiveCalculator);
+  }
+  if (elements.calcGameInput) {
+    elements.calcGameInput.addEventListener('input', updateLiveCalculator);
+  }
+  if (elements.calcWinnerBonusInput) {
+    elements.calcWinnerBonusInput.addEventListener('change', updateLiveCalculator);
+  }
+
 
   // Easter Egg (Cosmo)
   let clickCount = 0;
@@ -358,14 +463,14 @@ function launchFireworksShow() {
   fire(0.1, { spread: 130, startVelocity: 50, colors: ['#FFFFFF', '#FFC72C'] });
 }
 
-// Trigger Fireworks Display (Secret Surprise #1 - Unlocked at 150 Avg Pts)
+// Trigger Fireworks Display (Secret Surprise #1 - Unlocked at 1 Avg Pt)
 function triggerFireworksPrize() {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
   const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
 
-  if (avgScore < 150) {
-    alert(`🔒 Secret Present #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 150 average points to unwrap this present!`);
+  if (avgScore < 1) {
+    alert(`🔒 Secret Present #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 1 average point to unwrap this present!`);
     return;
   }
 
@@ -644,7 +749,7 @@ function stopFireDancerEngine() {
   if (dancer) dancer.classList.remove('throwing');
 }
 
-// Trigger 4th Quarter Fire Spinner Show (Secret Surprise #3 - Unlocked at 450 Avg Pts)
+// Trigger 4th Quarter Fire Spinner Show (Secret Surprise #3 - Unlocked at 900 Avg Pts)
 let isFireSpinnerActive = false;
 
 function triggerFireSpinner() {
@@ -652,8 +757,8 @@ function triggerFireSpinner() {
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
   const isUnwrapped3 = localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true';
 
-  if (avgScore < 450) {
-    alert(`🔒 Secret Present #3 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 450 average points to unwrap this present!`);
+  if (avgScore < 900) {
+    alert(`🔒 Secret Present #3 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 900 average points to unwrap this present!`);
     return;
   }
 
@@ -687,15 +792,15 @@ function triggerFireSpinner() {
   }, 2850);
 }
 
-// Trigger Full Screen Dancing Cosmo Animation (Secret Surprise #1 - Unlocked at 150 Avg Pts)
+// Trigger Full Screen Dancing Cosmo Animation (Secret Surprise #1 - Unlocked at 1 Avg Pt)
 let isCosmoDancing = false;
 function triggerCosmoDance() {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
   const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
 
-  if (avgScore < 150) {
-    alert(`🔒 Secret Present #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 150 average points to unwrap this present!`);
+  if (avgScore < 1) {
+    alert(`🔒 Secret Present #1 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 1 average point to unwrap this present!`);
     return;
   }
 
@@ -753,14 +858,14 @@ function triggerCosmoDance() {
   }, 4800);
 }
 
-// Trigger LaVell Edwards Stadium Cougar Wave (Secret Surprise #4 - Unlocked at 600 Avg Pts)
+// Trigger LaVell Edwards Stadium Cougar Wave (Secret Surprise #4 - Unlocked at 1500 Avg Pts)
 function triggerStadiumWave() {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
   const isUnwrapped4 = localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true';
 
-  if (avgScore < 600) {
-    alert(`🔒 Secret Present #4 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 600 average points to unwrap this present!`);
+  if (avgScore < 1500) {
+    alert(`🔒 Secret Present #4 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 1500 average points to unwrap this present!`);
     return;
   }
 
@@ -784,14 +889,14 @@ function triggerStadiumWave() {
   initStadiumWaveEngine();
 }
 
-// Trigger BYU Game Day Drum Hype (Secret Surprise #5 - Unlocked at 750 Avg Pts)
+// Trigger BYU Game Day Drum Hype (Secret Surprise #5 - Unlocked at 2500 Avg Pts)
 function triggerDrumHype() {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
   const isUnwrapped5 = localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true';
 
-  if (avgScore < 750) {
-    alert(`🔒 Secret Present #5 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 750 average points to unwrap this present!`);
+  if (avgScore < 2500) {
+    alert(`🔒 Secret Present #5 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs 2500 average points to unwrap this present!`);
     return;
   }
 
@@ -1609,8 +1714,8 @@ function renderPrizesView() {
       : 'Log in to view your family account average points!';
   }
 
-  // Surprise #1 (Cosmo Mascot Dance Party - 150 Avg Pts)
-  const unlockThreshold1 = 150;
+  // Surprise #1 (Cosmo Mascot Dance Party - 1 Avg Pt)
+  const unlockThreshold1 = 1;
   const isUnlocked1 = avgScore >= unlockThreshold1;
   const pct1 = Math.min(100, Math.round((avgScore / unlockThreshold1) * 100));
 
@@ -1624,12 +1729,12 @@ function renderPrizesView() {
     if (elements.prizeIcon1) elements.prizeIcon1.textContent = '🔒';
     if (elements.prizeBadge1) {
       elements.prizeBadge1.className = 'prize-badge locked';
-      elements.prizeBadge1.textContent = `Requires ${unlockThreshold1} Avg Pts`;
+      elements.prizeBadge1.textContent = `Requires ${unlockThreshold1} Avg Pt`;
     }
     if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = `Needs ${unlockThreshold1 - avgScore} more avg pts to unwrap`;
     if (badgeBox1) badgeBox1.className = 'prize-badge-box locked';
     if (badgeImg1) badgeImg1.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = `🔒 Locked Present (150 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = `🔒 Locked Present (1 Avg Pt Needed)`;
   } else if (!isUnwrapped1) {
     if (elements.prizeIcon1) elements.prizeIcon1.textContent = '🎁';
     if (elements.prizeBadge1) {
@@ -1699,8 +1804,8 @@ function renderPrizesView() {
     }
   }
 
-  // Surprise #3 (4th Quarter Fire Spinner Show - 450 Avg Pts)
-  const unlockThreshold3 = 450;
+  // Surprise #3 (4th Quarter Fire Spinner Show - 900 Avg Pts)
+  const unlockThreshold3 = 900;
   const isUnlocked3 = avgScore >= unlockThreshold3;
   const pct3 = Math.min(100, Math.round((avgScore / unlockThreshold3) * 100));
 
@@ -1719,7 +1824,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText3) elements.prizeStatusText3.textContent = `Needs ${unlockThreshold3 - avgScore} more avg pts to unwrap`;
     if (badgeBox3) badgeBox3.className = 'prize-badge-box locked';
     if (badgeImg3) badgeImg3.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = `🔒 Locked Present (450 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = `🔒 Locked Present (900 Avg Pts Needed)`;
   } else if (!isUnwrapped3) {
     if (elements.prizeIcon3) elements.prizeIcon3.textContent = '🎁';
     if (elements.prizeBadge3) {
@@ -1742,8 +1847,8 @@ function renderPrizesView() {
     if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = '🔥 Secret Surprise #3 (Tap for Fire Knife Spinner!)';
   }
 
-  // Surprise #4 (LaVell Edwards Stadium Cougar Wave - 600 Avg Pts)
-  const unlockThreshold4 = 600;
+  // Surprise #4 (LaVell Edwards Stadium Cougar Wave - 1500 Avg Pts)
+  const unlockThreshold4 = 1500;
   const isUnlocked4 = avgScore >= unlockThreshold4;
   const pct4 = Math.min(100, Math.round((avgScore / unlockThreshold4) * 100));
 
@@ -1762,7 +1867,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText4) elements.prizeStatusText4.textContent = `Needs ${unlockThreshold4 - avgScore} more avg pts to unwrap`;
     if (badgeBox4) badgeBox4.className = 'prize-badge-box locked';
     if (badgeImg4) badgeImg4.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = `🔒 Locked Present (600 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = `🔒 Locked Present (1500 Avg Pts Needed)`;
   } else if (!isUnwrapped4) {
     if (elements.prizeIcon4) elements.prizeIcon4.textContent = '🎁';
     if (elements.prizeBadge4) {
@@ -1785,8 +1890,8 @@ function renderPrizesView() {
     if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = '🌊 Secret Surprise #4 (Tap for Stadium Wave!)';
   }
 
-  // Surprise #5 (BYU Game Day Drum Hype - 750 Avg Pts)
-  const unlockThreshold5 = 750;
+  // Surprise #5 (BYU Game Day Drum Hype - 2500 Avg Pts)
+  const unlockThreshold5 = 2500;
   const isUnlocked5 = avgScore >= unlockThreshold5;
   const pct5 = Math.min(100, Math.round((avgScore / unlockThreshold5) * 100));
 
@@ -1805,7 +1910,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText5) elements.prizeStatusText5.textContent = `Needs ${unlockThreshold5 - avgScore} more avg pts to unwrap`;
     if (badgeBox5) badgeBox5.className = 'prize-badge-box locked';
     if (badgeImg5) badgeImg5.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = `🔒 Locked Present (750 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = `🔒 Locked Present (2500 Avg Pts Needed)`;
   } else if (!isUnwrapped5) {
     if (elements.prizeIcon5) elements.prizeIcon5.textContent = '🎁';
     if (elements.prizeBadge5) {
@@ -2538,8 +2643,162 @@ function renderSchedule() {
   });
 }
 
+// Admin Sub-Tab Management
+function setAdminSubTab(tab) {
+  scoringState.adminActiveTab = tab;
+  if (tab === 'games') {
+    if (elements.btnAdminGames) elements.btnAdminGames.classList.add('active');
+    if (elements.btnAdminScoring) elements.btnAdminScoring.classList.remove('active');
+    if (elements.adminGamesSubView) elements.adminGamesSubView.style.display = 'block';
+    if (elements.adminScoringSubView) elements.adminScoringSubView.style.display = 'none';
+  } else {
+    if (elements.btnAdminGames) elements.btnAdminGames.classList.remove('active');
+    if (elements.btnAdminScoring) elements.btnAdminScoring.classList.add('active');
+    if (elements.adminGamesSubView) elements.adminGamesSubView.style.display = 'none';
+    if (elements.adminScoringSubView) elements.adminScoringSubView.style.display = 'block';
+    renderAdminScoringTables();
+  }
+}
+
+// Render Diff Chips with Remove Buttons
+function renderDiffChips() {
+  if (!elements.diffChipsContainer) return;
+  elements.diffChipsContainer.innerHTML = '';
+  scoringState.scoreDiffs.forEach(diff => {
+    const chip = document.createElement('div');
+    chip.className = 'diff-chip';
+    chip.innerHTML = `
+      <span>±${diff} pts</span>
+      <button type="button" class="remove-diff-btn" data-diff="${diff}" title="Remove this difference">✕</button>
+    `;
+    elements.diffChipsContainer.appendChild(chip);
+  });
+
+  elements.diffChipsContainer.querySelectorAll('.remove-diff-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const d = parseInt(e.target.getAttribute('data-diff'), 10);
+      if (scoringState.scoreDiffs.length <= 1) {
+        alert('Please keep at least one score difference in the table.');
+        return;
+      }
+      scoringState.scoreDiffs = scoringState.scoreDiffs.filter(x => x !== d);
+      renderAdminScoringTables();
+    });
+  });
+}
+
+// Render Admin Point System Reference & Cumulative Tables
+function renderAdminScoringTables() {
+  renderDiffChips();
+  updateLiveCalculator();
+
+  const maxGames = 14;
+  const winnerBonus = scoringState.winnerBonus;
+  const applyDrops = scoringState.applyDrops;
+
+  // Render Table 1: Single-Game Point Payouts
+  if (elements.gamePointsMatrixTable) {
+    let html = '<thead><tr>';
+    html += '<th class="matrix-sticky-col">Score Diff</th>';
+    for (let g = 1; g <= maxGames; g++) {
+      const maxPts = Math.round(250 * Math.pow(500 / 250, (g - 1) / (maxGames - 1)));
+      html += `<th>Game ${g}<span class="multiplier-sub">Max: ${maxPts}</span></th>`;
+    }
+    html += '</tr></thead><tbody>';
+
+    scoringState.scoreDiffs.forEach(diff => {
+      let tagClass = 'diff-tag';
+      if (diff === 0) tagClass += ' perfect';
+      else if (diff <= 7) tagClass += ' good';
+      else if (diff <= 14) tagClass += ' mid';
+      else tagClass += ' high';
+
+      html += `<tr><td class="matrix-sticky-col"><span class="${tagClass}">±${diff} pts</span></td>`;
+      for (let g = 1; g <= maxGames; g++) {
+        const pts = calculatePointsFromDiff(diff, g - 1, winnerBonus);
+
+        let tierClass = 'score-cell-value tier-low';
+        if (pts >= 250) tierClass = 'score-cell-value tier-high';
+        else if (pts >= 100) tierClass = 'score-cell-value tier-mid';
+        else if (pts === 0) tierClass = 'score-cell-value tier-zero';
+
+        html += `<td><span class="${tierClass}" title="Game ${g} (Diff ${diff}): ${pts} pts">${pts}</span></td>`;
+      }
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    elements.gamePointsMatrixTable.innerHTML = html;
+  }
+
+  // Render Table 2: Cumulative Point Progression (Sum of Scores)
+  if (elements.cumulativeMatrixTable) {
+    let html = '<thead><tr>';
+    html += '<th class="matrix-sticky-col">Score Diff</th>';
+    for (let g = 1; g <= maxGames; g++) {
+      html += `<th>Thru G${g}<span class="multiplier-sub">Week ${g}</span></th>`;
+    }
+    html += '</tr></thead><tbody>';
+
+    scoringState.scoreDiffs.forEach(diff => {
+      let tagClass = 'diff-tag';
+      if (diff === 0) tagClass += ' perfect';
+      else if (diff <= 7) tagClass += ' good';
+      else if (diff <= 14) tagClass += ' mid';
+      else tagClass += ' high';
+
+      const { cumulativeScores } = calculateCumulativePoints(diff, maxGames, {
+        hasWinnerBonus: winnerBonus,
+        zeroIndexed: true,
+        applyDrops: applyDrops
+      });
+
+      html += `<tr><td class="matrix-sticky-col"><span class="${tagClass}">±${diff} pts</span></td>`;
+      cumulativeScores.forEach((total, idx) => {
+        const gameNum = idx + 1;
+        let tierClass = 'score-cell-value tier-low';
+        if (total >= 2500) tierClass = 'score-cell-value tier-high';
+        else if (total >= 1000) tierClass = 'score-cell-value tier-mid';
+        else if (total === 0) tierClass = 'score-cell-value tier-zero';
+
+        html += `<td><span class="${tierClass}" title="Thru Game ${gameNum}: ${total} total pts">${total}</span></td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    elements.cumulativeMatrixTable.innerHTML = html;
+  }
+}
+
+// Update Interactive Sandbox Calculator
+function updateLiveCalculator() {
+  if (!elements.calcDiffInput || !elements.calcGameInput) return;
+  const diff = Math.max(0, parseInt(elements.calcDiffInput.value, 10) || 0);
+  const gameNum = Math.min(14, Math.max(1, parseInt(elements.calcGameInput.value, 10) || 1));
+  const hasBonus = elements.calcWinnerBonusInput ? elements.calcWinnerBonusInput.checked : true;
+
+  const gameMax = Math.round(250 * Math.pow(500 / 250, (gameNum - 1) / 13));
+  const sigma = 14 / Math.sqrt(-Math.log(150 / 250));
+  const decay = diff === 0 ? 1.0 : Math.exp(-Math.pow(diff / sigma, 2.0));
+  const singleScore = calculatePointsFromDiff(diff, gameNum - 1, hasBonus);
+
+  const { cumulativeScores } = calculateCumulativePoints(diff, 14, {
+    hasWinnerBonus: hasBonus,
+    zeroIndexed: true,
+    applyDrops: scoringState.applyDrops
+  });
+  const seasonTotal = cumulativeScores[cumulativeScores.length - 1];
+
+  if (elements.calcRawPoints) elements.calcRawPoints.textContent = gameMax;
+  if (elements.calcMultiplier) elements.calcMultiplier.textContent = decay.toFixed(3);
+  if (elements.calcFinalScore) elements.calcFinalScore.textContent = singleScore;
+  if (elements.calcCumulativeScore) elements.calcCumulativeScore.textContent = seasonTotal;
+}
+
+
 // Render Admin View
 function renderAdminView() {
+  setAdminSubTab(scoringState.adminActiveTab);
+
   elements.adminScoreList.innerHTML = '';
 
   state.games.forEach(game => {
@@ -2662,6 +2921,7 @@ function renderAdminView() {
     });
   });
 }
+
 
 // Admin Add Game
 async function handleAdminAddGame(e) {

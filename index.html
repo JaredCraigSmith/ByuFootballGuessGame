@@ -264,43 +264,179 @@
 
     <!-- Admin View -->
     <section id="adminView" class="view">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">⚡ Admin Control Panel</h3>
+      <!-- Admin Sub Tabs: Games vs Scoring Matrix -->
+      <div class="sub-tab-container">
+        <button id="btnAdminGames" class="sub-tab active">🎮 Games & Live Scores</button>
+        <button id="btnAdminScoring" class="sub-tab">📊 Point System Tables</button>
+      </div>
+
+      <!-- Admin Sub View 1: Games & Scores -->
+      <div id="adminGamesSubView">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">⚡ Admin Control Panel</h3>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            Logged in as <strong>J&J Smith's</strong>. Manage games and input official final scores.
+          </p>
+
+          <!-- Add New Game -->
+          <h4 style="font-size: 0.95rem; color: var(--byu-gold); margin-bottom: 10px;">➕ Add Upcoming Game</h4>
+          <form id="adminAddGameForm" style="margin-bottom: 24px;">
+            <div class="form-group">
+              <label class="form-label">Home Team</label>
+              <input type="text" id="adminHomeTeam" class="form-control" value="BYU" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Away Team</label>
+              <input type="text" id="adminAwayTeam" class="form-control" placeholder="e.g. Utah" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Game Date</label>
+              <input type="date" id="adminStartDate" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kickoff Time (Optional / TBD)</label>
+              <input type="time" id="adminStartTime" class="form-control" placeholder="Leave blank if TBD" />
+            </div>
+            <button type="submit" class="btn btn-primary">Add Game to Schedule</button>
+          </form>
+
+          <!-- Enter Game Scores -->
+          <h4 style="font-size: 0.95rem; color: var(--byu-gold); margin-bottom: 6px;">🏈 Live Score Tracker & Game Status</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
+            Update live scores as games progress. Uncheck <strong>"Finished"</strong> while play is ongoing, and check <strong>"Finished"</strong> when the final score is set!
+          </p>
+          <div id="adminScoreList">
+            <!-- Rendered via JS -->
+          </div>
         </div>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-          Logged in as <strong>J&J Smith's</strong>. Manage games and input official final scores.
-        </p>
+      </div>
 
-        <!-- Add New Game -->
-        <h4 style="font-size: 0.95rem; color: var(--byu-gold); margin-bottom: 10px;">➕ Add Upcoming Game</h4>
-        <form id="adminAddGameForm" style="margin-bottom: 24px;">
-          <div class="form-group">
-            <label class="form-label">Home Team</label>
-            <input type="text" id="adminHomeTeam" class="form-control" value="BYU" required />
+      <!-- Admin Sub View 2: Point System Matrix & Cumulative Tables -->
+      <div id="adminScoringSubView" style="display: none;">
+        <div class="card admin-scoring-container">
+          <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+            <h3 class="card-title">📊 Scoring System Tables & Simulation</h3>
+            <a href="admin-scoring-lab.html" target="_blank" class="btn btn-gold" style="text-decoration: none; padding: 6px 14px; font-size: 0.82rem; font-weight: 800;">
+              🖥️ Open Desktop Curve Lab & Charts ↗
+            </a>
           </div>
-          <div class="form-group">
-            <label class="form-label">Away Team</label>
-            <input type="text" id="adminAwayTeam" class="form-control" placeholder="e.g. Utah" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Game Date</label>
-            <input type="date" id="adminStartDate" class="form-control" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Kickoff Time (Optional / TBD)</label>
-            <input type="time" id="adminStartTime" class="form-control" placeholder="Leave blank if TBD" />
-          </div>
-          <button type="submit" class="btn btn-primary">Add Game to Schedule</button>
-        </form>
 
-        <!-- Enter Game Scores -->
-        <h4 style="font-size: 0.95rem; color: var(--byu-gold); margin-bottom: 6px;">🏈 Live Score Tracker & Game Status</h4>
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
-          Update live scores as games progress. Uncheck <strong>"Finished"</strong> while play is ongoing, and check <strong>"Finished"</strong> when the final score is set!
-        </p>
-        <div id="adminScoreList">
-          <!-- Rendered via JS -->
+          <!-- Formula Overview -->
+          <div class="scoring-formula-card">
+            <div style="font-weight: 800; color: var(--byu-gold); margin-bottom: 6px; font-size: 0.9rem;">
+              📐 Exponential Scoring Formula Model:
+            </div>
+            <div style="line-height: 1.6;">
+              • <strong>Game Progression</strong> = <span class="scoring-formula-badge">250 · 2^((Game - 1) / 13)</span> (doubles from 250 to 500)<br>
+              • <strong>Score Decay</strong> = <span class="scoring-formula-badge">MaxPoints · e^(-k · Diff)</span> (k ≈ 0.158, 35 diff = 1 pt)<br>
+              • <strong>Winner Bonus</strong> = <span class="scoring-formula-badge">+15 pts</span> if correct winning team selected
+            </div>
+          </div>
+
+          <!-- Options & Toggles Bar -->
+          <div class="scoring-controls-bar">
+            <button type="button" id="toggleWinnerBonusBtn" class="control-toggle-btn active">
+              <span>🏆 Winner Bonus: ON (+15)</span>
+            </button>
+            <button type="button" id="toggleDropsBtn" class="control-toggle-btn">
+              <span>🧹 Drop Rules: OFF (Raw Sum)</span>
+            </button>
+            <a href="admin-scoring-lab.html" target="_blank" class="btn btn-secondary" style="margin-left: auto; text-decoration: none; padding: 5px 12px; font-size: 0.78rem;">
+              📈 View Curve Graphs
+            </a>
+          </div>
+
+          <!-- Custom Score Diff Chips & Add Row Form -->
+          <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
+                Active Score Differentials (Rows):
+              </span>
+              <form id="addCustomDiffForm" style="display: flex; gap: 6px; align-items: center;">
+                <input type="number" id="customDiffInput" class="form-control" placeholder="Add Diff" min="0" max="100" style="width: 85px; padding: 4px 8px; font-size: 0.78rem;" />
+                <button type="submit" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">+ Add</button>
+                <button type="button" id="resetDiffsBtn" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.75rem;">Reset</button>
+              </form>
+            </div>
+            <div class="diff-chips-row" id="diffChipsContainer">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Table 1: Per-Game Points Matrix -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+              <h4 style="font-size: 0.95rem; color: var(--byu-gold); font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                <span>🎯 Table 1: Single-Game Point Payouts</span>
+              </h4>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">👉 Scroll horizontally to view Games 1–14</span>
+            </div>
+            <div class="matrix-table-container">
+              <table class="matrix-table" id="gamePointsMatrixTable">
+                <!-- Rendered dynamically -->
+              </table>
+            </div>
+          </div>
+
+          <!-- Table 2: Cumulative Sum Matrix -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+              <h4 style="font-size: 0.95rem; color: var(--byu-gold); font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                <span>📈 Table 2: Cumulative Point Progression (Sum of Scores)</span>
+              </h4>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Running total through each game</span>
+            </div>
+            <div class="matrix-table-container">
+              <table class="matrix-table" id="cumulativeMatrixTable">
+                <!-- Rendered dynamically -->
+              </table>
+            </div>
+          </div>
+
+          <!-- Live Interactive Calculator -->
+          <div class="calc-card">
+            <h4 style="font-size: 0.95rem; color: var(--byu-gold); font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              <span>🧮 Interactive Score Calculator Sandbox</span>
+            </h4>
+            <div class="calc-grid">
+              <div>
+                <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Score Diff</label>
+                <input type="number" id="calcDiffInput" class="form-control" value="7" min="0" max="100" />
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Game Index (1–14)</label>
+                <input type="number" id="calcGameInput" class="form-control" value="1" min="1" max="14" />
+              </div>
+              <div style="display: flex; flex-direction: column; justify-content: flex-end;">
+                <label style="font-size: 0.75rem; display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-main); margin-bottom: 8px;">
+                  <input type="checkbox" id="calcWinnerBonusInput" checked style="accent-color: var(--byu-gold);" />
+                  <span>Correct Winner (+5)</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="calc-grid" style="margin-bottom: 0;">
+              <div class="calc-stat-box">
+                <div class="calc-stat-label">Raw Base Points</div>
+                <div class="calc-stat-num" id="calcRawPoints">84</div>
+              </div>
+              <div class="calc-stat-box">
+                <div class="calc-stat-label">Multiplier</div>
+                <div class="calc-stat-num" id="calcMultiplier">1.00×</div>
+              </div>
+              <div class="calc-stat-box">
+                <div class="calc-stat-label">Single Game Score</div>
+                <div class="calc-stat-num" id="calcFinalScore" style="color: #34D399;">840</div>
+              </div>
+              <div class="calc-stat-box">
+                <div class="calc-stat-label">Season Total (if all same)</div>
+                <div class="calc-stat-num" id="calcCumulativeScore" style="color: var(--byu-gold);">840</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -321,17 +457,17 @@
         </div>
       </div>
 
-      <!-- Surprise #1 Card (150 Avg Pts - Cosmo Mascot Dance Party) -->
+      <!-- Surprise #1 Card (1 Avg Pt - Cosmo Mascot Dance Party) -->
       <div id="prizeCard1" class="card prize-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
             <span id="prizeIcon1">🔒</span>
             <span>Secret Surprise #1</span>
           </h4>
-          <span id="prizeBadge1" class="prize-badge locked">Requires 150 Avg Pts</span>
+          <span id="prizeBadge1" class="prize-badge locked">Requires 1 Avg Pt</span>
         </div>
         <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
-          Reach a family average of <strong>150 points</strong> to unwrap the ultimate mascot dance surprise!
+          Earn at least <strong>1 point</strong> with your family to unwrap the ultimate mascot dance surprise!
         </p>
 
         <!-- Single Image Badge Box -->
@@ -339,7 +475,7 @@
           <div class="badge-img-wrapper">
             <img id="cosmoBtnImg" src="assets/gift_box.jpg" alt="Surprise Badge 1" class="badge-img" />
           </div>
-          <div id="prizeBtnLabel1" class="badge-sub-label">🔒 Locked Present (150 Avg Pts Needed)</div>
+          <div id="prizeBtnLabel1" class="badge-sub-label">🔒 Locked Present (1 Avg Pt Needed)</div>
         </div>
 
         <!-- Progress bar -->
@@ -347,7 +483,7 @@
           <div id="prizeProgressBar1" class="prize-progress-fill" style="width: 0%;"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
-          <span id="prizeProgressText1">0 / 150 avg pts</span>
+          <span id="prizeProgressText1">0 / 1 avg pts</span>
           <span id="prizeStatusText1">Locked</span>
         </div>
       </div>
@@ -386,17 +522,17 @@
         </div>
       </div>
 
-      <!-- Surprise #3 Card (450 Avg Pts - Polynesian Fire Knife Dancer Show) -->
+      <!-- Surprise #3 Card (900 Avg Pts - Polynesian Fire Knife Dancer Show) -->
       <div id="prizeCard3" class="card prize-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
             <span id="prizeIcon3">🔒</span>
             <span>Secret Surprise #3</span>
           </h4>
-          <span id="prizeBadge3" class="prize-badge locked">Requires 450 Avg Pts</span>
+          <span id="prizeBadge3" class="prize-badge locked">Requires 900 Avg Pts</span>
         </div>
         <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
-          Reach a family average of <strong>450 points</strong> to unwrap this epic fire knife surprise!
+          Reach a family average of <strong>900 points</strong> to unwrap this epic fire knife surprise!
         </p>
 
         <!-- Single Image Badge Box -->
@@ -404,7 +540,7 @@
           <div class="badge-img-wrapper">
             <img id="prizeBadgeImg3" src="assets/gift_box.jpg" alt="Surprise Badge 3" class="badge-img" />
           </div>
-          <div id="prizeBtnLabel3" class="badge-sub-label">🔒 Locked Present (450 Avg Pts Needed)</div>
+          <div id="prizeBtnLabel3" class="badge-sub-label">🔒 Locked Present (900 Avg Pts Needed)</div>
         </div>
 
         <!-- Progress bar -->
@@ -412,22 +548,22 @@
           <div id="prizeProgressBar3" class="prize-progress-fill" style="width: 0%;"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
-          <span id="prizeProgressText3">0 / 450 avg pts</span>
+          <span id="prizeProgressText3">0 / 900 avg pts</span>
           <span id="prizeStatusText3">Locked</span>
         </div>
       </div>
 
-      <!-- Surprise #4 Card (600 Avg Pts - LaVell Edwards Stadium Cougar Wave) -->
+      <!-- Surprise #4 Card (1500 Avg Pts - LaVell Edwards Stadium Cougar Wave) -->
       <div id="prizeCard4" class="card prize-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
             <span id="prizeIcon4">🔒</span>
             <span>Secret Surprise #4</span>
           </h4>
-          <span id="prizeBadge4" class="prize-badge locked">Requires 600 Avg Pts</span>
+          <span id="prizeBadge4" class="prize-badge locked">Requires 1500 Avg Pts</span>
         </div>
         <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
-          Reach a family average of <strong>600 points</strong> to unwrap the legendary LaVell Edwards Stadium Cougar Wave!
+          Reach a family average of <strong>1,500 points</strong> to unwrap the legendary LaVell Edwards Stadium Cougar Wave!
         </p>
 
         <!-- Single Image Badge Box -->
@@ -435,7 +571,7 @@
           <div class="badge-img-wrapper">
             <img id="prizeBadgeImg4" src="assets/gift_box.jpg" alt="Surprise Badge 4" class="badge-img" />
           </div>
-          <div id="prizeBtnLabel4" class="badge-sub-label">🔒 Locked Present (600 Avg Pts Needed)</div>
+          <div id="prizeBtnLabel4" class="badge-sub-label">🔒 Locked Present (1500 Avg Pts Needed)</div>
         </div>
 
         <!-- Progress bar -->
@@ -443,22 +579,22 @@
           <div id="prizeProgressBar4" class="prize-progress-fill" style="width: 0%;"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
-          <span id="prizeProgressText4">0 / 600 avg pts</span>
+          <span id="prizeProgressText4">0 / 1500 avg pts</span>
           <span id="prizeStatusText4">Locked</span>
         </div>
       </div>
 
-      <!-- Surprise #5 Card (750 Avg Pts - BYU Game Day Drum Hype) -->
+      <!-- Surprise #5 Card (2500 Avg Pts - BYU Game Day Drum Hype) -->
       <div id="prizeCard5" class="card prize-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
             <span id="prizeIcon5">🔒</span>
             <span>Secret Surprise #5</span>
           </h4>
-          <span id="prizeBadge5" class="prize-badge locked">Requires 750 Avg Pts</span>
+          <span id="prizeBadge5" class="prize-badge locked">Requires 2500 Avg Pts</span>
         </div>
         <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
-          Reach a family average of <strong>750 points</strong> to unwrap the BYU Game Day Drum Hype simulator!
+          Reach a family average of <strong>2,500 points</strong> to unwrap the BYU Game Day Drum Hype simulator!
         </p>
 
         <!-- Single Image Badge Box -->
@@ -466,7 +602,7 @@
           <div class="badge-img-wrapper">
             <img id="prizeBadgeImg5" src="assets/gift_box.jpg" alt="Surprise Badge 5" class="badge-img" />
           </div>
-          <div id="prizeBtnLabel5" class="badge-sub-label">🔒 Locked Present (750 Avg Pts Needed)</div>
+          <div id="prizeBtnLabel5" class="badge-sub-label">🔒 Locked Present (2500 Avg Pts Needed)</div>
         </div>
 
         <!-- Progress bar -->
@@ -474,7 +610,7 @@
           <div id="prizeProgressBar5" class="prize-progress-fill" style="width: 0%;"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
-          <span id="prizeProgressText5">0 / 750 avg pts</span>
+          <span id="prizeProgressText5">0 / 2500 avg pts</span>
           <span id="prizeStatusText5">Locked</span>
         </div>
       </div>

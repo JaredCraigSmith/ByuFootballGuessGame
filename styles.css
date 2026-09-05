@@ -1630,3 +1630,272 @@ body {
   }
 }
 
+/* =========================================================
+   Admin Point System Matrix & Tables Styling
+   ========================================================= */
+.admin-scoring-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scoring-formula-card {
+  background: linear-gradient(135deg, rgba(0, 46, 93, 0.4) 0%, rgba(0, 0, 0, 0.5) 100%);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.scoring-formula-badge {
+  display: inline-block;
+  background: rgba(255, 199, 44, 0.15);
+  color: var(--byu-gold);
+  border: 1px solid rgba(255, 199, 44, 0.3);
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.scoring-controls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+}
+
+.control-toggle-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.control-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFF;
+}
+
+.control-toggle-btn.active {
+  background: var(--byu-royal);
+  border-color: #3b82f6;
+  color: #FFF;
+  box-shadow: 0 2px 8px rgba(0, 98, 184, 0.3);
+}
+
+.matrix-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+  background: rgba(5, 14, 26, 0.85);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.matrix-table th,
+.matrix-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
+}
+
+.matrix-table th {
+  background: #002e5d;
+  color: var(--byu-gold);
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.matrix-table .matrix-sticky-col {
+  position: sticky;
+  left: 0;
+  background: #081a30;
+  font-weight: 800;
+  z-index: 5;
+  border-right: 2px solid var(--byu-gold);
+  color: #FFF;
+  text-align: left;
+  padding-left: 12px;
+  min-width: 110px;
+}
+
+.matrix-table th.matrix-sticky-col {
+  z-index: 15;
+  background: #002244;
+  color: var(--byu-gold);
+}
+
+.matrix-table tr:hover td {
+  background: rgba(0, 98, 184, 0.15);
+}
+
+.matrix-table tr:hover .matrix-sticky-col {
+  background: #0c2748;
+}
+
+.matrix-table tr:last-child td {
+  border-bottom: none;
+}
+
+.diff-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.diff-tag.perfect {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34D399;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.diff-tag.good {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60A5FA;
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.diff-tag.high {
+  background: rgba(239, 68, 68, 0.18);
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.score-cell-value {
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.score-cell-value.tier-high {
+  color: #34D399; /* Green */
+}
+
+.score-cell-value.tier-mid {
+  color: #38BDF8; /* Light Blue */
+}
+
+.score-cell-value.tier-low {
+  color: #CBD5E1; /* Muted */
+}
+
+.score-cell-value.tier-zero {
+  color: #64748B;
+  opacity: 0.6;
+}
+
+.multiplier-sub {
+  display: block;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 600;
+  margin-top: 2px;
+  text-transform: none;
+}
+
+/* Custom Diff Adder */
+.diff-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.diff-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #FFF;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.diff-chip .remove-diff-btn {
+  background: none;
+  border: none;
+  color: #F87171;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Interactive Calculator */
+.calc-card {
+  background: rgba(0, 20, 45, 0.6);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.calc-stat-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  text-align: center;
+}
+
+.calc-stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.calc-stat-num {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--byu-gold);
+  margin-top: 4px;
+}
+
+

@@ -39,8 +39,69 @@ export function isGameFinished(game) {
   return Boolean(game.game_finished || game.is_finished);
 }
 
+// Exponential Scoring Model Configuration Defaults
+export const EXPONENTIAL_CONFIG = {
+  game1Max: 250,        // Max points for Game 1 at Diff 0
+  lastGameMax: 500,     // Max points for Game 14 at Diff 0
+  totalGames: 14,       // Total season games
+  targetDiff14: 150,    // Points awarded in Game 1 for being 14 points off (~150 pts)
+  curvePower: 2.0,      // Exponential curve shape factor (2.0 = smooth bell curve, 1.0 = pure exponential)
+  winnerBonusPts: 15    // Default winner bonus points
+};
+
 /**
- * Calculates game points for a guess against actual score
+ * Calculates decay constant sigma for targetDiff14
+ */
+export function getDecaySigma(game1Max = 250, targetDiff14 = 150, curvePower = 2.0) {
+  const ratio = Math.max(0.01, Math.min(0.99, targetDiff14 / game1Max));
+  return 14 / Math.pow(-Math.log(ratio), 1 / curvePower);
+}
+
+/**
+ * Calculates exponential points for a game based on score difference and game number.
+ */
+export function calculateExponentialScore(totalDiff, gameIndex = 0, options = {}) {
+  const {
+    game1Max = EXPONENTIAL_CONFIG.game1Max,
+    lastGameMax = EXPONENTIAL_CONFIG.lastGameMax,
+    totalGames = EXPONENTIAL_CONFIG.totalGames,
+    targetDiff14 = EXPONENTIAL_CONFIG.targetDiff14,
+    curvePower = EXPONENTIAL_CONFIG.curvePower,
+    hasWinnerBonus = false,
+    winnerBonusPts = EXPONENTIAL_CONFIG.winnerBonusPts,
+    zeroIndexed = true
+  } = options;
+
+  // Normalize game number to 1..totalGames
+  const gameNumber = zeroIndexed ? (gameIndex + 1) : gameIndex;
+  const clampedGame = Math.max(1, Math.min(totalGames, gameNumber));
+
+  // 1. Exponential Game Progression: M(g) from game1Max to lastGameMax
+  const maxPossiblePoints = game1Max * Math.pow(lastGameMax / game1Max, (clampedGame - 1) / Math.max(1, totalGames - 1));
+
+  // 2. Exponential Decay based on targetDiff14 and curvePower
+  const safeDiff = Math.max(0, totalDiff);
+  let points = 0;
+
+  if (safeDiff === 0) {
+    points = Math.round(maxPossiblePoints);
+  } else {
+    // If a custom decaySigma is provided, use it, else calculate from targetDiff14 and curvePower
+    const sigma = options.decaySigma || getDecaySigma(game1Max, targetDiff14, curvePower);
+    const decayFactor = Math.exp(-Math.pow(safeDiff / sigma, curvePower));
+    points = Math.round(maxPossiblePoints * decayFactor);
+  }
+
+  // 3. Winner bonus
+  if (hasWinnerBonus) {
+    points += winnerBonusPts;
+  }
+
+  return Math.max(0, points);
+}
+
+/**
+ * Calculates game points for a guess against actual score using exponential model
  */
 export function calculateGuessPoints(guess, game, gameIndex = 0) {
   const isFinished = isGameFinished(game) || (game.home_score !== null && game.away_score !== null);
@@ -52,20 +113,83 @@ export function calculateGuessPoints(guess, game, gameIndex = 0) {
   const diffAway = Math.abs(game.away_score - guess.away);
   const totalDiff = diffHome + diffAway;
 
-  let rawPoints = Math.max(0, 100 - (totalDiff * 3));
-
   // Exact Winner Bonus
   const actualWinner = game.home_score > game.away_score ? 'home' : (game.home_score < game.away_score ? 'away' : 'tie');
   const guessWinner = guess.home > guess.away ? 'home' : (guess.home < guess.away ? 'away' : 'tie');
-  if (actualWinner === guessWinner && actualWinner !== 'tie') {
-    rawPoints += 5;
+  const hasWinnerBonus = (actualWinner === guessWinner && actualWinner !== 'tie');
+
+  return calculateExponentialScore(totalDiff, gameIndex, {
+    hasWinnerBonus,
+    winnerBonusPts: 15,
+    zeroIndexed: true
+  });
+}
+
+/**
+ * Calculates game points purely from total score difference and game index.
+ */
+export function calculatePointsFromDiff(totalDiff, gameIndex = 0, hasWinnerBonus = false, customOptions = {}) {
+  return calculateExponentialScore(totalDiff, gameIndex, {
+    hasWinnerBonus,
+    winnerBonusPts: 15,
+    zeroIndexed: true,
+    ...customOptions
+  });
+}
+
+/**
+ * Calculates cumulative score progression across games 1 to maxGames
+ * with optional drop rules applied (Game 3 drop 1, Game 4+ drop 2 lowest).
+ */
+export function calculateCumulativePoints(totalDiff, maxGames = 14, options = {}) {
+  const { 
+    hasWinnerBonus = false, 
+    zeroIndexed = true, 
+    applyDrops = false,
+    game1Max = EXPONENTIAL_CONFIG.game1Max,
+    lastGameMax = EXPONENTIAL_CONFIG.lastGameMax,
+    targetDiff14 = EXPONENTIAL_CONFIG.targetDiff14,
+    curvePower = EXPONENTIAL_CONFIG.curvePower,
+    winnerBonusPts = 15
+  } = options;
+
+  const perGameScores = [];
+  const cumulativeScores = [];
+
+  for (let g = 1; g <= maxGames; g++) {
+    const gameIdx = zeroIndexed ? (g - 1) : g;
+    const score = calculateExponentialScore(totalDiff, gameIdx, {
+      hasWinnerBonus,
+      winnerBonusPts,
+      zeroIndexed,
+      game1Max,
+      lastGameMax,
+      totalGames: maxGames,
+      targetDiff14,
+      curvePower
+    });
+    perGameScores.push(score);
+
+    if (applyDrops) {
+      let dropsAllowed = 0;
+      if (g === 3) dropsAllowed = 1;
+      else if (g >= 4) dropsAllowed = 2;
+
+      const sorted = [...perGameScores].sort((a, b) => a - b);
+      const kept = sorted.slice(dropsAllowed);
+      const sum = kept.reduce((acc, val) => acc + val, 0);
+      cumulativeScores.push(sum);
+    } else {
+      const sum = perGameScores.reduce((acc, val) => acc + val, 0);
+      cumulativeScores.push(sum);
+    }
   }
 
-  // Season Progression Multiplier (Later games worth slightly more)
-  const multiplier = 1.0 + (gameIndex * 0.15);
-  const finalScore = Math.round(rawPoints * multiplier);
-  return finalScore * 10 // Return score out of 1000 for more fun.
+  return { perGameScores, cumulativeScores };
 }
+
+
+
 
 /**
  * Calculates Overall Leaderboard Standings

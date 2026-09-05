@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BYU Football Scoring Matrix & Exponential Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  <style>
+    :root {
+      --byu-navy: #001e3d;
+      --byu-royal: #002E5D;
+      --byu-blue: #0062B8;
+      --byu-gold: #FFC72C;
+      --byu-gold-hover: #E0AC18;
+      --bg-dark: #070d18;
+      --bg-card: rgba(10, 22, 40, 0.85);
+      --bg-card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --color-green: #10B981;
+      --color-sky: #38BDF8;
+      --color-pink: #EC4899;
+      --color-purple: #A855F7;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 15%, rgba(0, 98, 184, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 85%, rgba(255, 199, 44, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px 32px;
+      overflow-x: auto;
+    }
+
+    /* Desktop Wide Container */
+    .lab-container {
+      max-width: 1560px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Header */
+    .lab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-badge {
+      background: var(--byu-royal);
+      color: #FFF;
+      font-weight: 900;
+      font-size: 1.6rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--byu-gold);
+      box-shadow: 0 0 15px rgba(255, 199, 44, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #FFF;
+    }
+
+    .brand-text p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      text-decoration: none;
+    }
+
+    .btn-gold {
+      background: var(--byu-gold);
+      color: #001e3d;
+    }
+
+    .btn-gold:hover {
+      background: var(--byu-gold-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Controls Bar & Sliders */
+    .controls-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      align-items: center;
+    }
+
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .control-val {
+      color: var(--byu-gold);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--byu-gold);
+      box-shadow: 0 0 8px rgba(255, 199, 44, 0.6);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Toggle Switches */
+    .toggle-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .toggle-pill {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-pill.active {
+      background: var(--byu-royal);
+      border-color: #3b82f6;
+      color: #FFF;
+      box-shadow: 0 2px 8px rgba(0, 98, 184, 0.4);
+    }
+
+    /* Grid for Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 1100px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 380px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      min-height: 280px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 8px;
+    }
+
+    /* Tables Section */
+    .table-section {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .table-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .table-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--byu-gold);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .matrix-table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--bg-card-border);
+      border-radius: 8px;
+      background: rgba(3, 10, 20, 0.9);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    table.matrix-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    table.matrix-table th,
+    table.matrix-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-right: 1px solid rgba(255, 255, 255, 0.04);
+      white-space: nowrap;
+    }
+
+    table.matrix-table th {
+      background: #002244;
+      color: var(--byu-gold);
+      font-weight: 800;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    table.matrix-table .sticky-col {
+      position: sticky;
+      left: 0;
+      background: #061527;
+      font-weight: 800;
+      z-index: 5;
+      border-right: 2px solid var(--byu-gold);
+      color: #FFF;
+      text-align: left;
+      padding-left: 16px;
+      min-width: 130px;
+    }
+
+    table.matrix-table th.sticky-col {
+      z-index: 15;
+      background: #001830;
+      color: var(--byu-gold);
+    }
+
+    table.matrix-table tr:hover td {
+      background: rgba(0, 98, 184, 0.18);
+    }
+
+    table.matrix-table tr:hover .sticky-col {
+      background: #0c2542;
+    }
+
+    .diff-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .diff-badge.perfect {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .diff-badge.good {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60A5FA;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .diff-badge.mid {
+      background: rgba(245, 158, 11, 0.2);
+      color: #FBBF24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .diff-badge.high {
+      background: rgba(239, 68, 68, 0.2);
+      color: #F87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .score-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .score-val.tier-high { color: #34D399; }
+    .score-val.tier-mid { color: #38BDF8; }
+    .score-val.tier-low { color: #CBD5E1; }
+    .score-val.tier-zero { color: #64748B; opacity: 0.5; }
+
+    .sub-head {
+      display: block;
+      font-size: 0.68rem;
+      color: rgba(255, 255, 255, 0.65);
+      font-weight: 600;
+      margin-top: 2px;
+      text-transform: none;
+    }
+
+    /* Live Calculator Sandbox */
+    .calc-card {
+      background: linear-gradient(135deg, rgba(0, 30, 60, 0.6) 0%, rgba(5, 15, 30, 0.8) 100%);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .calc-box {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .calc-box-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .calc-box-num {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: var(--byu-gold);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
+    }
+
+    .formula-tag {
+      display: inline-block;
+      background: rgba(255, 199, 44, 0.12);
+      border: 1px solid rgba(255, 199, 44, 0.3);
+      color: var(--byu-gold);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="lab-container">
+
+    <!-- Top Header -->
+    <header class="lab-header">
+      <div class="brand-group">
+        <div class="brand-badge">Y</div>
+        <div class="brand-text">
+          <h1>BYU Football Guess Game • Exponential Scoring Lab</h1>
+          <p>Secret Admin Analysis Dashboard & Mathematical Curve Visualizer</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="formula-tag">M(g) = 250 · 2^((g-1)/13)</span>
+        <span class="formula-tag">S(d, g) = M(g) · e^(-k·d)</span>
+        <a href="index.html" class="btn btn-secondary">← Back to Main App</a>
+      </div>
+    </header>
+
+    <!-- Controls Panel -->
+    <section class="controls-panel">
+      <!-- Game 1 Max Points -->
+      <div class="control-item">
+        <div class="control-header">
+          <span>Game 1 Max (Diff 0)</span>
+          <span class="control-val" id="valGame1Max">250 pts</span>
+        </div>
+        <input type="range" id="sliderGame1Max" min="150" max="350" step="10" value="250" />
+      </div>
+
+      <!-- Last Game Max Points -->
+      <div class="control-item">
+        <div class="control-header">
+          <span>Last Game Max (Diff 0)</span>
+          <span class="control-val" id="valLastGameMax">500 pts</span>
+        </div>
+        <input type="range" id="sliderLastGameMax" min="300" max="700" step="10" value="500" />
+      </div>
+
+      <!-- Game 1 Score at Diff 14 (User Request) -->
+      <div class="control-item">
+        <div class="control-header">
+          <span>Game 1 at Diff 14</span>
+          <span class="control-val" id="valTargetDiff14" style="color: #34D399;">150 pts</span>
+        </div>
+        <input type="range" id="sliderTargetDiff14" min="80" max="200" step="5" value="150" />
+      </div>
+
+      <!-- Curve Shape / Falloff Power -->
+      <div class="control-item">
+        <div class="control-header">
+          <span>Curve Shape</span>
+          <span class="control-val" id="valCurvePower">Smooth (p=2.0)</span>
+        </div>
+        <div class="toggle-group">
+          <button type="button" class="toggle-pill active" id="btnPower20">Smooth (p=2.0)</button>
+          <button type="button" class="toggle-pill" id="btnPower16">Balanced (1.6)</button>
+          <button type="button" class="toggle-pill" id="btnPower10">Pure Exp (1.0)</button>
+        </div>
+      </div>
+
+      <!-- Winner Bonus Toggle -->
+      <div class="control-item">
+        <div class="control-header">
+          <span>Winner Bonus</span>
+          <span class="control-val" id="valWinnerBonus">+15 pts</span>
+        </div>
+        <div class="toggle-group">
+          <button type="button" class="toggle-pill" id="btnBonusNone">None (+0)</button>
+          <button type="button" class="toggle-pill active" id="btnBonusStandard">+15 pts</button>
+          <button type="button" class="toggle-pill" id="btnBonusHigh">+25 pts</button>
+        </div>
+      </div>
+
+      <!-- Drop Rules Toggle -->
+      <div class="control-item">
+        <div class="control-header">
+          <span>Season Drops</span>
+          <span class="control-val" id="valDrops">Raw Sum</span>
+        </div>
+        <div class="toggle-group">
+          <button type="button" class="toggle-pill active" id="btnDropsOff">Raw Sum</button>
+          <button type="button" class="toggle-pill" id="btnDropsOn">Drop Lowest 2</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Charts Grid (Exponential Curves) -->
+    <section class="charts-grid">
+      <!-- Chart 1: Score vs Difference Curve -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <span>📉 Curve 1: Score Decay vs Score Difference</span>
+          </div>
+          <div class="chart-legend" id="legendChart1">
+            <div class="legend-item"><span class="legend-dot" style="background:#FFC72C;"></span> Game 1 (250)</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#38BDF8;"></span> Game 4 (295)</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#10B981;"></span> Game 7 (344)</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#EC4899;"></span> Game 11 (423)</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#A855F7;"></span> Game 14 (500)</div>
+          </div>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="canvasScoreVsDiff"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Game Index Progression Curve -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <span>📈 Curve 2: Exponential Progression Across Season (1–14)</span>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#FFC72C;"></span> Diff 0 (Max)</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#38BDF8;"></span> Diff 7 (1 TD off)</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#10B981;"></span> Diff 14 (2 TD off)</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#EC4899;"></span> Diff 21</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#A855F7;"></span> Diff 35 (Tail)</div>
+          </div>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="canvasProgressionByGame"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cumulative Progression Chart (Full Width) -->
+    <div class="chart-card" style="min-height: 340px;">
+      <div class="chart-header">
+        <div class="chart-title">
+          <span>🏆 Curve 3: Cumulative Season Score Growth (Thru Game 1 to 14)</span>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#FFC72C;"></span> Always Diff 0</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#38BDF8;"></span> Always Diff 7</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#10B981;"></span> Always Diff 14</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#EC4899;"></span> Always Diff 28</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#A855F7;"></span> Always Diff 35</div>
+        </div>
+      </div>
+      <div class="canvas-wrapper">
+        <canvas id="canvasCumulativeGrowth"></canvas>
+      </div>
+    </div>
+
+    <!-- Tables Section -->
+    <section class="table-section">
+      <!-- Table 1: Single-Game Point Payouts -->
+      <div>
+        <div class="table-header-row" style="margin-bottom: 12px;">
+          <h3 class="table-title">🎯 Table 1: Single-Game Point Payouts (Game Index 1–14 × Score Diff)</h3>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Points awarded for a single game guess</span>
+        </div>
+        <div class="matrix-table-wrapper">
+          <table class="matrix-table" id="tableGamePoints">
+            <!-- Dynamically generated -->
+          </table>
+        </div>
+      </div>
+
+      <!-- Table 2: Cumulative Sum of Scores -->
+      <div>
+        <div class="table-header-row" style="margin-bottom: 12px;">
+          <h3 class="table-title">📈 Table 2: Cumulative Score Matrix (Sum of Scores Thru Each Game)</h3>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" id="cumulativeTableSubtitle">Running total through each week</span>
+        </div>
+        <div class="matrix-table-wrapper">
+          <table class="matrix-table" id="tableCumulativePoints">
+            <!-- Dynamically generated -->
+          </table>
+        </div>
+      </div>
+
+      <!-- Live Simulator Sandbox -->
+      <div class="calc-card">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--byu-gold);">🧮 Interactive Guess Simulator</h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Test any score difference and game number to verify the exact payout:</p>
+
+        <div class="calc-grid">
+          <div class="calc-box">
+            <div class="calc-box-title">Score Difference</div>
+            <input type="number" id="simDiffInput" value="7" min="0" max="60" style="width: 80px; padding: 4px; font-size: 1.1rem; text-align: center; margin-top: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 6px;" />
+          </div>
+          <div class="calc-box">
+            <div class="calc-box-title">Game Number (1–14)</div>
+            <input type="number" id="simGameInput" value="1" min="1" max="14" style="width: 80px; padding: 4px; font-size: 1.1rem; text-align: center; margin-top: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 6px;" />
+          </div>
+          <div class="calc-box">
+            <div class="calc-box-title">Game Max (Diff 0)</div>
+            <div class="calc-box-num" id="simGameMax">250</div>
+          </div>
+          <div class="calc-box">
+            <div class="calc-box-title">Decay Factor</div>
+            <div class="calc-box-num" id="simDecayFactor" style="color: var(--color-sky);">0.331</div>
+          </div>
+          <div class="calc-box">
+            <div class="calc-box-title">Points Earned</div>
+            <div class="calc-box-num" id="simEarnedPts" style="color: var(--color-green);">98</div>
+          </div>
+          <div class="calc-box">
+            <div class="calc-box-title">Season Total (if all same)</div>
+            <div class="calc-box-num" id="simSeasonTotal" style="color: var(--byu-gold);">1,610</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script type="module">
+    import { 
+      calculateExponentialScore, 
+      calculateCumulativePoints,
+      getDecaySigma,
+      EXPONENTIAL_CONFIG 
+    } from './js/scoring.js?v=5';
+
+    // State
+    const state = {
+      game1Max: 250,
+      lastGameMax: 500,
+      targetDiff14: 150,
+      curvePower: 2.0,
+      totalGames: 14,
+      winnerBonusPts: 15,
+      applyDrops: false,
+      diffs: [0, 1, 3, 7, 10, 14, 21, 28, 35]
+    };
+
+    // DOM Elements
+    const sliderGame1Max = document.getElementById('sliderGame1Max');
+    const sliderLastGameMax = document.getElementById('sliderLastGameMax');
+    const sliderTargetDiff14 = document.getElementById('sliderTargetDiff14');
+    const valGame1Max = document.getElementById('valGame1Max');
+    const valLastGameMax = document.getElementById('valLastGameMax');
+    const valTargetDiff14 = document.getElementById('valTargetDiff14');
+    const valCurvePower = document.getElementById('valCurvePower');
+    const valWinnerBonus = document.getElementById('valWinnerBonus');
+    const valDrops = document.getElementById('valDrops');
+
+    const btnPower20 = document.getElementById('btnPower20');
+    const btnPower16 = document.getElementById('btnPower16');
+    const btnPower10 = document.getElementById('btnPower10');
+
+    const btnBonusNone = document.getElementById('btnBonusNone');
+    const btnBonusStandard = document.getElementById('btnBonusStandard');
+    const btnBonusHigh = document.getElementById('btnBonusHigh');
+
+    const btnDropsOff = document.getElementById('btnDropsOff');
+    const btnDropsOn = document.getElementById('btnDropsOn');
+
+    const tableGamePoints = document.getElementById('tableGamePoints');
+    const tableCumulativePoints = document.getElementById('tableCumulativePoints');
+    const cumulativeTableSubtitle = document.getElementById('cumulativeTableSubtitle');
+
+    const simDiffInput = document.getElementById('simDiffInput');
+    const simGameInput = document.getElementById('simGameInput');
+    const simGameMax = document.getElementById('simGameMax');
+    const simDecayFactor = document.getElementById('simDecayFactor');
+    const simEarnedPts = document.getElementById('simEarnedPts');
+    const simSeasonTotal = document.getElementById('simSeasonTotal');
+
+    // Canvas elements
+    const canvasScoreVsDiff = document.getElementById('canvasScoreVsDiff');
+    const canvasProgressionByGame = document.getElementById('canvasProgressionByGame');
+    const canvasCumulativeGrowth = document.getElementById('canvasCumulativeGrowth');
+
+    // Event Listeners
+    sliderGame1Max.addEventListener('input', (e) => {
+      state.game1Max = parseInt(e.target.value, 10);
+      valGame1Max.textContent = state.game1Max + ' pts';
+      updateAll();
+    });
+
+    sliderLastGameMax.addEventListener('input', (e) => {
+      state.lastGameMax = parseInt(e.target.value, 10);
+      valLastGameMax.textContent = state.lastGameMax + ' pts';
+      updateAll();
+    });
+
+    sliderTargetDiff14.addEventListener('input', (e) => {
+      state.targetDiff14 = parseInt(e.target.value, 10);
+      valTargetDiff14.textContent = state.targetDiff14 + ' pts';
+      updateAll();
+    });
+
+    btnPower20.addEventListener('click', () => {
+      state.curvePower = 2.0;
+      setPowerActive(btnPower20, 'Smooth (p=2.0)');
+      updateAll();
+    });
+
+    btnPower16.addEventListener('click', () => {
+      state.curvePower = 1.6;
+      setPowerActive(btnPower16, 'Balanced (1.6)');
+      updateAll();
+    });
+
+    btnPower10.addEventListener('click', () => {
+      state.curvePower = 1.0;
+      setPowerActive(btnPower10, 'Pure Exp (1.0)');
+      updateAll();
+    });
+
+    function setPowerActive(btn, label) {
+      [btnPower20, btnPower16, btnPower10].forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      valCurvePower.textContent = label;
+    }
+
+    btnBonusNone.addEventListener('click', () => {
+      state.winnerBonusPts = 0;
+      setBonusActive(btnBonusNone, '+0 (Off)');
+      updateAll();
+    });
+
+    btnBonusStandard.addEventListener('click', () => {
+      state.winnerBonusPts = 15;
+      setBonusActive(btnBonusStandard, '+15 pts');
+      updateAll();
+    });
+
+    btnBonusHigh.addEventListener('click', () => {
+      state.winnerBonusPts = 25;
+      setBonusActive(btnBonusHigh, '+25 pts');
+      updateAll();
+    });
+
+    function setBonusActive(btn, label) {
+      [btnBonusNone, btnBonusStandard, btnBonusHigh].forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      valWinnerBonus.textContent = label;
+    }
+
+    btnDropsOff.addEventListener('click', () => {
+      state.applyDrops = false;
+      btnDropsOff.classList.add('active');
+      btnDropsOn.classList.remove('active');
+      valDrops.textContent = 'Raw Sum';
+      cumulativeTableSubtitle.textContent = 'Raw running sum through each week';
+      updateAll();
+    });
+
+    btnDropsOn.addEventListener('click', () => {
+      state.applyDrops = true;
+      btnDropsOn.classList.add('active');
+      btnDropsOff.classList.remove('active');
+      valDrops.textContent = 'Drops Applied';
+      cumulativeTableSubtitle.textContent = 'Running sum with lowest 2 scores dropped';
+      updateAll();
+    });
+
+    simDiffInput.addEventListener('input', updateSimulator);
+    simGameInput.addEventListener('input', updateSimulator);
+
+    // Helpers
+    function getScore(diff, gameNum) {
+      return calculateExponentialScore(diff, gameNum, {
+        game1Max: state.game1Max,
+        lastGameMax: state.lastGameMax,
+        totalGames: state.totalGames,
+        targetDiff14: state.targetDiff14,
+        curvePower: state.curvePower,
+        hasWinnerBonus: state.winnerBonusPts > 0,
+        winnerBonusPts: state.winnerBonusPts,
+        zeroIndexed: false
+      });
+    }
+
+    function getCumulative(diff) {
+      return calculateCumulativePoints(diff, state.totalGames, {
+        game1Max: state.game1Max,
+        lastGameMax: state.lastGameMax,
+        targetDiff14: state.targetDiff14,
+        curvePower: state.curvePower,
+        hasWinnerBonus: state.winnerBonusPts > 0,
+        winnerBonusPts: state.winnerBonusPts,
+        zeroIndexed: false,
+        applyDrops: state.applyDrops
+      });
+    }
+
+
+    // Render Tables
+    function renderTables() {
+      // Table 1
+      let h1 = '<thead><tr><th class="sticky-col">Score Diff</th>';
+      for (let g = 1; g <= state.totalGames; g++) {
+        const maxPts = Math.round(state.game1Max * Math.pow(state.lastGameMax / state.game1Max, (g - 1) / (state.totalGames - 1)));
+        h1 += `<th>Game ${g}<span class="sub-head">Max: ${maxPts}</span></th>`;
+      }
+      h1 += '</tr></thead><tbody>';
+
+      state.diffs.forEach(d => {
+        let badgeClass = 'diff-badge';
+        if (d === 0) badgeClass += ' perfect';
+        else if (d <= 7) badgeClass += ' good';
+        else if (d <= 14) badgeClass += ' mid';
+        else badgeClass += ' high';
+
+        h1 += `<tr><td class="sticky-col"><span class="${badgeClass}">±${d} pts</span></td>`;
+        for (let g = 1; g <= state.totalGames; g++) {
+          const pts = getScore(d, g);
+          let tier = 'score-val tier-low';
+          if (pts >= 250) tier = 'score-val tier-high';
+          else if (pts >= 100) tier = 'score-val tier-mid';
+          else if (pts === 0) tier = 'score-val tier-zero';
+
+          h1 += `<td><span class="${tier}">${pts}</span></td>`;
+        }
+        h1 += '</tr>';
+      });
+      h1 += '</tbody>';
+      tableGamePoints.innerHTML = h1;
+
+      // Table 2
+      let h2 = '<thead><tr><th class="sticky-col">Score Diff</th>';
+      for (let g = 1; g <= state.totalGames; g++) {
+        h2 += `<th>Thru G${g}<span class="sub-head">Week ${g}</span></th>`;
+      }
+      h2 += '</tr></thead><tbody>';
+
+      state.diffs.forEach(d => {
+        let badgeClass = 'diff-badge';
+        if (d === 0) badgeClass += ' perfect';
+        else if (d <= 7) badgeClass += ' good';
+        else if (d <= 14) badgeClass += ' mid';
+        else badgeClass += ' high';
+
+        const { cumulativeScores } = getCumulative(d);
+        h2 += `<tr><td class="sticky-col"><span class="${badgeClass}">±${d} pts</span></td>`;
+        cumulativeScores.forEach(tot => {
+          let tier = 'score-val tier-low';
+          if (tot >= 2500) tier = 'score-val tier-high';
+          else if (tot >= 1000) tier = 'score-val tier-mid';
+          else if (tot === 0) tier = 'score-val tier-zero';
+
+          h2 += `<td><span class="${tier}">${tot}</span></td>`;
+        });
+        h2 += '</tr>';
+      });
+      h2 += '</tbody>';
+      tableCumulativePoints.innerHTML = h2;
+    }
+
+    // Update Simulator Sandbox
+    function updateSimulator() {
+      const diff = Math.max(0, parseInt(simDiffInput.value, 10) || 0);
+      const game = Math.max(1, Math.min(state.totalGames, parseInt(simGameInput.value, 10) || 1));
+
+      const gameMax = Math.round(state.game1Max * Math.pow(state.lastGameMax / state.game1Max, (game - 1) / (state.totalGames - 1)));
+      const sigma = getDecaySigma(state.game1Max, state.targetDiff14, state.curvePower);
+      const decay = diff === 0 ? 1.0 : Math.exp(-Math.pow(diff / sigma, state.curvePower));
+      const earned = getScore(diff, game);
+      const { cumulativeScores } = getCumulative(diff);
+      const seasonTot = cumulativeScores[cumulativeScores.length - 1];
+
+      simGameMax.textContent = gameMax;
+      simDecayFactor.textContent = decay.toFixed(3);
+      simEarnedPts.textContent = earned;
+      simSeasonTotal.textContent = seasonTot.toLocaleString();
+    }
+
+
+    // Canvas Chart Drawing Utilities
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    function drawGrid(ctx, w, h, padLeft, padBottom, padRight, padTop, xMin, xMax, yMin, yMax, xLabel, yLabel) {
+      ctx.clearRect(0, 0, w, h);
+
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+
+      // Background
+      ctx.fillStyle = 'rgba(0, 10, 25, 0.4)';
+      ctx.fillRect(padLeft, padTop, plotW, plotH);
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.fillStyle = '#64748B';
+      ctx.font = '10px "JetBrains Mono", monospace';
+
+      // Horizontal lines (Y axis)
+      const ySteps = 5;
+      for (let i = 0; i <= ySteps; i++) {
+        const val = yMin + (yMax - yMin) * (i / ySteps);
+        const y = padTop + plotH - (i / ySteps) * plotH;
+
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(padLeft + plotW, y);
+        ctx.stroke();
+
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Math.round(val), padLeft - 8, y);
+      }
+
+      // Vertical lines (X axis)
+      const xSteps = 6;
+      for (let i = 0; i <= xSteps; i++) {
+        const val = xMin + (xMax - xMin) * (i / xSteps);
+        const x = padLeft + (i / xSteps) * plotW;
+
+        ctx.beginPath();
+        ctx.moveTo(x, padTop);
+        ctx.lineTo(x, padTop + plotH);
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(Math.round(val), x, padTop + plotH + 8);
+      }
+
+      // Axis Labels
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '11px Outfit, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(xLabel, padLeft + plotW / 2, h - 10);
+
+      ctx.save();
+      ctx.translate(14, padTop + plotH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(yLabel, 0, 0);
+      ctx.restore();
+
+      return {
+        toX: (xVal) => padLeft + ((xVal - xMin) / (xMax - xMin)) * plotW,
+        toY: (yVal) => padTop + plotH - ((yVal - yMin) / (yMax - yMin)) * plotH
+      };
+    }
+
+    function drawLine(ctx, points, color, lineWidth = 2.5) {
+      if (points.length === 0) return;
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.stroke();
+
+      // Points dots
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = color;
+      points.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
+    }
+
+    // 1. Draw Curve 1: Score vs Diff
+    function drawChart1() {
+      const { ctx, width: w, height: h } = setupCanvas(canvasScoreVsDiff);
+      const padLeft = 45, padBottom = 35, padRight = 20, padTop = 15;
+      const xMin = 0, xMax = 40;
+      const yMin = 0, yMax = state.lastGameMax + 20;
+
+      const { toX, toY } = drawGrid(ctx, w, h, padLeft, padBottom, padRight, padTop, xMin, xMax, yMin, yMax, 'Score Difference (0 to 40)', 'Points Awarded');
+
+      const series = [
+        { game: 1, color: '#FFC72C' },
+        { game: 4, color: '#38BDF8' },
+        { game: 7, color: '#10B981' },
+        { game: 11, color: '#EC4899' },
+        { game: 14, color: '#A855F7' }
+      ];
+
+      series.forEach(s => {
+        const pts = [];
+        for (let d = 0; d <= 40; d += 1) {
+          const score = getScore(d, s.game);
+          pts.push({ x: toX(d), y: toY(score) });
+        }
+        drawLine(ctx, pts, s.color);
+      });
+    }
+
+    // 2. Draw Curve 2: Game Index Progression
+    function drawChart2() {
+      const { ctx, width: w, height: h } = setupCanvas(canvasProgressionByGame);
+      const padLeft = 45, padBottom = 35, padRight = 20, padTop = 15;
+      const xMin = 1, xMax = 14;
+      const yMin = 0, yMax = state.lastGameMax + 20;
+
+      const { toX, toY } = drawGrid(ctx, w, h, padLeft, padBottom, padRight, padTop, xMin, xMax, yMin, yMax, 'Game Index (1 to 14)', 'Points Awarded');
+
+      const diffSeries = [
+        { diff: 0, color: '#FFC72C' },
+        { diff: 7, color: '#38BDF8' },
+        { diff: 14, color: '#10B981' },
+        { diff: 21, color: '#EC4899' },
+        { diff: 35, color: '#A855F7' }
+      ];
+
+      diffSeries.forEach(s => {
+        const pts = [];
+        for (let g = 1; g <= 14; g++) {
+          const score = getScore(s.diff, g);
+          pts.push({ x: toX(g), y: toY(score) });
+        }
+        drawLine(ctx, pts, s.color);
+      });
+    }
+
+    // 3. Draw Curve 3: Cumulative Season Growth
+    function drawChart3() {
+      const { ctx, width: w, height: h } = setupCanvas(canvasCumulativeGrowth);
+      const padLeft = 55, padBottom = 35, padRight = 20, padTop = 15;
+      const xMin = 1, xMax = 14;
+
+      // Calculate max possible cumulative
+      const { cumulativeScores: maxCum } = getCumulative(0);
+      const yMax = maxCum[maxCum.length - 1] + 200;
+      const yMin = 0;
+
+      const { toX, toY } = drawGrid(ctx, w, h, padLeft, padBottom, padRight, padTop, xMin, xMax, yMin, yMax, 'Game Index Thru Season (1 to 14)', 'Cumulative Points Total');
+
+      const diffSeries = [
+        { diff: 0, color: '#FFC72C' },
+        { diff: 7, color: '#38BDF8' },
+        { diff: 14, color: '#10B981' },
+        { diff: 28, color: '#EC4899' },
+        { diff: 35, color: '#A855F7' }
+      ];
+
+      diffSeries.forEach(s => {
+        const { cumulativeScores } = getCumulative(s.diff);
+        const pts = cumulativeScores.map((tot, idx) => ({
+          x: toX(idx + 1),
+          y: toY(tot)
+        }));
+        drawLine(ctx, pts, s.color);
+      });
+    }
+
+    function updateAll() {
+      renderTables();
+      updateSimulator();
+      drawChart1();
+      drawChart2();
+      drawChart3();
+    }
+
+    // Window resize handler
+    window.addEventListener('resize', () => {
+      drawChart1();
+      drawChart2();
+      drawChart3();
+    });
+
+    // Initial render
+    updateAll();
+  </script>
+</body>
+</html>
