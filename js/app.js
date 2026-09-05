@@ -148,6 +148,8 @@ const elements = {
   prizesAccountAvgScore: document.getElementById('prizesAccountAvgScore'),
   prizesAccountPlayerCount: document.getElementById('prizesAccountPlayerCount'),
   prizeCard1: document.getElementById('prizeCard1'),
+  prizeTitle1: document.getElementById('prizeTitle1'),
+  prizeDesc1: document.getElementById('prizeDesc1'),
   prizeIcon1: document.getElementById('prizeIcon1'),
   prizeBadge1: document.getElementById('prizeBadge1'),
   prizeProgressBar1: document.getElementById('prizeProgressBar1'),
@@ -158,6 +160,8 @@ const elements = {
   cosmoBtnImg: document.getElementById('cosmoBtnImg'),
 
   prizeCard2: document.getElementById('prizeCard2'),
+  prizeTitle2: document.getElementById('prizeTitle2'),
+  prizeDesc2: document.getElementById('prizeDesc2'),
   prizeIcon2: document.getElementById('prizeIcon2'),
   prizeBadge2: document.getElementById('prizeBadge2'),
   prizeProgressBar2: document.getElementById('prizeProgressBar2'),
@@ -168,6 +172,8 @@ const elements = {
   prizeBadgeImg2: document.getElementById('prizeBadgeImg2'),
 
   prizeCard3: document.getElementById('prizeCard3'),
+  prizeTitle3: document.getElementById('prizeTitle3'),
+  prizeDesc3: document.getElementById('prizeDesc3'),
   prizeIcon3: document.getElementById('prizeIcon3'),
   prizeBadge3: document.getElementById('prizeBadge3'),
   prizeProgressBar3: document.getElementById('prizeProgressBar3'),
@@ -178,6 +184,8 @@ const elements = {
   prizeBadgeImg3: document.getElementById('prizeBadgeImg3'),
 
   prizeCard4: document.getElementById('prizeCard4'),
+  prizeTitle4: document.getElementById('prizeTitle4'),
+  prizeDesc4: document.getElementById('prizeDesc4'),
   prizeIcon4: document.getElementById('prizeIcon4'),
   prizeBadge4: document.getElementById('prizeBadge4'),
   prizeProgressBar4: document.getElementById('prizeProgressBar4'),
@@ -188,6 +196,8 @@ const elements = {
   prizeBadgeImg4: document.getElementById('prizeBadgeImg4'),
 
   prizeCard5: document.getElementById('prizeCard5'),
+  prizeTitle5: document.getElementById('prizeTitle5'),
+  prizeDesc5: document.getElementById('prizeDesc5'),
   prizeIcon5: document.getElementById('prizeIcon5'),
   prizeBadge5: document.getElementById('prizeBadge5'),
   prizeProgressBar5: document.getElementById('prizeProgressBar5'),
@@ -499,7 +509,11 @@ function toggleMusic() {
   // If points reached but present not unwrapped yet, unwrap present!
   if (!isUnwrapped2) {
     localStorage.setItem(`byu_prize_unwrapped_2_${accId}`, 'true');
+    if (window.confetti) {
+      window.confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+    }
     renderPrizesView();
+    alert('🎁 SURPRISE UNWRAPPED! 🎵\n\nYou revealed Secret Surprise #2: BYU Pump Up Song!\n\nTap your unlocked badge to play the stadium song with the live equalizer!');
     return;
   }
 
@@ -767,6 +781,7 @@ function triggerFireSpinner() {
     localStorage.setItem(`byu_prize_unwrapped_3_${accId}`, 'true');
     launchFireworksShow();
     renderPrizesView();
+    alert('🎁 SURPRISE UNWRAPPED! 🔥\n\nYou revealed Secret Surprise #3: Polynesian Fire Knife Dancer Show!\n\nTap your unlocked badge anytime to watch the high flaming staff toss!');
     return;
   }
 
@@ -811,6 +826,7 @@ function triggerCosmoDance() {
       window.confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
     }
     renderPrizesView();
+    alert('🎁 SURPRISE UNWRAPPED! 🐾\n\nYou revealed Secret Surprise #1: Cosmo Mascot Dance Party!\n\nTap your unlocked badge anytime to start the dance party!');
     return;
   }
 
@@ -876,6 +892,7 @@ function triggerStadiumWave() {
       window.confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
     }
     renderPrizesView();
+    alert('🎁 SURPRISE UNWRAPPED! 🌊\n\nYou revealed Secret Surprise #4: LaVell Edwards Stadium Cougar Wave!\n\nTap your unlocked badge anytime to launch the 1,600+ fan stadium wave!');
     return;
   }
 
@@ -907,6 +924,7 @@ function triggerDrumHype() {
       window.confetti({ particleCount: 250, spread: 130, origin: { y: 0.6 } });
     }
     renderPrizesView();
+    alert('🎁 SURPRISE UNWRAPPED! 🥁\n\nYou revealed Secret Surprise #5: BYU Game Day Drum Hype!\n\nTap your unlocked badge anytime to beat the official game day kickoff hype drum!');
     return;
   }
 
@@ -1714,7 +1732,7 @@ function renderPrizesView() {
       : 'Log in to view your family account average points!';
   }
 
-  // Surprise #1 (Cosmo Mascot Dance Party - 1 Avg Pt)
+  // Surprise #1 (1 Avg Pt)
   const unlockThreshold1 = 1;
   const isUnlocked1 = avgScore >= unlockThreshold1;
   const pct1 = Math.min(100, Math.round((avgScore / unlockThreshold1) * 100));
@@ -1726,6 +1744,10 @@ function renderPrizesView() {
   const badgeImg1 = elements.cosmoBtnImg || document.getElementById('cosmoBtnImg');
 
   if (!isUnlocked1) {
+    if (elements.prizeTitle1) elements.prizeTitle1.textContent = 'Secret Surprise #1';
+    if (elements.prizeDesc1) {
+      elements.prizeDesc1.innerHTML = `Earn at least <strong>${unlockThreshold1} point</strong> with your family to reveal and unwrap this mystery surprise!`;
+    }
     if (elements.prizeIcon1) elements.prizeIcon1.textContent = '🔒';
     if (elements.prizeBadge1) {
       elements.prizeBadge1.className = 'prize-badge locked';
@@ -1736,6 +1758,10 @@ function renderPrizesView() {
     if (badgeImg1) badgeImg1.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = `🔒 Locked Present (1 Avg Pt Needed)`;
   } else if (!isUnwrapped1) {
+    if (elements.prizeTitle1) elements.prizeTitle1.textContent = 'Secret Surprise #1';
+    if (elements.prizeDesc1) {
+      elements.prizeDesc1.innerHTML = '🎉 <strong>Points reached!</strong> Tap the mystery present below to unwrap and reveal your surprise!';
+    }
     if (elements.prizeIcon1) elements.prizeIcon1.textContent = '🎁';
     if (elements.prizeBadge1) {
       elements.prizeBadge1.className = 'prize-badge unlocked';
@@ -1746,6 +1772,10 @@ function renderPrizesView() {
     if (badgeImg1) badgeImg1.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
   } else {
+    if (elements.prizeTitle1) elements.prizeTitle1.textContent = '🐾 Cosmo Mascot Dance Party';
+    if (elements.prizeDesc1) {
+      elements.prizeDesc1.innerHTML = '✨ <strong>Surprise Unwrapped!</strong> Tap your unlocked Cosmo badge anytime to launch the full-screen dance party with confetti!';
+    }
     if (elements.prizeIcon1) elements.prizeIcon1.textContent = '✨';
     if (elements.prizeBadge1) {
       elements.prizeBadge1.className = 'prize-badge unlocked';
@@ -1754,10 +1784,10 @@ function renderPrizesView() {
     if (elements.prizeStatusText1) elements.prizeStatusText1.textContent = 'Unlocked Badge! Tap to launch Cosmo Dance!';
     if (badgeBox1) badgeBox1.className = 'prize-badge-box unlocked-badge';
     if (badgeImg1) badgeImg1.src = 'assets/cosmo_head.jpg';
-    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = '🐾 Secret Surprise #1 (Tap for Cosmo Dance!)';
+    if (elements.prizeBtnLabel1) elements.prizeBtnLabel1.textContent = '🐾 Cosmo Mascot Dance (Tap to Dance!)';
   }
 
-  // Surprise #2 (BYU Pump Up Song - 300 Avg Pts)
+  // Surprise #2 (300 Avg Pts)
   const unlockThreshold2 = 300;
   const isUnlocked2 = avgScore >= unlockThreshold2;
   const pct2 = Math.min(100, Math.round((avgScore / unlockThreshold2) * 100));
@@ -1769,6 +1799,10 @@ function renderPrizesView() {
   const badgeImg2 = elements.prizeBadgeImg2 || document.getElementById('prizeBadgeImg2');
 
   if (!isUnlocked2) {
+    if (elements.prizeTitle2) elements.prizeTitle2.textContent = 'Secret Surprise #2';
+    if (elements.prizeDesc2) {
+      elements.prizeDesc2.innerHTML = `Reach a family average of <strong>${unlockThreshold2} points</strong> to reveal and unwrap this mystery surprise!`;
+    }
     if (elements.prizeIcon2) elements.prizeIcon2.textContent = '🔒';
     if (elements.prizeBadge2) {
       elements.prizeBadge2.className = 'prize-badge locked';
@@ -1779,6 +1813,10 @@ function renderPrizesView() {
     if (badgeImg2) badgeImg2.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = `🔒 Locked Present (300 Avg Pts Needed)`;
   } else if (!isUnwrapped2) {
+    if (elements.prizeTitle2) elements.prizeTitle2.textContent = 'Secret Surprise #2';
+    if (elements.prizeDesc2) {
+      elements.prizeDesc2.innerHTML = '🎉 <strong>Points reached!</strong> Tap the mystery present below to unwrap and reveal your surprise!';
+    }
     if (elements.prizeIcon2) elements.prizeIcon2.textContent = '🎁';
     if (elements.prizeBadge2) {
       elements.prizeBadge2.className = 'prize-badge unlocked';
@@ -1789,6 +1827,10 @@ function renderPrizesView() {
     if (badgeImg2) badgeImg2.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel2) elements.prizeBtnLabel2.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
   } else {
+    if (elements.prizeTitle2) elements.prizeTitle2.textContent = '🎵 BYU Pump Up Song';
+    if (elements.prizeDesc2) {
+      elements.prizeDesc2.innerHTML = '✨ <strong>Surprise Unwrapped!</strong> Tap your unlocked music badge to play/pause the BYU stadium pump-up track!';
+    }
     if (elements.prizeIcon2) elements.prizeIcon2.textContent = '✨';
     if (elements.prizeBadge2) {
       elements.prizeBadge2.className = 'prize-badge unlocked';
@@ -1800,11 +1842,11 @@ function renderPrizesView() {
     }
     if (badgeImg2) badgeImg2.src = 'assets/music_badge.jpg';
     if (elements.prizeBtnLabel2) {
-      elements.prizeBtnLabel2.textContent = isMusicPlaying ? '🎵 Secret Surprise #2 (Playing - Tap to Stop)' : '🎵 Secret Surprise #2 (Tap to Play Song)';
+      elements.prizeBtnLabel2.textContent = isMusicPlaying ? '🎵 BYU Pump Up Song (Playing - Tap to Stop)' : '🎵 BYU Pump Up Song (Tap to Play Song)';
     }
   }
 
-  // Surprise #3 (4th Quarter Fire Spinner Show - 900 Avg Pts)
+  // Surprise #3 (900 Avg Pts)
   const unlockThreshold3 = 900;
   const isUnlocked3 = avgScore >= unlockThreshold3;
   const pct3 = Math.min(100, Math.round((avgScore / unlockThreshold3) * 100));
@@ -1816,6 +1858,10 @@ function renderPrizesView() {
   const badgeImg3 = elements.prizeBadgeImg3 || document.getElementById('prizeBadgeImg3');
 
   if (!isUnlocked3) {
+    if (elements.prizeTitle3) elements.prizeTitle3.textContent = 'Secret Surprise #3';
+    if (elements.prizeDesc3) {
+      elements.prizeDesc3.innerHTML = `Reach a family average of <strong>${unlockThreshold3} points</strong> to reveal and unwrap this mystery surprise!`;
+    }
     if (elements.prizeIcon3) elements.prizeIcon3.textContent = '🔒';
     if (elements.prizeBadge3) {
       elements.prizeBadge3.className = 'prize-badge locked';
@@ -1826,6 +1872,10 @@ function renderPrizesView() {
     if (badgeImg3) badgeImg3.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = `🔒 Locked Present (900 Avg Pts Needed)`;
   } else if (!isUnwrapped3) {
+    if (elements.prizeTitle3) elements.prizeTitle3.textContent = 'Secret Surprise #3';
+    if (elements.prizeDesc3) {
+      elements.prizeDesc3.innerHTML = '🎉 <strong>Points reached!</strong> Tap the mystery present below to unwrap and reveal your surprise!';
+    }
     if (elements.prizeIcon3) elements.prizeIcon3.textContent = '🎁';
     if (elements.prizeBadge3) {
       elements.prizeBadge3.className = 'prize-badge unlocked';
@@ -1836,6 +1886,10 @@ function renderPrizesView() {
     if (badgeImg3) badgeImg3.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
   } else {
+    if (elements.prizeTitle3) elements.prizeTitle3.textContent = '🔥 Polynesian Fire Knife Dancer Show';
+    if (elements.prizeDesc3) {
+      elements.prizeDesc3.innerHTML = '✨ <strong>Surprise Unwrapped!</strong> Tap your unlocked badge to watch the Polynesian fire dancer perform the flaming staff toss!';
+    }
     if (elements.prizeIcon3) elements.prizeIcon3.textContent = '✨';
     if (elements.prizeBadge3) {
       elements.prizeBadge3.className = 'prize-badge unlocked';
@@ -1844,10 +1898,10 @@ function renderPrizesView() {
     if (elements.prizeStatusText3) elements.prizeStatusText3.textContent = 'Unlocked Badge! Tap to launch Fire Knife Spinner!';
     if (badgeBox3) badgeBox3.className = 'prize-badge-box unlocked-badge';
     if (badgeImg3) badgeImg3.src = 'assets/fire_spinner_badge.jpg';
-    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = '🔥 Secret Surprise #3 (Tap for Fire Knife Spinner!)';
+    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = '🔥 Fire Knife Dancer (Tap for Show!)';
   }
 
-  // Surprise #4 (LaVell Edwards Stadium Cougar Wave - 1500 Avg Pts)
+  // Surprise #4 (1500 Avg Pts)
   const unlockThreshold4 = 1500;
   const isUnlocked4 = avgScore >= unlockThreshold4;
   const pct4 = Math.min(100, Math.round((avgScore / unlockThreshold4) * 100));
@@ -1859,6 +1913,10 @@ function renderPrizesView() {
   const badgeImg4 = elements.prizeBadgeImg4 || document.getElementById('prizeBadgeImg4');
 
   if (!isUnlocked4) {
+    if (elements.prizeTitle4) elements.prizeTitle4.textContent = 'Secret Surprise #4';
+    if (elements.prizeDesc4) {
+      elements.prizeDesc4.innerHTML = `Reach a family average of <strong>${unlockThreshold4.toLocaleString()} points</strong> to reveal and unwrap this mystery surprise!`;
+    }
     if (elements.prizeIcon4) elements.prizeIcon4.textContent = '🔒';
     if (elements.prizeBadge4) {
       elements.prizeBadge4.className = 'prize-badge locked';
@@ -1869,6 +1927,10 @@ function renderPrizesView() {
     if (badgeImg4) badgeImg4.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = `🔒 Locked Present (1500 Avg Pts Needed)`;
   } else if (!isUnwrapped4) {
+    if (elements.prizeTitle4) elements.prizeTitle4.textContent = 'Secret Surprise #4';
+    if (elements.prizeDesc4) {
+      elements.prizeDesc4.innerHTML = '🎉 <strong>Points reached!</strong> Tap the mystery present below to unwrap and reveal your surprise!';
+    }
     if (elements.prizeIcon4) elements.prizeIcon4.textContent = '🎁';
     if (elements.prizeBadge4) {
       elements.prizeBadge4.className = 'prize-badge unlocked';
@@ -1879,6 +1941,10 @@ function renderPrizesView() {
     if (badgeImg4) badgeImg4.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
   } else {
+    if (elements.prizeTitle4) elements.prizeTitle4.textContent = '🌊 LaVell Edwards Stadium Cougar Wave';
+    if (elements.prizeDesc4) {
+      elements.prizeDesc4.innerHTML = '✨ <strong>Surprise Unwrapped!</strong> Tap your unlocked badge to launch the 1,600+ fan Cougar wave across the stadium!';
+    }
     if (elements.prizeIcon4) elements.prizeIcon4.textContent = '✨';
     if (elements.prizeBadge4) {
       elements.prizeBadge4.className = 'prize-badge unlocked';
@@ -1887,10 +1953,10 @@ function renderPrizesView() {
     if (elements.prizeStatusText4) elements.prizeStatusText4.textContent = 'Unlocked Badge! Tap to launch Stadium Wave!';
     if (badgeBox4) badgeBox4.className = 'prize-badge-box unlocked-badge';
     if (badgeImg4) badgeImg4.src = 'assets/stadium_badge.jpg';
-    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = '🌊 Secret Surprise #4 (Tap for Stadium Wave!)';
+    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = '🌊 Stadium Cougar Wave (Tap to Launch!)';
   }
 
-  // Surprise #5 (BYU Game Day Drum Hype - 2500 Avg Pts)
+  // Surprise #5 (2500 Avg Pts)
   const unlockThreshold5 = 2500;
   const isUnlocked5 = avgScore >= unlockThreshold5;
   const pct5 = Math.min(100, Math.round((avgScore / unlockThreshold5) * 100));
@@ -1902,6 +1968,10 @@ function renderPrizesView() {
   const badgeImg5 = elements.prizeBadgeImg5 || document.getElementById('prizeBadgeImg5');
 
   if (!isUnlocked5) {
+    if (elements.prizeTitle5) elements.prizeTitle5.textContent = 'Secret Surprise #5';
+    if (elements.prizeDesc5) {
+      elements.prizeDesc5.innerHTML = `Reach a family average of <strong>${unlockThreshold5.toLocaleString()} points</strong> to reveal and unwrap this mystery surprise!`;
+    }
     if (elements.prizeIcon5) elements.prizeIcon5.textContent = '🔒';
     if (elements.prizeBadge5) {
       elements.prizeBadge5.className = 'prize-badge locked';
@@ -1912,6 +1982,10 @@ function renderPrizesView() {
     if (badgeImg5) badgeImg5.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = `🔒 Locked Present (2500 Avg Pts Needed)`;
   } else if (!isUnwrapped5) {
+    if (elements.prizeTitle5) elements.prizeTitle5.textContent = 'Secret Surprise #5';
+    if (elements.prizeDesc5) {
+      elements.prizeDesc5.innerHTML = '🎉 <strong>Points reached!</strong> Tap the mystery present below to unwrap and reveal your surprise!';
+    }
     if (elements.prizeIcon5) elements.prizeIcon5.textContent = '🎁';
     if (elements.prizeBadge5) {
       elements.prizeBadge5.className = 'prize-badge unlocked';
@@ -1922,6 +1996,10 @@ function renderPrizesView() {
     if (badgeImg5) badgeImg5.src = 'assets/gift_box.jpg';
     if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
   } else {
+    if (elements.prizeTitle5) elements.prizeTitle5.textContent = '🥁 BYU Game Day Drum Hype';
+    if (elements.prizeDesc5) {
+      elements.prizeDesc5.innerHTML = '✨ <strong>Surprise Unwrapped!</strong> Tap your unlocked badge to step up and beat the official BYU Game Day kickoff hype drum!';
+    }
     if (elements.prizeIcon5) elements.prizeIcon5.textContent = '✨';
     if (elements.prizeBadge5) {
       elements.prizeBadge5.className = 'prize-badge unlocked';
@@ -1930,7 +2008,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText5) elements.prizeStatusText5.textContent = 'Unlocked Badge! Tap to launch Drum Show!';
     if (badgeBox5) badgeBox5.className = 'prize-badge-box unlocked-badge';
     if (badgeImg5) badgeImg5.src = 'assets/drum_badge.jpg';
-    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = '🥁 Secret Surprise #5 (Tap for Drum Show!)';
+    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = '🥁 Game Day Drum Hype (Tap for Drum Show!)';
   }
 }
 
