@@ -204,51 +204,67 @@
         </form>
       </div>
 
-      <!-- Add Player Section (Hidden by default) -->
-      <div id="addPlayerCard" class="card" style="display: none;">
-        <div class="card-header">
-          <h3 class="card-title">👤 Add Family Player</h3>
-          <button id="hideAddPlayerBtn" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.8rem;">✕</button>
-        </div>
-        <form id="addPlayerForm">
-          <div class="form-group">
-            <label class="form-label" for="newPlayerName">Player Name</label>
-            <input type="text" id="newPlayerName" class="form-control" placeholder="e.g. Johnny" required />
+      <!-- Add Player Modal -->
+      <div id="addPlayerModal" class="modal-overlay">
+        <div id="addPlayerCard" class="modal-card">
+          <div class="card-header" style="margin-bottom: 16px;">
+            <h3 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+              <span>👤</span>
+              <span>Add Family Player</span>
+            </h3>
+            <button type="button" id="hideAddPlayerBtn" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.85rem;" title="Close">✕</button>
           </div>
-
-          <div class="form-group">
-            <label class="form-label">Pick Player Color Badge</label>
-            <div class="color-picker" id="newPlayerColorPicker">
-              <!-- Swatches generated in JS -->
+          <form id="addPlayerForm">
+            <div class="form-group">
+              <label class="form-label" for="newPlayerName">Player Name</label>
+              <input type="text" id="newPlayerName" class="form-control" placeholder="e.g. Johnny" required autocomplete="off" />
             </div>
-          </div>
 
-          <button type="submit" class="btn btn-primary">Save New Player</button>
-        </form>
+            <div class="form-group">
+              <label class="form-label">Pick Player Color Badge</label>
+              <div class="color-picker" id="newPlayerColorPicker">
+                <!-- Swatches generated in JS -->
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+              <button type="button" id="cancelAddPlayerBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+              <button type="submit" class="btn btn-primary" style="flex: 2;">Save Player 🚀</button>
+            </div>
+          </form>
+        </div>
       </div>
 
-      <!-- Edit Player Section (Hidden by default) -->
-      <div id="editPlayerCard" class="card" style="display: none;">
-        <div class="card-header">
-          <h3 class="card-title">✏️ Edit Family Player</h3>
-          <button id="hideEditPlayerBtn" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.8rem;">✕</button>
-        </div>
-        <form id="editPlayerForm">
-          <input type="hidden" id="editPlayerId" />
-          <div class="form-group">
-            <label class="form-label" for="editPlayerName">Player Name</label>
-            <input type="text" id="editPlayerName" class="form-control" required />
+      <!-- Edit Player Modal -->
+      <div id="editPlayerModal" class="modal-overlay">
+        <div id="editPlayerCard" class="modal-card">
+          <div class="card-header" style="margin-bottom: 16px;">
+            <h3 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+              <span>✏️</span>
+              <span>Edit Family Player</span>
+            </h3>
+            <button type="button" id="hideEditPlayerBtn" class="btn btn-secondary" style="width: auto; padding: 4px 10px; font-size: 0.85rem;" title="Close">✕</button>
           </div>
-
-          <div class="form-group">
-            <label class="form-label">Player Badge Color</label>
-            <div class="color-picker" id="editPlayerColorPicker">
-              <!-- Swatches generated in JS -->
+          <form id="editPlayerForm">
+            <input type="hidden" id="editPlayerId" />
+            <div class="form-group">
+              <label class="form-label" for="editPlayerName">Player Name</label>
+              <input type="text" id="editPlayerName" class="form-control" required autocomplete="off" />
             </div>
-          </div>
 
-          <button type="submit" class="btn btn-primary">Save Player Changes</button>
-        </form>
+            <div class="form-group">
+              <label class="form-label">Player Badge Color</label>
+              <div class="color-picker" id="editPlayerColorPicker">
+                <!-- Swatches generated in JS -->
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+              <button type="button" id="cancelEditPlayerBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+              <button type="submit" class="btn btn-primary" style="flex: 2;">Save Changes 💾</button>
+            </div>
+          </form>
+        </div>
       </div>
     </section>
 

@@ -89,14 +89,18 @@ const elements = {
   bulkGuessForm: document.getElementById('bulkGuessForm'),
   showAddPlayerBtn: document.getElementById('showAddPlayerBtn'),
   hideAddPlayerBtn: document.getElementById('hideAddPlayerBtn'),
+  cancelAddPlayerBtn: document.getElementById('cancelAddPlayerBtn'),
+  addPlayerModal: document.getElementById('addPlayerModal'),
   addPlayerCard: document.getElementById('addPlayerCard'),
   addPlayerForm: document.getElementById('addPlayerForm'),
   newPlayerName: document.getElementById('newPlayerName'),
   newPlayerColorPicker: document.getElementById('newPlayerColorPicker'),
 
   // Edit Player
+  editPlayerModal: document.getElementById('editPlayerModal'),
   editPlayerCard: document.getElementById('editPlayerCard'),
   hideEditPlayerBtn: document.getElementById('hideEditPlayerBtn'),
+  cancelEditPlayerBtn: document.getElementById('cancelEditPlayerBtn'),
   editPlayerForm: document.getElementById('editPlayerForm'),
   editPlayerId: document.getElementById('editPlayerId'),
   editPlayerName: document.getElementById('editPlayerName'),
@@ -289,21 +293,46 @@ function setupEventListeners() {
   // Guesses & Players
   elements.guessGameSelect.addEventListener('change', renderPlayerGuesses);
   elements.bulkGuessForm.addEventListener('submit', handleSaveGuesses);
-  elements.showAddPlayerBtn.addEventListener('click', () => {
-    elements.addPlayerCard.style.display = 'block';
-    elements.editPlayerCard.style.display = 'none';
-    initAddPlayerColorPicker();
-  });
-  elements.hideAddPlayerBtn.addEventListener('click', () => {
-    elements.addPlayerCard.style.display = 'none';
-  });
-  elements.addPlayerForm.addEventListener('submit', handleAddPlayer);
+  // Add & Edit Player Modal Toggles
+  if (elements.showAddPlayerBtn) {
+    elements.showAddPlayerBtn.addEventListener('click', openAddPlayerModal);
+  }
+  if (elements.hideAddPlayerBtn) {
+    elements.hideAddPlayerBtn.addEventListener('click', closeAddPlayerModal);
+  }
+  if (elements.cancelAddPlayerBtn) {
+    elements.cancelAddPlayerBtn.addEventListener('click', closeAddPlayerModal);
+  }
+  if (elements.addPlayerModal) {
+    elements.addPlayerModal.addEventListener('click', (e) => {
+      if (e.target === elements.addPlayerModal) closeAddPlayerModal();
+    });
+  }
 
   // Edit Player
   if (elements.hideEditPlayerBtn) {
-    elements.hideEditPlayerBtn.addEventListener('click', () => {
-      elements.editPlayerCard.style.display = 'none';
+    elements.hideEditPlayerBtn.addEventListener('click', closeEditPlayerModal);
+  }
+  if (elements.cancelEditPlayerBtn) {
+    elements.cancelEditPlayerBtn.addEventListener('click', closeEditPlayerModal);
+  }
+  if (elements.editPlayerModal) {
+    elements.editPlayerModal.addEventListener('click', (e) => {
+      if (e.target === elements.editPlayerModal) closeEditPlayerModal();
     });
+  }
+
+  // Escape key dismiss for modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAddPlayerModal();
+      closeEditPlayerModal();
+      if (elements.cosmoModal) elements.cosmoModal.classList.remove('active');
+    }
+  });
+
+  if (elements.addPlayerForm) {
+    elements.addPlayerForm.addEventListener('submit', handleAddPlayer);
   }
   if (elements.editPlayerForm) {
     elements.editPlayerForm.addEventListener('submit', handleEditPlayer);
@@ -2580,7 +2609,32 @@ function renderPlayerGuesses() {
   }
 }
 
-// Open Edit Player Card
+// Open / Close Add Player Modal
+function openAddPlayerModal() {
+  closeEditPlayerModal();
+  if (elements.addPlayerModal) {
+    elements.addPlayerModal.classList.add('active');
+  }
+  if (elements.addPlayerCard) {
+    elements.addPlayerCard.style.display = 'block';
+  }
+  if (elements.newPlayerName) {
+    elements.newPlayerName.value = '';
+    setTimeout(() => elements.newPlayerName.focus(), 150);
+  }
+  initAddPlayerColorPicker();
+}
+
+function closeAddPlayerModal() {
+  if (elements.addPlayerModal) {
+    elements.addPlayerModal.classList.remove('active');
+  }
+  if (elements.addPlayerCard) {
+    elements.addPlayerCard.style.display = 'none';
+  }
+}
+
+// Open / Close Edit Player Modal
 function openEditPlayerModal(playerId) {
   const player = state.players.find(p => p.id === playerId);
   if (!player) return;
@@ -2590,9 +2644,25 @@ function openEditPlayerModal(playerId) {
   
   initEditPlayerColorPicker(getPlayerColor(player.id));
   
-  elements.addPlayerCard.style.display = 'none';
-  elements.editPlayerCard.style.display = 'block';
-  elements.editPlayerCard.scrollIntoView({ behavior: 'smooth' });
+  closeAddPlayerModal();
+  if (elements.editPlayerModal) {
+    elements.editPlayerModal.classList.add('active');
+  }
+  if (elements.editPlayerCard) {
+    elements.editPlayerCard.style.display = 'block';
+  }
+  if (elements.editPlayerName) {
+    setTimeout(() => elements.editPlayerName.focus(), 150);
+  }
+}
+
+function closeEditPlayerModal() {
+  if (elements.editPlayerModal) {
+    elements.editPlayerModal.classList.remove('active');
+  }
+  if (elements.editPlayerCard) {
+    elements.editPlayerCard.style.display = 'none';
+  }
 }
 
 // Edit Player Form Handler
@@ -2607,7 +2677,7 @@ async function handleEditPlayer(e) {
     await SupabaseAPI.updatePlayer(playerId, newName);
     savePlayerColor(playerId, state.editingPlayerColor);
     await loadData();
-    elements.editPlayerCard.style.display = 'none';
+    closeEditPlayerModal();
     renderPlayerGuesses();
     renderLeaderboard();
     alert('Player updated successfully!');
@@ -2668,7 +2738,7 @@ async function handleAddPlayer(e) {
     }
     await loadData();
     elements.newPlayerName.value = '';
-    elements.addPlayerCard.style.display = 'none';
+    closeAddPlayerModal();
     renderPlayerGuesses();
     renderLeaderboard();
   } catch (err) {
