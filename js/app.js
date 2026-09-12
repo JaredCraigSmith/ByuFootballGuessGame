@@ -1036,7 +1036,8 @@ function populateWeeklySelector() {
     elements.weeklyGameSelect.appendChild(opt);
   });
   if (!state.selectedWeeklyGameId && state.games.length > 0) {
-    const firstActive = state.games.find(g => isGameFinished(g) || (g.home_score !== null && g.away_score !== null));
+    const liveGame = state.games.find(g => !isGameFinished(g) && g.home_score !== null && g.away_score !== null);
+    const firstActive = liveGame || state.games.find(g => isGameFinished(g) || (g.home_score !== null && g.away_score !== null));
     state.selectedWeeklyGameId = firstActive ? firstActive.id : state.games[0].id;
   }
   if (state.selectedWeeklyGameId) {
@@ -1746,24 +1747,28 @@ function getAccountAverageScore() {
 function renderPrizesView() {
   const { avgScore, playerCount } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
-  const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
-  const isUnwrapped2 = localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true';
-  const isUnwrapped3 = localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true';
-  const isUnwrapped4 = localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true';
-  const isUnwrapped5 = localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true';
+  const liveGame = state.games.find(g => !isGameFinished(g) && (g.home_score !== null && g.away_score !== null));
 
   if (elements.prizesAccountAvgScore) {
     elements.prizesAccountAvgScore.innerHTML = `${avgScore} <span style="font-size:0.9rem; color:var(--byu-gold);">avg pts</span>`;
   }
   if (elements.prizesAccountPlayerCount) {
-    elements.prizesAccountPlayerCount.textContent = state.currentAccount 
+    let subText = state.currentAccount 
       ? `${playerCount} family player(s) registered under ${state.currentAccount.name}`
       : 'Log in to view your family account average points!';
+    if (liveGame) {
+      subText += ` • ⏱️ Live game in progress (${liveGame.home_score}-${liveGame.away_score}) — Points apply to prize vault when game is final`;
+    }
+    elements.prizesAccountPlayerCount.textContent = subText;
   }
 
   // Surprise #1 (1 Avg Pt)
   const unlockThreshold1 = 1;
   const isUnlocked1 = avgScore >= unlockThreshold1;
+  if (!isUnlocked1 && localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true') {
+    localStorage.removeItem(`byu_prize_unwrapped_1_${accId}`);
+  }
+  const isUnwrapped1 = localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true';
   const pct1 = Math.min(100, Math.round((avgScore / unlockThreshold1) * 100));
 
   if (elements.prizeProgressBar1) elements.prizeProgressBar1.style.width = `${pct1}%`;
@@ -1819,6 +1824,10 @@ function renderPrizesView() {
   // Surprise #2 (300 Avg Pts)
   const unlockThreshold2 = 300;
   const isUnlocked2 = avgScore >= unlockThreshold2;
+  if (!isUnlocked2 && localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true') {
+    localStorage.removeItem(`byu_prize_unwrapped_2_${accId}`);
+  }
+  const isUnwrapped2 = localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true';
   const pct2 = Math.min(100, Math.round((avgScore / unlockThreshold2) * 100));
 
   if (elements.prizeProgressBar2) elements.prizeProgressBar2.style.width = `${pct2}%`;
@@ -1878,6 +1887,10 @@ function renderPrizesView() {
   // Surprise #3 (900 Avg Pts)
   const unlockThreshold3 = 900;
   const isUnlocked3 = avgScore >= unlockThreshold3;
+  if (!isUnlocked3 && localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true') {
+    localStorage.removeItem(`byu_prize_unwrapped_3_${accId}`);
+  }
+  const isUnwrapped3 = localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true';
   const pct3 = Math.min(100, Math.round((avgScore / unlockThreshold3) * 100));
 
   if (elements.prizeProgressBar3) elements.prizeProgressBar3.style.width = `${pct3}%`;
@@ -1933,6 +1946,10 @@ function renderPrizesView() {
   // Surprise #4 (1500 Avg Pts)
   const unlockThreshold4 = 1500;
   const isUnlocked4 = avgScore >= unlockThreshold4;
+  if (!isUnlocked4 && localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true') {
+    localStorage.removeItem(`byu_prize_unwrapped_4_${accId}`);
+  }
+  const isUnwrapped4 = localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true';
   const pct4 = Math.min(100, Math.round((avgScore / unlockThreshold4) * 100));
 
   if (elements.prizeProgressBar4) elements.prizeProgressBar4.style.width = `${pct4}%`;
@@ -1988,6 +2005,10 @@ function renderPrizesView() {
   // Surprise #5 (2500 Avg Pts)
   const unlockThreshold5 = 2500;
   const isUnlocked5 = avgScore >= unlockThreshold5;
+  if (!isUnlocked5 && localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true') {
+    localStorage.removeItem(`byu_prize_unwrapped_5_${accId}`);
+  }
+  const isUnwrapped5 = localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true';
   const pct5 = Math.min(100, Math.round((avgScore / unlockThreshold5) * 100));
 
   if (elements.prizeProgressBar5) elements.prizeProgressBar5.style.width = `${pct5}%`;
@@ -2361,6 +2382,30 @@ function renderLeaderboard() {
       return;
     }
 
+    if (result.liveGame) {
+      const liveBanner = document.createElement('div');
+      liveBanner.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%)';
+      liveBanner.style.border = '1px solid rgba(239, 68, 68, 0.45)';
+      liveBanner.style.borderRadius = 'var(--radius-sm)';
+      liveBanner.style.padding = '10px 14px';
+      liveBanner.style.marginBottom = '12px';
+      liveBanner.style.display = 'flex';
+      liveBanner.style.alignItems = 'center';
+      liveBanner.style.justifyContent = 'space-between';
+      liveBanner.style.flexWrap = 'wrap';
+      liveBanner.style.gap = '8px';
+      liveBanner.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 0.9rem; color: #FFF;">
+          <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#EF4444; box-shadow:0 0 8px #EF4444;"></span>
+          <span>🔴 LIVE: ${result.liveGame.home_team} ${result.liveGame.home_score} - ${result.liveGame.away_score} ${result.liveGame.away_team}</span>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--byu-gold); font-weight: 600;">
+          ⏱️ Live points shown below are in progress (added to overall standings when final)
+        </div>
+      `;
+      elements.leaderboardList.appendChild(liveBanner);
+    }
+
     result.standings.forEach(player => {
       const item = document.createElement('div');
       item.className = 'leader-item';
@@ -2369,6 +2414,10 @@ function renderLeaderboard() {
       const playerColor = player.color || getPlayerColor(player.playerId);
       const bgStyle = `background: linear-gradient(135deg, ${hexToRgba(playerColor, 0.38)} 0%, ${hexToRgba(playerColor, 0.16)} 100%); border: 1px solid ${hexToRgba(playerColor, 0.65)}; box-shadow: 0 4px 16px ${hexToRgba(playerColor, 0.25)};`;
       item.setAttribute('style', bgStyle);
+
+      const livePtsHtml = player.liveGameScore !== null
+        ? `<div style="font-size:0.75rem; color:#F59E0B; font-weight:800; margin-top:3px; text-shadow:0 1px 2px rgba(0,0,0,0.5);">🔴 ${player.liveGameScore} live pts${player.liveExactHit ? ' 🎯' : ''}</div>`
+        : (result.liveGame ? `<div style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-top:3px;">No live guess</div>` : '');
 
       item.innerHTML = `
         <div class="leader-left">
@@ -2379,8 +2428,9 @@ function renderLeaderboard() {
             <div class="account-sub">${player.accountName}</div>
           </div>
         </div>
-        <div class="leader-right">
+        <div class="leader-right" style="display:flex; flex-direction:column; align-items:flex-end;">
           <div class="score-tag">${player.totalScore} <span style="font-size:0.7rem; color:rgba(241,245,249,0.8);">pts</span></div>
+          ${livePtsHtml}
         </div>
       `;
       elements.leaderboardList.appendChild(item);
@@ -2495,6 +2545,9 @@ function renderPlayerGuesses() {
   const selectedGameId = parseInt(elements.guessGameSelect.value, 10);
   const selectedGame = state.games.find(g => g.id === selectedGameId);
   const isLocked = isGameLocked(selectedGame);
+  const isFinished = selectedGame ? isGameFinished(selectedGame) : false;
+  const isLive = selectedGame && !isFinished && (selectedGame.home_score !== null && selectedGame.away_score !== null);
+  const gameIndex = selectedGame ? state.games.indexOf(selectedGame) : 0;
   const accountPlayers = state.players.filter(p => p.account_id === state.currentAccount.id);
 
   elements.playerGuessesContainer.innerHTML = '';
@@ -2526,16 +2579,22 @@ function renderPlayerGuesses() {
 
   if (isLocked) {
     const lockNotice = document.createElement('div');
-    lockNotice.style.background = 'rgba(239, 68, 68, 0.15)';
-    lockNotice.style.color = '#F87171';
-    lockNotice.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+    lockNotice.style.background = isLive ? 'rgba(245, 158, 11, 0.16)' : 'rgba(239, 68, 68, 0.15)';
+    lockNotice.style.color = isLive ? '#F59E0B' : '#F87171';
+    lockNotice.style.border = isLive ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid rgba(239, 68, 68, 0.3)';
     lockNotice.style.padding = '10px 14px';
     lockNotice.style.borderRadius = 'var(--radius-sm)';
     lockNotice.style.marginBottom = '14px';
     lockNotice.style.textAlign = 'center';
     lockNotice.style.fontWeight = '700';
     lockNotice.style.fontSize = '0.9rem';
-    lockNotice.innerHTML = '🔒 GUESSES LOCKED — Kickoff has passed for this game!';
+    if (isFinished) {
+      lockNotice.innerHTML = `🏆 FINAL SCORE: ${selectedGame.home_team} ${selectedGame.home_score} - ${selectedGame.away_score} ${selectedGame.away_team} — Guesses locked`;
+    } else if (isLive) {
+      lockNotice.innerHTML = `🔴 LIVE SCORE: ${selectedGame.home_team} ${selectedGame.home_score} - ${selectedGame.away_score} ${selectedGame.away_team} — Live points shown below (pending final score)`;
+    } else {
+      lockNotice.innerHTML = '🔒 GUESSES LOCKED — Kickoff has passed for this game!';
+    }
     elements.playerGuessesContainer.appendChild(lockNotice);
   }
 
@@ -2555,16 +2614,29 @@ function renderPlayerGuesses() {
     const awayVal = existingGuess ? (existingGuess.away !== null ? existingGuess.away : '') : '';
     const currentColor = getPlayerColor(player.id);
 
+    let pointsBadgeHtml = '';
+    if ((isLive || isFinished) && existingGuess && existingGuess.home !== null && existingGuess.away !== null && selectedGame) {
+      const pts = calculateGuessPoints(existingGuess, selectedGame, gameIndex);
+      if (pts !== null) {
+        if (isFinished) {
+          pointsBadgeHtml = `<span style="font-size:0.75rem; font-weight:800; color:var(--byu-gold); background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:10px; border:1px solid rgba(255,199,44,0.4);">🏆 ${pts} pts earned</span>`;
+        } else {
+          pointsBadgeHtml = `<span style="font-size:0.75rem; font-weight:800; color:#F59E0B; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:10px; border:1px solid rgba(245,158,11,0.4);">🔴 ${pts} live pts</span>`;
+        }
+      }
+    }
+
     const row = document.createElement('div');
     row.className = 'card player-guess-card';
     const bgStyle = `background: linear-gradient(135deg, ${hexToRgba(currentColor, 0.38)} 0%, ${hexToRgba(currentColor, 0.16)} 100%); border: 1px solid ${hexToRgba(currentColor, 0.65)}; box-shadow: 0 4px 16px ${hexToRgba(currentColor, 0.25)};`;
     row.setAttribute('style', `padding: 14px 16px; margin-bottom: 12px; ${bgStyle}${isLocked ? ' opacity: 0.75;' : ''}`);
 
     row.innerHTML = `
-      <div style="font-weight:700; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+      <div style="font-weight:700; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
         <div style="display:flex; align-items:center; gap:10px;">
           <span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:${currentColor}; box-shadow:0 0 10px ${currentColor}; border:2px solid rgba(255,255,255,0.9);"></span>
           <span style="font-weight:800; font-size:1.05rem; color:#FFF; text-shadow:0 1px 3px rgba(0,0,0,0.5);">${player.name}</span>
+          ${pointsBadgeHtml}
         </div>
         <button type="button" class="btn btn-secondary edit-player-btn" data-player-id="${player.id}" style="width:auto; padding:4px 10px; font-size:0.75rem; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.3);">
           ✏️ Edit
@@ -3036,6 +3108,7 @@ function renderAdminView() {
         renderAdminView();
         setupCountdown();
         renderLeaderboard();
+        renderPrizesView();
         alert(`⏱️ Live score updated: ${game ? game.home_team : 'Home'} ${homeInput.value} - ${awayInput.value} ${game ? game.away_team : 'Away'}${isFinished ? ' (Marked Finished)' : ' (In Progress)'}`);
       } catch (err) {
         alert('Failed to update score.');
@@ -3062,6 +3135,7 @@ function renderAdminView() {
         renderAdminView();
         setupCountdown();
         renderLeaderboard();
+        renderPrizesView();
         alert(`🏆 Final score set & marked Finished! ${game ? game.home_team : 'Home'} ${homeInput.value} - ${awayInput.value} ${game ? game.away_team : 'Away'}`);
       } catch (err) {
         alert('Failed to mark game as finished.');

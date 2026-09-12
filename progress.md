@@ -72,5 +72,12 @@
   - **Sticky Side Column**: `Score Diff` labels remain anchored on the left during horizontal scrolling on mobile screens.
   - **Interactive Score Simulator**: Real-time calculator sandbox breaking down raw points, multiplier, single-game payout, and season projection.
 
-
-
+- [x] **Phase 7: Live Score Isolation & Prize Vault Bugfix**
+  - **Overall Leaderboard Isolation**: Updated `computeLeaderboard` in `js/scoring.js` to strictly filter completed games by `isGameFinished(game)`. In-progress games with live scores entered are no longer counted towards `totalScore`, drop rules, or overall standings rank.
+  - **Prize Vault Protection**: Since the Family Prize Vault average score is calculated from `totalScore`, prize unlocking now strictly depends on completed games. Live mid-game score matches can no longer prematurely unlock or unwrap vault prizes.
+  - **Unearned Prize Reset**: Added automatic cleanup in `renderPrizesView` to clear any unearned unwrapped prize flags in `localStorage` if an account's true completed average score is below the threshold.
+  - **Live Point Visibility Across Views**:
+    - **Overall Standings**: Displays an active live game banner when in progress and shows each player's pending live points (`🔴 X live pts 🎯`) right below their official total score.
+    - **Weekly Leaders**: Shows full live game standings, points, rank, and exact hit badges in real time as the admin updates scores.
+    - **My Guesses**: Added live status notice and individual player point badges (`🔴 X live pts` / `🏆 X pts earned`) directly on each player's guess card.
+    - **Prize Vault**: Subtitle indicates when a live game is in progress and clarifies that points will be added when the game is final.

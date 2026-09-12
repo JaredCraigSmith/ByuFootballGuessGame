@@ -196,13 +196,17 @@ export function calculateCumulativePoints(totalDiff, maxGames = 14, options = {}
  */
 export function computeLeaderboard(players, games, guesses, accounts) {
   const completedGames = games
-    .filter(g => isGameFinished(g) || (g.home_score !== null && g.away_score !== null))
+    .filter(g => isGameFinished(g))
     .sort((a, b) => new Date(a.start_date || a.start_time) - new Date(b.start_date || b.start_time));
 
   const totalCompleted = completedGames.length;
   let dropsAllowed = 0;
   if (totalCompleted === 3) dropsAllowed = 1;
   else if (totalCompleted >= 4) dropsAllowed = 2;
+
+  // Identify any active in-progress game with live scores
+  const liveGame = games.find(g => !isGameFinished(g) && g.home_score !== null && g.away_score !== null);
+  const liveGameIndex = liveGame ? games.indexOf(liveGame) : -1;
 
   const playerStats = players.map(player => {
     const account = accounts.find(a => a.id === player.account_id);
@@ -236,6 +240,22 @@ export function computeLeaderboard(players, games, guesses, accounts) {
     const lastGameScore = gameScores.length > 0 ? gameScores[gameScores.length - 1] : 0;
     const isOnFire = lastGameScore >= 100 || exactHits > 0;
 
+    // Calculate live points for in-progress game without adding to totalScore
+    let liveGameScore = null;
+    let liveExactHit = false;
+    if (liveGame) {
+      const liveGuess = playerGuesses.find(pg => pg.game_id === liveGame.id);
+      if (liveGuess) {
+        const livePts = calculateGuessPoints(liveGuess, liveGame, liveGameIndex >= 0 ? liveGameIndex : 0);
+        if (livePts !== null) {
+          liveGameScore = livePts;
+          if (liveGuess.home === liveGame.home_score && liveGuess.away === liveGame.away_score) {
+            liveExactHit = true;
+          }
+        }
+      }
+    }
+
     return {
       playerId: player.id,
       playerName: player.name,
@@ -247,7 +267,9 @@ export function computeLeaderboard(players, games, guesses, accounts) {
       droppedScores: dropped,
       exactHits,
       isOnFire,
-      gamesPlayed: gameScores.length
+      gamesPlayed: gameScores.length,
+      liveGameScore,
+      liveExactHit
     };
   });
 
@@ -260,7 +282,8 @@ export function computeLeaderboard(players, games, guesses, accounts) {
   return {
     standings: playerStats,
     completedGamesCount: totalCompleted,
-    dropsAllowed
+    dropsAllowed,
+    liveGame: liveGame || null
   };
 }
 
