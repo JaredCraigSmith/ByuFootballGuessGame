@@ -12,7 +12,7 @@ import {
   calculateCumulativePoints,
   getDefaultFocusedGame,
   getGameStartTimestamp
-} from './scoring.js?v=3';
+} from './scoring.js?v=4';
 
 // Application State
 const state = {
@@ -2247,23 +2247,6 @@ function formatGameDateTime(game) {
   }
 
   return `${dateFormatted} • ${timeFormatted === 'TBD' ? 'Kickoff TBD' : timeFormatted}`;
-}
-
-// Robust Game Timestamp Helper (Fixes NaN in Date parsing)
-function getGameStartTimestamp(game) {
-  if (!game) return null;
-  const dateStr = game.start_date || '2026-09-05';
-  const dateParts = dateStr.split('-').map(Number);
-  
-  let hours = 0, mins = 0;
-  if (game.start_time) {
-    const timeClean = game.start_time.split('+')[0].split('-')[0].trim();
-    const timeParts = timeClean.split(':').map(Number);
-    hours = timeParts[0] || 0;
-    mins = timeParts[1] || 0;
-  }
-  
-  return new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, mins, 0).getTime();
 }
 
 // Check if game guesses are locked (Kickoff passed or final scores entered / game finished)
