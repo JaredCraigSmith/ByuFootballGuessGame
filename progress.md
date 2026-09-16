@@ -87,3 +87,18 @@
   - **Automatic Transition to Upcoming Game**: Once the 3-day buffer expires, initial navigation automatically advances to the next upcoming scheduled game.
   - **Live Game Priority**: If a game is currently in progress (scores entered or kickoff recently passed), both views immediately prioritize and focus on the live matchup.
   - **User Selection Freedom**: Preserves manual dropdown selections while interacting on the page, allowing users to freely view other game scores or guesses without interruption.
+
+- [x] **Phase 9: Comprehensive Automated Test Suite (Zero-Database-Mutation Safety)**
+  - **Strict Database Protection Guardrail**: `tests/mock-network.js` intercepts all `fetch` requests with a safety barrier preventing any production queries or mutation requests (`POST`, `PATCH`, `DELETE`) from reaching Supabase.
+  - **Dual Test Runners**:
+    - **CLI Runner**: Built-in Node test runner (`node:test`) running 52 unit and integration tests across 13 suites in under 300ms via `run-tests.cmd`, `run-tests.ps1`, or `npm test`.
+    - **Browser Runner (`test.html`)**: BYU-themed visual web test runner to execute and view all assertions directly in any browser with real-time timers and pass/fail badges.
+  - **Complete Algorithm & API Coverage**:
+    - Mathematical exponential scoring curves, decay sigma, and winner bonuses
+    - Dropped scores algorithm (Game 3 drop 1, Games 4–6 drop 2, Games 7+ drop 3)
+    - Overall and weekly leaderboard calculation
+    - Live game isolation (guaranteeing in-progress scores never mutate official standings)
+    - Smart dynamic game focus and 3-day buffer window logic
+    - Supabase REST client request construction, caching, offline fallback, and error handling
+
+

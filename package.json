@@ -1,0 +1,16 @@
+{
+  "name": "byu-football-guess-game",
+  "version": "1.0.0",
+  "description": "BYU Football Guess the Score Game for family and friends",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [
+    "byu",
+    "football",
+    "game"
+  ],
+  "author": "Jared Craig Smith",
+  "license": "MIT"
+}

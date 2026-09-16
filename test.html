@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BYU Football Guess Game - Automated Test Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧪</text></svg>">
+  <style>
+    :root {
+      --byu-navy: #001e3d;
+      --byu-royal: #002E5D;
+      --byu-blue: #0062B8;
+      --byu-gold: #FFC72C;
+      --byu-gold-hover: #E0AC18;
+      --bg-dark: #070d18;
+      --bg-card: rgba(10, 22, 40, 0.85);
+      --bg-card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --color-green: #10B981;
+      --color-red: #EF4444;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(0, 98, 184, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 85%, rgba(255, 199, 44, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-badge {
+      background: var(--byu-royal);
+      color: #FFF;
+      font-weight: 900;
+      font-size: 1.5rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--byu-gold);
+      box-shadow: 0 0 15px rgba(255, 199, 44, 0.3);
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #FFF;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      text-decoration: none;
+    }
+
+    .btn-gold {
+      background: var(--byu-gold);
+      color: #001e3d;
+    }
+    .btn-gold:hover {
+      background: var(--byu-gold-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Safety Banner */
+    .safety-banner {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      color: #34D399;
+      font-weight: 600;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-val {
+      font-size: 1.8rem;
+      font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
+    }
+
+    .stat-val.passed { color: var(--color-green); }
+    .stat-val.failed { color: var(--color-red); }
+    .stat-val.total { color: var(--byu-gold); }
+    .stat-val.time { color: #38BDF8; }
+
+    /* Suite Cards */
+    .suite-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .suite-header {
+      padding: 14px 20px;
+      background: rgba(0, 46, 93, 0.4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--bg-card-border);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .suite-badge {
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .suite-badge.has-failure {
+      background: rgba(239, 68, 68, 0.2);
+      color: #F87171;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .test-list {
+      list-style: none;
+    }
+
+    .test-item {
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 0.88rem;
+    }
+
+    .test-item:last-child {
+      border-bottom: none;
+    }
+
+    .test-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .test-icon.pass { color: var(--color-green); }
+    .test-icon.fail { color: var(--color-red); }
+
+    .test-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .test-error {
+      padding: 8px 16px;
+      margin: 6px 20px 10px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 6px;
+      color: #FCA5A5;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="brand-group">
+        <div class="brand-badge">Y</div>
+        <div>
+          <h1>BYU Football Guess Game • Test Suite</h1>
+          <p class="subtitle">Unit & Integration Verification Runner</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button id="runBtn" class="btn btn-gold">▶ Re-Run Tests</button>
+        <a href="index.html" class="btn btn-secondary">← Back to App</a>
+      </div>
+    </header>
+
+    <div class="safety-banner">
+      <span style="font-size: 1.3rem;">🛡️</span>
+      <div>
+        <strong>Strict Database Mutation Protection Active:</strong>
+        All Supabase REST API requests are intercepted in-memory by <code>mockNetwork</code>. Zero requests or mutations reach production.
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Total Tests</div>
+        <div class="stat-val total" id="totalCount">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Passed</div>
+        <div class="stat-val passed" id="passedCount">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Failed</div>
+        <div class="stat-val failed" id="failedCount">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Duration</div>
+        <div class="stat-val time" id="durationVal">-</div>
+      </div>
+    </div>
+
+    <main id="suitesContainer">
+      <!-- Dynamically generated test results -->
+    </main>
+  </div>
+
+  <script type="module">
+    import { mockNetwork } from './tests/mock-network.js';
+    import {
+      PRESET_PLAYER_COLORS,
+      getPlayerColor,
+      savePlayerColor,
+      hexToRgba,
+      isGameFinished,
+      calculateExponentialScore,
+      calculateGuessPoints,
+      calculateCumulativePoints,
+      computeLeaderboard,
+      computeWeeklyLeaderboard,
+      getGameStartTimestamp,
+      getDefaultFocusedGame,
+      getDecaySigma
+    } from './js/scoring.js';
+    import { SupabaseAPI } from './js/supabase.js';
+
+    // Install mock network guard
+    mockNetwork.install();
+    mockNetwork.setupStandardSupabaseMocks();
+
+    const suitesContainer = document.getElementById('suitesContainer');
+    const totalCountEl = document.getElementById('totalCount');
+    const passedCountEl = document.getElementById('passedCount');
+    const failedCountEl = document.getElementById('failedCount');
+    const durationValEl = document.getElementById('durationVal');
+    const runBtn = document.getElementById('runBtn');
+
+    // Lightweight In-Browser Test Framework
+    class Suite {
+      constructor(name) {
+        this.name = name;
+        this.tests = [];
+      }
+      test(name, fn) {
+        this.tests.push({ name, fn });
+      }
+    }
+
+    function assert(condition, message) {
+      if (!condition) throw new Error(message || 'Assertion failed');
+    }
+    assert.equal = (a, b, msg) => {
+      if (a !== b) throw new Error(msg || `Expected ${JSON.stringify(a)} === ${JSON.stringify(b)}`);
+    };
+    assert.deepEqual = (a, b, msg) => {
+      if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(msg || `Expected ${JSON.stringify(a)} deepEqual ${JSON.stringify(b)}`);
+    };
+    assert.ok = (val, msg) => {
+      if (!val) throw new Error(msg || `Expected truthy value, got ${val}`);
+    };
+
+    function buildSuites() {
+      const suites = [];
+
+      // Suite 1: Colors & Styling
+      const s1 = new Suite('Player Colors & Styling Helpers');
+      s1.test('should provide at least 10 preset colors', () => {
+        assert.ok(Array.isArray(PRESET_PLAYER_COLORS));
+        assert.ok(PRESET_PLAYER_COLORS.length >= 10);
+      });
+      s1.test('should get default color deterministically by player ID', () => {
+        localStorage.clear();
+        assert.equal(getPlayerColor(0), PRESET_PLAYER_COLORS[0]);
+        assert.equal(getPlayerColor(1), PRESET_PLAYER_COLORS[1]);
+      });
+      s1.test('should save and retrieve custom player color from localStorage', () => {
+        localStorage.clear();
+        savePlayerColor(42, '#FF0099');
+        assert.equal(getPlayerColor(42), '#FF0099');
+      });
+      s1.test('should convert 6-character hex to rgba', () => {
+        assert.equal(hexToRgba('#0062B8', 0.5), 'rgba(0, 98, 184, 0.5)');
+      });
+      s1.test('should convert 3-character hex to rgba', () => {
+        assert.equal(hexToRgba('#FFF', 1), 'rgba(255, 255, 255, 1)');
+      });
+      s1.test('should handle invalid or null hex safely with fallback', () => {
+        assert.equal(hexToRgba(null, 0.3), 'rgba(0, 98, 184, 0.3)');
+      });
+      suites.push(s1);
+
+      // Suite 2: Game Status Helpers
+      const s2 = new Suite('Game Status Helpers');
+      s2.test('should correctly identify finished games', () => {
+        assert.equal(isGameFinished({ game_finished: true }), true);
+        assert.equal(isGameFinished({ game_finished: false }), false);
+        assert.equal(isGameFinished(null), false);
+      });
+      suites.push(s2);
+
+      // Suite 3: Exponential Scoring Calculations
+      const s3 = new Suite('Exponential Scoring Calculations');
+      s3.test('Game 1 perfect prediction awards 250 points', () => {
+        const score = calculateExponentialScore(0, 0, { game1Max: 250, lastGameMax: 500 });
+        assert.equal(score, 250);
+      });
+      s3.test('Game 14 perfect prediction awards 500 points', () => {
+        const score = calculateExponentialScore(0, 13, { game1Max: 250, lastGameMax: 500, totalGames: 14 });
+        assert.equal(score, 500);
+      });
+      s3.test('Game 1 at Diff 14 awards approximately 150 points', () => {
+        const score = calculateExponentialScore(14, 0, { game1Max: 250, targetDiff14: 150, curvePower: 2.0 });
+        assert.ok(Math.abs(score - 150) <= 1, `Score was ${score}`);
+      });
+      s3.test('Winner bonus adds configured points', () => {
+        const base = calculateExponentialScore(7, 0, { hasWinnerBonus: false, winnerBonusPts: 15 });
+        const withBonus = calculateExponentialScore(7, 0, { hasWinnerBonus: true, winnerBonusPts: 15 });
+        assert.equal(withBonus, base + 15);
+      });
+      s3.test('Points smoothly decay with larger differences', () => {
+        const s0 = calculateExponentialScore(0, 0);
+        const s7 = calculateExponentialScore(7, 0);
+        const s14 = calculateExponentialScore(14, 0);
+        assert.ok(s0 > s7 && s7 > s14);
+      });
+      s3.test('Negative difference clamped safely as 0', () => {
+        assert.equal(calculateExponentialScore(-10, 0), calculateExponentialScore(0, 0));
+      });
+      s3.test('Out-of-bounds game indices clamped safely', () => {
+        assert.equal(calculateExponentialScore(0, -5), 250);
+        assert.equal(calculateExponentialScore(0, 999), 500);
+      });
+      suites.push(s3);
+
+      // Suite 4: calculateGuessPoints
+      const s4 = new Suite('calculateGuessPoints Function');
+      s4.test('returns null if game is unfinished and has no scores', () => {
+        assert.equal(calculateGuessPoints({ home: 35, away: 21 }, { game_finished: false, home_score: null, away_score: null }), null);
+      });
+      s4.test('awards exact points + winner bonus for exact prediction', () => {
+        const game = { home_score: 35, away_score: 21, game_finished: true };
+        const guess = { home: 35, away: 21 };
+        assert.equal(calculateGuessPoints(guess, game, 0), 265);
+      });
+      s4.test('awards winner bonus when user picks correct winner', () => {
+        const game = { home_score: 31, away_score: 28, game_finished: true };
+        const guessWith = { home: 24, away: 21 };
+        const guessWithout = { home: 21, away: 24 };
+        assert.ok(calculateGuessPoints(guessWith, game, 0) > calculateGuessPoints(guessWithout, game, 0));
+      });
+      suites.push(s4);
+
+      // Suite 5: Cumulative & Drop Rules
+      const s5 = new Suite('Cumulative Points & Dropped Score Rules');
+      s5.test('calculates raw cumulative sum correctly', () => {
+        const { cumulativeScores } = calculateCumulativePoints(0, 14, { applyDrops: false });
+        assert.equal(cumulativeScores.length, 14);
+        assert.ok(cumulativeScores[13] > cumulativeScores[0]);
+      });
+      s5.test('applies progressive drops across season games', () => {
+        const { cumulativeScores } = calculateCumulativePoints(14, 8, { applyDrops: true });
+        assert.equal(cumulativeScores.length, 8);
+      });
+      suites.push(s5);
+
+      // Suite 6: Overall Leaderboard & Live Isolation
+      const s6 = new Suite('Leaderboard Standings & Live Score Isolation');
+      s6.test('ranks players descending by totalScore', () => {
+        const players = [{ id: 1, name: 'A', account_id: 1 }, { id: 2, name: 'B', account_id: 1 }];
+        const games = [{ id: 1, home_score: 30, away_score: 20, game_finished: true }];
+        const guesses = [
+          { game_id: 1, player_id: 1, home: 30, away: 20 },
+          { game_id: 1, player_id: 2, home: 0, away: 50 }
+        ];
+        const res = computeLeaderboard(players, games, guesses, [{ id: 1, name: 'Acc' }]);
+        assert.equal(res.standings[0].playerId, 1);
+        assert.equal(res.standings[0].rank, 1);
+      });
+      s6.test('CRITICAL: Live games do not alter official totalScore or rank', () => {
+        const players = [{ id: 1, name: 'A', account_id: 1 }, { id: 2, name: 'B', account_id: 1 }];
+        const games = [
+          { id: 1, home_score: 30, away_score: 20, game_finished: true },
+          { id: 2, home_score: 21, away_score: 14, game_finished: false } // LIVE
+        ];
+        const guesses = [
+          { game_id: 1, player_id: 1, home: 30, away: 20 }, // P1 has 265
+          { game_id: 2, player_id: 1, home: 0, away: 50 },
+          { game_id: 1, player_id: 2, home: 0, away: 50 },  // P2 has 0
+          { game_id: 2, player_id: 2, home: 21, away: 14 }  // P2 got live perfect
+        ];
+        const res = computeLeaderboard(players, games, guesses, [{ id: 1, name: 'Acc' }]);
+        assert.equal(res.standings[0].playerId, 1, 'P1 must remain rank 1');
+        assert.equal(res.standings[1].totalScore, 0, 'P2 official totalScore must stay 0');
+        assert.ok(res.standings[1].liveGameScore > 0, 'P2 should have pending live points');
+      });
+      s6.test('drops lowest scores when 3 games finished', () => {
+        const players = [{ id: 1, name: 'A', account_id: 1 }];
+        const games = [
+          { id: 1, home_score: 30, away_score: 20, game_finished: true },
+          { id: 2, home_score: 30, away_score: 20, game_finished: true },
+          { id: 3, home_score: 30, away_score: 20, game_finished: true }
+        ];
+        const guesses = [
+          { game_id: 1, player_id: 1, home: 30, away: 20 },
+          { game_id: 2, player_id: 1, home: 30, away: 20 },
+          { game_id: 3, player_id: 1, home: 0, away: 90 } // Bad guess
+        ];
+        const res = computeLeaderboard(players, games, guesses, [{ id: 1, name: 'Acc' }]);
+        assert.equal(res.dropsAllowed, 1);
+        assert.equal(res.standings[0].droppedScores.length, 1);
+      });
+      suites.push(s6);
+
+      // Suite 7: Timestamps & Game Focus
+      const s7 = new Suite('Game Timestamps & Smart Focus');
+      s7.test('parses start_date and start_time', () => {
+        const ts = getGameStartTimestamp({ start_date: '2026-09-05', start_time: '19:00:00-06' });
+        assert.ok(ts > 0);
+        assert.equal(new Date(ts).getDate(), 5);
+      });
+      s7.test('focuses on live game in progress', () => {
+        const games = [
+          { id: 1, home_score: 30, away_score: 20, game_finished: true },
+          { id: 2, home_score: 14, away_score: 10, game_finished: false },
+          { id: 3, home_score: null, away_score: null, game_finished: false }
+        ];
+        assert.equal(getDefaultFocusedGame(games).id, 2);
+      });
+      s7.test('focuses on finished game within 3-day buffer', () => {
+        const now = new Date(2026, 8, 7, 12, 0).getTime(); // 2 days later
+        const games = [
+          { id: 1, start_date: '2026-09-05', start_time: '19:00:00', home_score: 30, away_score: 20, game_finished: true },
+          { id: 2, start_date: '2026-09-12', start_time: '19:00:00', home_score: null, away_score: null, game_finished: false }
+        ];
+        assert.equal(getDefaultFocusedGame(games, now).id, 1);
+      });
+      suites.push(s7);
+
+      // Suite 8: Supabase API Service (Strictly Mocked)
+      const s8 = new Suite('Supabase API Client (Strict Mocked)');
+      s8.test('CRITICAL: blocks unmocked requests to protect live database', async () => {
+        mockNetwork.routes = [];
+        let blocked = false;
+        try {
+          await window.fetch('https://djqeavbyehrcbczvqgat.supabase.co/rest/v1/DangerousMutation', { method: 'DELETE' });
+        } catch (e) {
+          blocked = true;
+        }
+        mockNetwork.setupStandardSupabaseMocks();
+        assert.ok(blocked, 'Must block unmocked Supabase calls');
+      });
+      s8.test('fetches accounts and uses memory cache on second call', async () => {
+        mockNetwork.reset();
+        mockNetwork.setupStandardSupabaseMocks();
+        const a1 = await SupabaseAPI.getAccounts(true);
+        const reqCount1 = mockNetwork.getRecordedRequests().length;
+        const a2 = await SupabaseAPI.getAccounts(false);
+        const reqCount2 = mockNetwork.getRecordedRequests().length;
+        assert.equal(reqCount1, reqCount2, 'Second call must hit cache');
+        assert.equal(a1.length, a2.length);
+      });
+      s8.test('creates account with parsed integer pin', async () => {
+        const newAcc = await SupabaseAPI.createAccount('Browser Test Acc', '7777');
+        assert.equal(newAcc.name, 'Browser Test Acc');
+        assert.equal(newAcc.pin, 7777);
+      });
+      s8.test('updates player name via PATCH', async () => {
+        const updated = await SupabaseAPI.updatePlayer(101, 'Jared Browser');
+        assert.equal(updated.name, 'Jared Browser');
+      });
+      s8.test('upserts guess via POST when not found', async () => {
+        const guess = await SupabaseAPI.upsertGuess(203, 104, 28, 24);
+        assert.equal(guess.home, 28);
+        assert.equal(guess.away, 24);
+      });
+      suites.push(s8);
+
+      return suites;
+    }
+
+    async function runAll() {
+      suitesContainer.innerHTML = '';
+      const suites = buildSuites();
+      let total = 0, passed = 0, failed = 0;
+      const startTime = performance.now();
+
+      for (const suite of suites) {
+        const card = document.createElement('div');
+        card.className = 'suite-card';
+
+        const header = document.createElement('div');
+        header.className = 'suite-header';
+        header.innerHTML = `<span>${suite.name}</span><span class="suite-badge" id="badge-${suite.name}">Running...</span>`;
+        card.appendChild(header);
+
+        const list = document.createElement('ul');
+        list.className = 'test-list';
+        card.appendChild(list);
+        suitesContainer.appendChild(card);
+
+        let suiteFailed = 0;
+
+        for (const t of suite.tests) {
+          total++;
+          const item = document.createElement('li');
+          item.className = 'test-item';
+
+          const tStart = performance.now();
+          let err = null;
+
+          try {
+            await t.fn();
+            passed++;
+          } catch (e) {
+            failed++;
+            suiteFailed++;
+            err = e;
+          }
+
+          const tDuration = (performance.now() - tStart).toFixed(1);
+
+          item.innerHTML = `
+            <div class="test-name">
+              <span class="test-icon ${err ? 'fail' : 'pass'}">${err ? '✖' : '✔'}</span>
+              <span>${t.name}</span>
+            </div>
+            <span class="test-time">${tDuration}ms</span>
+          `;
+          list.appendChild(item);
+
+          if (err) {
+            const errBox = document.createElement('div');
+            errBox.className = 'test-error';
+            errBox.textContent = err.stack || err.message;
+            card.appendChild(errBox);
+          }
+        }
+
+        const badge = card.querySelector('.suite-badge');
+        if (suiteFailed > 0) {
+          badge.className = 'suite-badge has-failure';
+          badge.textContent = `${suite.tests.length - suiteFailed}/${suite.tests.length} Passed`;
+        } else {
+          badge.textContent = `${suite.tests.length}/${suite.tests.length} Passed`;
+        }
+      }
+
+      const totalDuration = (performance.now() - startTime).toFixed(1);
+      totalCountEl.textContent = total;
+      passedCountEl.textContent = passed;
+      failedCountEl.textContent = failed;
+      durationValEl.textContent = totalDuration + 'ms';
+    }
+
+    runBtn.addEventListener('click', runAll);
+    runAll();
+  </script>
+</body>
+</html>
