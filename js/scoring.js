@@ -139,7 +139,7 @@ export function calculatePointsFromDiff(totalDiff, gameIndex = 0, hasWinnerBonus
 
 /**
  * Calculates cumulative score progression across games 1 to maxGames
- * with optional drop rules applied (Game 3 drop 1, Game 4+ drop 2 lowest).
+ * with optional drop rules applied (Game 3 drop 1, Games 4-6 drop 2, Games 7+ drop 3 lowest).
  */
 export function calculateCumulativePoints(totalDiff, maxGames = 14, options = {}) {
   const { 
@@ -172,8 +172,9 @@ export function calculateCumulativePoints(totalDiff, maxGames = 14, options = {}
 
     if (applyDrops) {
       let dropsAllowed = 0;
-      if (g === 3) dropsAllowed = 1;
+      if (g >= 7) dropsAllowed = 3;
       else if (g >= 4) dropsAllowed = 2;
+      else if (g === 3) dropsAllowed = 1;
 
       const sorted = [...perGameScores].sort((a, b) => a - b);
       const kept = sorted.slice(dropsAllowed);
@@ -201,8 +202,9 @@ export function computeLeaderboard(players, games, guesses, accounts) {
 
   const totalCompleted = completedGames.length;
   let dropsAllowed = 0;
-  if (totalCompleted === 3) dropsAllowed = 1;
+  if (totalCompleted >= 7) dropsAllowed = 3;
   else if (totalCompleted >= 4) dropsAllowed = 2;
+  else if (totalCompleted === 3) dropsAllowed = 1;
 
   // Identify any active in-progress game with live scores
   const liveGame = games.find(g => !isGameFinished(g) && g.home_score !== null && g.away_score !== null);

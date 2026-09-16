@@ -384,7 +384,7 @@ function setupEventListeners() {
       scoringState.applyDrops = !scoringState.applyDrops;
       elements.toggleDropsBtn.className = scoringState.applyDrops ? 'control-toggle-btn active' : 'control-toggle-btn';
       elements.toggleDropsBtn.innerHTML = scoringState.applyDrops 
-        ? '<span>🧹 Drop Rules: ON (G3 drop 1, G4+ drop 2)</span>' 
+        ? '<span>🧹 Drop Rules: ON (G3 drop 1, G4-6 drop 2, G7+ drop 3)</span>' 
         : '<span>🧹 Drop Rules: OFF (Raw Sum)</span>';
       renderAdminScoringTables();
     });

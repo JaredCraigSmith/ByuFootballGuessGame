@@ -16,7 +16,7 @@
   - Support for `start_date` (date) & optional `start_time` (timetz/TBD)
   - Guess completion status indicator (e.g. `X/Y players submitted`)
   - Dynamic Leaderboard with Overall Standings & **Weekly Leaders breakdown**
-  - Dropped scores algorithm (Game 3 drop 1, Game 4+ drop 2 lowest) & season progression weighting
+  - Dropped scores algorithm (Game 3 drop 1, Games 4-6 drop 2, Games 7+ drop 3 lowest) & season progression weighting
   - Admin panel for `"J&J Smith's"` account to add games and submit official final scores
   - BYU fan aesthetics & Cosmo dancing Easter Egg 🐾 (Click Y logo 3 times!)
   - Smart client caching to minimize Supabase API quota usage
@@ -67,7 +67,7 @@
   - **Admin Sub-Tabs**: Added tab navigation between `🎮 Games & Live Scores` and `📊 Point System Tables`.
   - **Table 1: Single-Game Point Payouts**: 14 game index columns with multiplier badges (×1.00 to ×2.95) across score differences (0, 7, 14, 21, 28, 35+).
   - **Table 2: Cumulative Point Progression Matrix**: Running cumulative point total across all 14 games.
-  - **Rule Toggles**: One-click toggles for Winner Bonus (+5 vs +0), Index Base (0-based vs 1-based), and Official Drop Rules (Game 3 drop 1, Game 4+ drop 2 lowest).
+  - **Rule Toggles**: One-click toggles for Winner Bonus (+5 vs +0), Index Base (0-based vs 1-based), and Official Drop Rules (Game 3 drop 1, Games 4-6 drop 2, Games 7+ drop 3 lowest).
   - **Custom Diff Adder**: Dynamically add and remove arbitrary score differentials to the matrix tables.
   - **Sticky Side Column**: `Score Diff` labels remain anchored on the left during horizontal scrolling on mobile screens.
   - **Interactive Score Simulator**: Real-time calculator sandbox breaking down raw points, multiplier, single-game payout, and season projection.

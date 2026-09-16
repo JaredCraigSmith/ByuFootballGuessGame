@@ -580,7 +580,7 @@
         </div>
         <div class="toggle-group">
           <button type="button" class="toggle-pill active" id="btnDropsOff">Raw Sum</button>
-          <button type="button" class="toggle-pill" id="btnDropsOn">Drop Lowest 2</button>
+          <button type="button" class="toggle-pill" id="btnDropsOn">Drops Applied</button>
         </div>
       </div>
     </section>
@@ -848,7 +848,7 @@
       btnDropsOn.classList.add('active');
       btnDropsOff.classList.remove('active');
       valDrops.textContent = 'Drops Applied';
-      cumulativeTableSubtitle.textContent = 'Running sum with lowest 2 scores dropped';
+      cumulativeTableSubtitle.textContent = 'Running sum with lowest scores dropped (G3 drop 1, G4-6 drop 2, G7+ drop 3)';
       updateAll();
     });
 
