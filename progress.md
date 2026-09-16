@@ -101,4 +101,20 @@
     - Smart dynamic game focus and 3-day buffer window logic
     - Supabase REST client request construction, caching, offline fallback, and error handling
 
-
+- [x] **Phase 10: Admin Badge Development & Testing Lab (`admin-badges.html`)**
+  - **Computer-Level Admin Authorization Guard**: Detects if session is admin or if machine has been authorized (`byu_admin_authorized`). Unauthorized computers are presented with an Admin PIN gate (`1234`) to verify and authorize administrative privileges.
+  - **Enabled Badges Management**: Every badge includes an interactive `Enabled / Disabled` toggle. Disabling a badge marks it as "In Development" and cleanly hides it from players in the live game (`index.html`) until re-enabled by the admin.
+  - **Interactive State Simulator**: For any badge, preview its UI across all 3 key states:
+    - 🔒 **Locked**: Shows desaturated mystery present (`assets/gift_box.jpg`), lock pill, and remaining points needed.
+    - 🎁 **Ready to Unwrap**: Golden pulsing glow, shaking box animation, and interactive unwrap celebration.
+    - ✨ **Unlocked Badge**: Reveals official badge art, custom borders, and hover interaction effects.
+  - **Live Interactive Test Runners**:
+    - **Cosmo Mascot Dance Party**: Full mascot sprite dance (`assets/cosmo_dancer.jpg`), pop cheer text, and multi-wave confetti blast.
+    - **BYU Pump Up Song**: Dedicated player for `PumpUpSong.mp3` with animated live equalizer overlay.
+    - **Polynesian Fire Knife Dancer**: Full HTML5 Canvas + CSS simulation with real-time ember particles and high staff toss.
+    - **LaVell Edwards Stadium Wave**: 1,600+ fan interactive Cougar Nation wave with speed & direction controls.
+    - **BYU Game Day Drum Hype**: Kickoff tempo drum, mallets, BPM tracker, stadium energy meter, and reaction hype GIFs.
+    - **BYU Victory Fireworks Celebration (New #6)**: Full-canvas aerial fireworks engine with Royal Blue, Gold, and Pearl White bursts.
+  - **Family Score Simulation Sandbox**: Visual slider (0 to 4,000+ pts) and quick jump buttons to watch all badges transition states dynamically in real-time.
+  - **Experimental Badge Creator**: Form to mock and develop new upcoming season reward badges with custom artwork and threshold requirements.
+  - **Main Game Integration**: Direct launch banner inside the Admin Control Panel of `index.html` and dynamic prize vault filtering in `js/app.js`.

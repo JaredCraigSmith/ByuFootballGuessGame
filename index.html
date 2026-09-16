@@ -288,6 +288,24 @@
 
       <!-- Admin Sub View 1: Games & Scores -->
       <div id="adminGamesSubView">
+        <!-- Admin Badge Dev Lab Promo Card -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(0, 46, 93, 0.45) 0%, rgba(255, 199, 44, 0.12) 100%); border: 1px solid var(--byu-gold); margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h4 style="color: var(--byu-gold); font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                <span>🎖️</span>
+                <span>Admin Badge Dev & Testing Lab</span>
+              </h4>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
+                Test unlocked/locked states, run interactive animations, and toggle enabled badges for this device.
+              </p>
+            </div>
+            <a href="admin-badges.html" target="_blank" class="btn btn-gold" style="text-decoration: none; padding: 8px 18px; font-weight: 800; font-size: 0.85rem; white-space: nowrap;">
+              Open Badge Dev Lab ↗
+            </a>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">
             <h3 class="card-title">⚡ Admin Control Panel</h3>
@@ -628,6 +646,37 @@
         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
           <span id="prizeProgressText5">0 / 2500 avg pts</span>
           <span id="prizeStatusText5">Locked</span>
+        </div>
+      </div>
+
+      <!-- Surprise #6 Card (3500 Avg Pts) -->
+      <div id="prizeCard6" class="card prize-card" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span id="prizeIcon6">🔒</span>
+            <span id="prizeTitle6">Secret Surprise #6</span>
+          </h4>
+          <span id="prizeBadge6" class="prize-badge locked">Requires 3500 Avg Pts</span>
+        </div>
+        <p id="prizeDesc6" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
+          Reach a family average of <strong>3,500 points</strong> to reveal and unwrap this mystery surprise!
+        </p>
+
+        <!-- Single Image Badge Box -->
+        <div id="fireworksTrigger" class="prize-badge-box locked" title="Secret Surprise #6">
+          <div class="badge-img-wrapper">
+            <img id="prizeBadgeImg6" src="assets/gift_box.jpg" alt="Mystery Surprise 6" class="badge-img" />
+          </div>
+          <div id="prizeBtnLabel6" class="badge-sub-label">🔒 Locked Present (3500 Avg Pts Needed)</div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="prize-progress-track" style="margin-top: 14px;">
+          <div id="prizeProgressBar6" class="prize-progress-fill" style="width: 0%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+          <span id="prizeProgressText6">0 / 3500 avg pts</span>
+          <span id="prizeStatusText6">Locked</span>
         </div>
       </div>
     </section>

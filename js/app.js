@@ -212,7 +212,19 @@ const elements = {
   prizeStatusText5: document.getElementById('prizeStatusText5'),
   prizeBtnLabel5: document.getElementById('prizeBtnLabel5'),
   drumHypeTrigger: document.getElementById('drumHypeTrigger'),
-  prizeBadgeImg5: document.getElementById('prizeBadgeImg5')
+  prizeBadgeImg5: document.getElementById('prizeBadgeImg5'),
+
+  prizeCard6: document.getElementById('prizeCard6'),
+  prizeTitle6: document.getElementById('prizeTitle6'),
+  prizeDesc6: document.getElementById('prizeDesc6'),
+  prizeIcon6: document.getElementById('prizeIcon6'),
+  prizeBadge6: document.getElementById('prizeBadge6'),
+  prizeProgressBar6: document.getElementById('prizeProgressBar6'),
+  prizeProgressText6: document.getElementById('prizeProgressText6'),
+  prizeStatusText6: document.getElementById('prizeStatusText6'),
+  prizeBtnLabel6: document.getElementById('prizeBtnLabel6'),
+  fireworksTrigger: document.getElementById('fireworksTrigger'),
+  prizeBadgeImg6: document.getElementById('prizeBadgeImg6')
 };
 
 // Initialize Application
@@ -491,6 +503,7 @@ function attachSmartTapListener(element, callback) {
   attachSmartTapListener(elements.fireSpinnerTrigger, () => triggerFireSpinner());
   attachSmartTapListener(elements.stadiumWaveTrigger, () => triggerStadiumWave());
   attachSmartTapListener(elements.drumHypeTrigger, () => triggerDrumHype());
+  attachSmartTapListener(elements.fireworksTrigger, () => triggerFireworksShow());
 }
 
 // Launch Fireworks Display on Screen
@@ -976,6 +989,31 @@ function triggerDrumHype() {
 
   overlay.style.display = 'flex';
   initDrumHypeEngine();
+}
+
+// Trigger BYU Victory Fireworks Celebration (Secret Surprise #6)
+function triggerFireworksShow() {
+  const { avgScore } = getAccountAverageScore();
+  const accId = state.currentAccount ? state.currentAccount.id : 'guest';
+  const customThresholds = JSON.parse(localStorage.getItem('byu_badge_thresholds') || '{}');
+  const threshold6 = customThresholds['fireworks_show'] !== undefined ? customThresholds['fireworks_show'] : 3500;
+  const isUnwrapped6 = localStorage.getItem(`byu_prize_unwrapped_6_${accId}`) === 'true';
+
+  if (avgScore < threshold6) {
+    alert(`🔒 Secret Present #6 is locked!\n\nYour family account currently has ${avgScore} average points. Your family needs ${threshold6.toLocaleString()} average points to unwrap this present!`);
+    return;
+  }
+
+  // If points reached but present not unwrapped yet, unwrap present!
+  if (!isUnwrapped6) {
+    localStorage.setItem(`byu_prize_unwrapped_6_${accId}`, 'true');
+    launchFireworksShow();
+    renderPrizesView();
+    alert('🎁 SURPRISE UNWRAPPED! 🎆\n\nYou revealed Secret Surprise #6: BYU Victory Fireworks Celebration!\n\nTap your unlocked badge anytime to launch victory fireworks!');
+    return;
+  }
+
+  launchFireworksShow();
 }
 
 // Color Picker Swatches Initializer for Add Player
@@ -1773,8 +1811,19 @@ function renderPrizesView() {
     elements.prizesAccountPlayerCount.textContent = subText;
   }
 
+  // Load Admin Enabled Badges & Thresholds Config
+  const enabledConfig = JSON.parse(localStorage.getItem('byu_enabled_badges_config') || '{}');
+  const customThresholds = JSON.parse(localStorage.getItem('byu_badge_thresholds') || '{}');
+
+  if (elements.prizeCard1) elements.prizeCard1.style.display = enabledConfig['cosmo_dance'] === false ? 'none' : 'block';
+  if (elements.prizeCard2) elements.prizeCard2.style.display = enabledConfig['pump_up_song'] === false ? 'none' : 'block';
+  if (elements.prizeCard3) elements.prizeCard3.style.display = enabledConfig['fire_knife'] === false ? 'none' : 'block';
+  if (elements.prizeCard4) elements.prizeCard4.style.display = enabledConfig['stadium_wave'] === false ? 'none' : 'block';
+  if (elements.prizeCard5) elements.prizeCard5.style.display = enabledConfig['drum_hype'] === false ? 'none' : 'block';
+  if (elements.prizeCard6) elements.prizeCard6.style.display = enabledConfig['fireworks_show'] === true ? 'block' : 'none';
+
   // Surprise #1 (1 Avg Pt)
-  const unlockThreshold1 = 1;
+  const unlockThreshold1 = customThresholds['cosmo_dance'] !== undefined ? customThresholds['cosmo_dance'] : 1;
   const isUnlocked1 = avgScore >= unlockThreshold1;
   if (!isUnlocked1 && localStorage.getItem(`byu_prize_unwrapped_1_${accId}`) === 'true') {
     localStorage.removeItem(`byu_prize_unwrapped_1_${accId}`);
@@ -1833,7 +1882,7 @@ function renderPrizesView() {
   }
 
   // Surprise #2 (300 Avg Pts)
-  const unlockThreshold2 = 300;
+  const unlockThreshold2 = customThresholds['pump_up_song'] !== undefined ? customThresholds['pump_up_song'] : 300;
   const isUnlocked2 = avgScore >= unlockThreshold2;
   if (!isUnlocked2 && localStorage.getItem(`byu_prize_unwrapped_2_${accId}`) === 'true') {
     localStorage.removeItem(`byu_prize_unwrapped_2_${accId}`);
@@ -1896,7 +1945,7 @@ function renderPrizesView() {
   }
 
   // Surprise #3 (900 Avg Pts)
-  const unlockThreshold3 = 900;
+  const unlockThreshold3 = customThresholds['fire_knife'] !== undefined ? customThresholds['fire_knife'] : 900;
   const isUnlocked3 = avgScore >= unlockThreshold3;
   if (!isUnlocked3 && localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true') {
     localStorage.removeItem(`byu_prize_unwrapped_3_${accId}`);
@@ -1955,7 +2004,7 @@ function renderPrizesView() {
   }
 
   // Surprise #4 (1500 Avg Pts)
-  const unlockThreshold4 = 1500;
+  const unlockThreshold4 = customThresholds['stadium_wave'] !== undefined ? customThresholds['stadium_wave'] : 1500;
   const isUnlocked4 = avgScore >= unlockThreshold4;
   if (!isUnlocked4 && localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true') {
     localStorage.removeItem(`byu_prize_unwrapped_4_${accId}`);
@@ -2014,7 +2063,7 @@ function renderPrizesView() {
   }
 
   // Surprise #5 (2500 Avg Pts)
-  const unlockThreshold5 = 2500;
+  const unlockThreshold5 = customThresholds['drum_hype'] !== undefined ? customThresholds['drum_hype'] : 2500;
   const isUnlocked5 = avgScore >= unlockThreshold5;
   if (!isUnlocked5 && localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true') {
     localStorage.removeItem(`byu_prize_unwrapped_5_${accId}`);
@@ -2070,6 +2119,65 @@ function renderPrizesView() {
     if (badgeBox5) badgeBox5.className = 'prize-badge-box unlocked-badge';
     if (badgeImg5) badgeImg5.src = 'assets/drum_badge.jpg';
     if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = '🥁 Game Day Drum Hype (Tap for Drum Show!)';
+  }
+
+  // Surprise #6 (3500 Avg Pts - In Development)
+  const unlockThreshold6 = customThresholds['fireworks_show'] !== undefined ? customThresholds['fireworks_show'] : 3500;
+  const isUnlocked6 = avgScore >= unlockThreshold6;
+  if (!isUnlocked6 && localStorage.getItem(`byu_prize_unwrapped_6_${accId}`) === 'true') {
+    localStorage.removeItem(`byu_prize_unwrapped_6_${accId}`);
+  }
+  const isUnwrapped6 = localStorage.getItem(`byu_prize_unwrapped_6_${accId}`) === 'true';
+  const pct6 = Math.min(100, Math.round((avgScore / unlockThreshold6) * 100));
+
+  if (elements.prizeProgressBar6) elements.prizeProgressBar6.style.width = `${pct6}%`;
+  if (elements.prizeProgressText6) elements.prizeProgressText6.textContent = `${avgScore} / ${unlockThreshold6} avg pts`;
+
+  const badgeBox6 = elements.fireworksTrigger;
+  const badgeImg6 = elements.prizeBadgeImg6 || document.getElementById('prizeBadgeImg6');
+
+  if (!isUnlocked6) {
+    if (elements.prizeTitle6) elements.prizeTitle6.textContent = 'Secret Surprise #6';
+    if (elements.prizeDesc6) {
+      elements.prizeDesc6.innerHTML = `Reach a family average of <strong>${unlockThreshold6.toLocaleString()} points</strong> to reveal and unwrap this mystery surprise!`;
+    }
+    if (elements.prizeIcon6) elements.prizeIcon6.textContent = '🔒';
+    if (elements.prizeBadge6) {
+      elements.prizeBadge6.className = 'prize-badge locked';
+      elements.prizeBadge6.textContent = `Requires ${unlockThreshold6} Avg Pts`;
+    }
+    if (elements.prizeStatusText6) elements.prizeStatusText6.textContent = `Needs ${unlockThreshold6 - avgScore} more avg pts to unwrap`;
+    if (badgeBox6) badgeBox6.className = 'prize-badge-box locked';
+    if (badgeImg6) badgeImg6.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel6) elements.prizeBtnLabel6.textContent = `🔒 Locked Present (${unlockThreshold6} Avg Pts Needed)`;
+  } else if (!isUnwrapped6) {
+    if (elements.prizeTitle6) elements.prizeTitle6.textContent = 'Secret Surprise #6';
+    if (elements.prizeDesc6) {
+      elements.prizeDesc6.innerHTML = '🎉 <strong>Points reached!</strong> Tap the mystery present below to unwrap and reveal your surprise!';
+    }
+    if (elements.prizeIcon6) elements.prizeIcon6.textContent = '🎁';
+    if (elements.prizeBadge6) {
+      elements.prizeBadge6.className = 'prize-badge unlocked';
+      elements.prizeBadge6.textContent = 'READY TO UNWRAP!';
+    }
+    if (elements.prizeStatusText6) elements.prizeStatusText6.textContent = 'Points Reached! Tap Present to Unwrap!';
+    if (badgeBox6) badgeBox6.className = 'prize-badge-box ready-to-unwrap';
+    if (badgeImg6) badgeImg6.src = 'assets/gift_box.jpg';
+    if (elements.prizeBtnLabel6) elements.prizeBtnLabel6.textContent = '🎁 TAP PRESENT TO UNWRAP YOUR SURPRISE!';
+  } else {
+    if (elements.prizeTitle6) elements.prizeTitle6.textContent = '🎆 BYU Victory Fireworks Celebration';
+    if (elements.prizeDesc6) {
+      elements.prizeDesc6.innerHTML = '✨ <strong>Surprise Unwrapped!</strong> Tap your unlocked badge to launch a stadium skyline fireworks celebration!';
+    }
+    if (elements.prizeIcon6) elements.prizeIcon6.textContent = '✨';
+    if (elements.prizeBadge6) {
+      elements.prizeBadge6.className = 'prize-badge unlocked';
+      elements.prizeBadge6.textContent = 'UNLOCKED BADGE';
+    }
+    if (elements.prizeStatusText6) elements.prizeStatusText6.textContent = 'Unlocked Badge! Tap to launch Fireworks!';
+    if (badgeBox6) badgeBox6.className = 'prize-badge-box unlocked-badge';
+    if (badgeImg6) badgeImg6.src = 'assets/fireworks_badge.jpg';
+    if (elements.prizeBtnLabel6) elements.prizeBtnLabel6.textContent = '🎆 Victory Fireworks (Tap for Fireworks!)';
   }
 }
 
@@ -2127,6 +2235,7 @@ function setLoggedInUser(account) {
 
   if (account && Boolean(account.is_admin)) {
     elements.adminNavTab.style.display = 'flex';
+    localStorage.setItem('byu_admin_authorized', 'true');
   } else {
     elements.adminNavTab.style.display = 'none';
   }
