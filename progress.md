@@ -81,3 +81,9 @@
     - **Weekly Leaders**: Shows full live game standings, points, rank, and exact hit badges in real time as the admin updates scores.
     - **My Guesses**: Added live status notice and individual player point badges (`🔴 X live pts` / `🏆 X pts earned`) directly on each player's guess card.
     - **Prize Vault**: Subtitle indicates when a live game is in progress and clarifies that points will be added when the game is final.
+
+- [x] **Phase 8: Smart Dynamic Focus for Weekly Leaders & My Guesses Dropdowns**
+  - **3-Day Post-Game Score Viewing Buffer**: After a game concludes, the dropdown selector on Weekly Leaders and My Guesses continues to default to that recently finished game for a 3-day buffer window (~4 hours duration + 72 hours), allowing players to readily inspect their final scores, points earned, and ranks.
+  - **Automatic Transition to Upcoming Game**: Once the 3-day buffer expires, initial navigation automatically advances to the next upcoming scheduled game.
+  - **Live Game Priority**: If a game is currently in progress (scores entered or kickoff recently passed), both views immediately prioritize and focus on the live matchup.
+  - **User Selection Freedom**: Preserves manual dropdown selections while interacting on the page, allowing users to freely view other game scores or guesses without interruption.

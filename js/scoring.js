@@ -340,3 +340,93 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
 
   return { standings, game, isCompleted: isFinished, isLive: !isFinished && hasScores };
 }
+
+/**
+ * Robust Game Timestamp Helper (returns millisecond epoch timestamp)
+ */
+export function getGameStartTimestamp(game) {
+  if (!game) return null;
+  const dateStr = game.start_date || '2026-09-05';
+  const dateParts = dateStr.split('-').map(Number);
+  if (dateParts.length < 3 || isNaN(dateParts[0])) return null;
+
+  let hours = 19, mins = 0; // Default to 7:00 PM if time is TBD
+  if (game.start_time) {
+    const timeClean = game.start_time.split('+')[0].split('-')[0].trim();
+    const timeParts = timeClean.split(':').map(Number);
+    if (!isNaN(timeParts[0])) hours = timeParts[0];
+    if (!isNaN(timeParts[1])) mins = timeParts[1];
+  }
+
+  return new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, mins, 0).getTime();
+}
+
+/**
+ * Determines the default game to focus on:
+ * 1. An in-progress / live game (scores entered, or kickoff has passed & not finished)
+ * 2. A recently finished game within the 3-day buffer window (so users can see what score they got)
+ * 3. The next upcoming game
+ * 4. Fallbacks (last finished game or first game of season)
+ */
+export function getDefaultFocusedGame(games, now = Date.now()) {
+  if (!games || games.length === 0) return null;
+
+  const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+  const GAME_DURATION_MS = 4 * 60 * 60 * 1000; // ~4 hours estimated game duration
+
+  // Chronologically sort all games by start date/time
+  const sortedGames = [...games].sort((a, b) => {
+    const timeA = getGameStartTimestamp(a) || 0;
+    const timeB = getGameStartTimestamp(b) || 0;
+    return timeA - timeB;
+  });
+
+  // 1. Check for an active in-progress / live game
+  const liveGame = sortedGames.find(g => !isGameFinished(g) && g.home_score !== null && g.away_score !== null);
+  if (liveGame) return liveGame;
+
+  // Also check if game kickoff has passed recently (within last 5 hours) and is not marked finished
+  const currentOngoing = sortedGames.find(g => {
+    if (isGameFinished(g)) return false;
+    const start = getGameStartTimestamp(g);
+    return Boolean(start && now >= start && (now - start) <= (5 * 60 * 60 * 1000));
+  });
+  if (currentOngoing) return currentOngoing;
+
+  // 2. Check for a recently finished game within the 3-day buffer
+  const finishedGames = sortedGames
+    .filter(g => isGameFinished(g) || (g.home_score !== null && g.away_score !== null))
+    .sort((a, b) => {
+      const timeA = getGameStartTimestamp(a) || 0;
+      const timeB = getGameStartTimestamp(b) || 0;
+      return timeB - timeA; // Descending (most recent first)
+    });
+
+  if (finishedGames.length > 0) {
+    const mostRecentFinished = finishedGames[0];
+    const startTime = getGameStartTimestamp(mostRecentFinished);
+    if (startTime) {
+      const bufferEndTime = startTime + GAME_DURATION_MS + THREE_DAYS_MS;
+      if (now <= bufferEndTime) {
+        return mostRecentFinished;
+      }
+    }
+  }
+
+  // 3. Next upcoming game
+  const upcomingGames = sortedGames.filter(g => {
+    if (isGameFinished(g) || (g.home_score !== null && g.away_score !== null)) return false;
+    return true;
+  });
+
+  if (upcomingGames.length > 0) {
+    return upcomingGames[0];
+  }
+
+  // 4. Fallback: if all games completed, default to the last finished game
+  if (finishedGames.length > 0) {
+    return finishedGames[0];
+  }
+
+  return sortedGames[0];
+}

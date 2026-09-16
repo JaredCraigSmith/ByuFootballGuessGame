@@ -9,8 +9,10 @@ import {
   isGameFinished,
   hexToRgba,
   calculatePointsFromDiff,
-  calculateCumulativePoints
-} from './scoring.js?v=2';
+  calculateCumulativePoints,
+  getDefaultFocusedGame,
+  getGameStartTimestamp
+} from './scoring.js?v=3';
 
 // Application State
 const state = {
@@ -22,6 +24,7 @@ const state = {
   activeView: 'leaderboardView',
   leaderboardMode: 'overall', // 'overall' or 'weekly'
   selectedWeeklyGameId: null,
+  selectedGuessGameId: null,
   selectedPlayerColor: PRESET_PLAYER_COLORS[0],
   editingPlayerColor: PRESET_PLAYER_COLORS[0],
   countdownInterval: null
@@ -220,6 +223,11 @@ async function init() {
   await loadData();
   restoreSession();
   renderAccountsDropdown();
+  const defaultGame = getDefaultFocusedGame(state.games);
+  if (defaultGame) {
+    state.selectedWeeklyGameId = defaultGame.id;
+    state.selectedGuessGameId = defaultGame.id;
+  }
   renderLeaderboard();
   renderSchedule();
   setupCountdown();
@@ -268,7 +276,7 @@ function setupEventListeners() {
     elements.btnOverallStandings.addEventListener('click', () => setLeaderboardMode('overall'));
   }
   if (elements.btnWeeklyLeaders) {
-    elements.btnWeeklyLeaders.addEventListener('click', () => setLeaderboardMode('weekly'));
+    elements.btnWeeklyLeaders.addEventListener('click', () => setLeaderboardMode('weekly', true));
   }
   if (elements.weeklyGameSelect) {
     elements.weeklyGameSelect.addEventListener('change', (e) => {
@@ -291,7 +299,10 @@ function setupEventListeners() {
   elements.createAccountForm.addEventListener('submit', handleCreateAccount);
 
   // Guesses & Players
-  elements.guessGameSelect.addEventListener('change', renderPlayerGuesses);
+  elements.guessGameSelect.addEventListener('change', (e) => {
+    state.selectedGuessGameId = parseInt(e.target.value, 10);
+    renderPlayerGuesses();
+  });
   elements.bulkGuessForm.addEventListener('submit', handleSaveGuesses);
   // Add & Edit Player Modal Toggles
   if (elements.showAddPlayerBtn) {
@@ -1004,7 +1015,7 @@ function initEditPlayerColorPicker(initialColor) {
 }
 
 // Leaderboard Mode Switcher
-function setLeaderboardMode(mode) {
+function setLeaderboardMode(mode, forceDefault = false) {
   state.leaderboardMode = mode;
   if (mode === 'overall') {
     elements.btnOverallStandings.classList.add('active');
@@ -1014,12 +1025,12 @@ function setLeaderboardMode(mode) {
     elements.btnWeeklyLeaders.classList.add('active');
     elements.btnOverallStandings.classList.remove('active');
     elements.weeklySelectorGroup.style.display = 'block';
-    populateWeeklySelector();
+    populateWeeklySelector(forceDefault);
   }
   renderLeaderboard();
 }
 
-function populateWeeklySelector() {
+function populateWeeklySelector(forceDefault = false) {
   elements.weeklyGameSelect.innerHTML = '';
   state.games.forEach(game => {
     const opt = document.createElement('option');
@@ -1035,10 +1046,10 @@ function populateWeeklySelector() {
     opt.textContent = `${game.home_team} vs ${game.away_team} (${dateFormatted})${labelSuffix}`;
     elements.weeklyGameSelect.appendChild(opt);
   });
-  if (!state.selectedWeeklyGameId && state.games.length > 0) {
-    const liveGame = state.games.find(g => !isGameFinished(g) && g.home_score !== null && g.away_score !== null);
-    const firstActive = liveGame || state.games.find(g => isGameFinished(g) || (g.home_score !== null && g.away_score !== null));
-    state.selectedWeeklyGameId = firstActive ? firstActive.id : state.games[0].id;
+
+  const defaultGame = getDefaultFocusedGame(state.games);
+  if (forceDefault || !state.selectedWeeklyGameId || !state.games.some(g => g.id === state.selectedWeeklyGameId)) {
+    state.selectedWeeklyGameId = defaultGame ? defaultGame.id : (state.games[0] ? state.games[0].id : null);
   }
   if (state.selectedWeeklyGameId) {
     elements.weeklyGameSelect.value = state.selectedWeeklyGameId;
@@ -2080,8 +2091,13 @@ function switchView(viewId) {
       loadData(true).then(() => renderAccountsDropdown());
     }
   }
-  if (viewId === 'leaderboardView') renderLeaderboard();
-  if (viewId === 'guessesView') renderGuessesView();
+  if (viewId === 'leaderboardView') {
+    if (state.leaderboardMode === 'weekly') {
+      populateWeeklySelector(true);
+    }
+    renderLeaderboard();
+  }
+  if (viewId === 'guessesView') renderGuessesView(true);
   if (viewId === 'gamesView') renderSchedule();
   if (viewId === 'prizesView') renderPrizesView();
   if (viewId === 'adminView') renderAdminView();
@@ -2521,7 +2537,7 @@ function renderLeaderboard() {
 }
 
 // Render Guesses View
-function renderGuessesView() {
+function renderGuessesView(isNavigating = false) {
   if (!state.currentAccount) {
     switchView('loginView');
     return;
@@ -2537,6 +2553,14 @@ function renderGuessesView() {
     opt.textContent = `${game.home_team} vs ${game.away_team} (${dateFormatted})${isCompleted ? ' - Final' : ''}`;
     elements.guessGameSelect.appendChild(opt);
   });
+
+  const defaultGame = getDefaultFocusedGame(state.games);
+  if (isNavigating || !state.selectedGuessGameId || !state.games.some(g => g.id === state.selectedGuessGameId)) {
+    state.selectedGuessGameId = defaultGame ? defaultGame.id : (state.games[0] ? state.games[0].id : null);
+  }
+  if (state.selectedGuessGameId) {
+    elements.guessGameSelect.value = state.selectedGuessGameId;
+  }
 
   renderPlayerGuesses();
 }
