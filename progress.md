@@ -118,3 +118,22 @@
   - **Family Score Simulation Sandbox**: Visual slider (0 to 4,000+ pts) and quick jump buttons to watch all badges transition states dynamically in real-time.
   - **Experimental Badge Creator**: Form to mock and develop new upcoming season reward badges with custom artwork and threshold requirements.
   - **Main Game Integration**: Direct launch banner inside the Admin Control Panel of `index.html` and dynamic prize vault filtering in `js/app.js`.
+
+- [x] **Phase 11: Away Game Score Inversion Fix & Weekly Leader Diff Tracking**
+  - **Away Game Score Calculation Fix (`js/scoring.js`)**:
+    - Resolved inversion bug where `calculateGuessPoints` compared `game.home_score` against `guess.home` regardless of matchup location.
+    - Added `calculateGuessDiff(guess, game)` exported helper function that accurately computes total points off (`|actualByu - guessByu| + |actualOpp - guessOpp|`).
+    - Fixed winner bonus check so picking BYU to win properly matches actual game winner when BYU is the away team.
+    - Updated `computeLeaderboard` and `computeWeeklyLeaderboard` to accurately award exact hit badges (`🎯`) during away games.
+  - **Weekly Leaders Diff Display (`js/app.js`)**:
+    - Displayed `Diff: <val>` on every player row in the right column beneath their weekly points tag (`.leader-right`).
+    - Added `Diff: <val>` to the guess subtitle line (`.account-sub`).
+    - Enhanced guess readability by formatting guesses with team indicators (e.g. `BYU 41 - 23 Colorado State`).
+    - Included diff details on the Weekly Winner announcement card.
+  - **Submit Guesses Clarification (`js/app.js`)**:
+    - Updated score input labels to dynamically display `BYU (Away)` and `<Opponent> (Home)` during away games, or `BYU (Home)` and `<Opponent> (Away)` during home games.
+    - Added `Diff` to live and final points badges on individual guess cards.
+  - **Automated Test Coverage (`tests/scoring.test.js`, `test.html`)**:
+    - Added tests for `calculateGuessDiff` across home and away games.
+    - Added test assertions for away game points, winner bonuses, exact hit awards, and diff tracking on weekly leaderboards.
+

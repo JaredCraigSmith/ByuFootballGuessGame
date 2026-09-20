@@ -13,6 +13,7 @@ import {
   getDecaySigma,
   calculateExponentialScore,
   calculateGuessPoints,
+  calculateGuessDiff,
   calculatePointsFromDiff,
   calculateCumulativePoints,
   computeLeaderboard,
@@ -207,6 +208,42 @@ describe('calculateGuessPoints Function', () => {
     const points = calculateGuessPoints(guess, game, 0);
     // Diff is 0, points should be 250 without the 15 bonus
     assert.equal(points, 250);
+  });
+
+  it('should calculate away game points correctly without backwards inversion', () => {
+    // BYU is away team: CSU (home) 23, BYU (away) 41
+    const awayGame = {
+      home_team: 'Colorado State',
+      away_team: 'BYU',
+      home_score: 23,
+      away_score: 41,
+      game_finished: true
+    };
+    // Exact prediction: BYU 41 (home input), CSU 23 (away input)
+    const exactGuess = { home: 41, away: 23 };
+    const exactPoints = calculateGuessPoints(exactGuess, awayGame, 0);
+    assert.equal(exactPoints, 265, 'Exact prediction in away game must award max 250 + 15 winner bonus = 265');
+
+    // Close prediction picking BYU to win: BYU 35, CSU 24 (diff: |41-35| + |23-24| = 7)
+    const byuWinGuess = { home: 35, away: 24 };
+    const byuWinPts = calculateGuessPoints(byuWinGuess, awayGame, 0);
+
+    // Close prediction picking CSU to win: BYU 24, CSU 35 (diff: |41-24| + |23-35| = 29)
+    const csuWinGuess = { home: 24, away: 35 };
+    const csuWinPts = calculateGuessPoints(csuWinGuess, awayGame, 0);
+
+    assert.ok(byuWinPts > csuWinPts, 'Guess predicting BYU win should score much higher than backwards guess');
+  });
+
+  it('should calculate guess diff accurately for both home and away games via calculateGuessDiff', () => {
+    const homeGame = { home_team: 'BYU', away_team: 'Utah Tech', home_score: 63, away_score: 7, game_finished: true };
+    assert.equal(calculateGuessDiff({ home: 56, away: 6 }, homeGame), Math.abs(63 - 56) + Math.abs(7 - 6)); // 7 + 1 = 8
+    assert.equal(calculateGuessDiff({ home: 63, away: 7 }, homeGame), 0);
+
+    const awayGame = { home_team: 'Colorado State', away_team: 'BYU', home_score: 23, away_score: 41, game_finished: true };
+    assert.equal(calculateGuessDiff({ home: 41, away: 23 }, awayGame), 0);
+    assert.equal(calculateGuessDiff({ home: 35, away: 24 }, awayGame), Math.abs(41 - 35) + Math.abs(23 - 24)); // 6 + 1 = 7
+    assert.equal(calculateGuessDiff({ home: 35, away: 24 }, { ...awayGame, home_score: null, away_score: null, game_finished: false }), null);
   });
 });
 
@@ -423,7 +460,34 @@ describe('computeWeeklyLeaderboard Function', () => {
     assert.equal(result.standings[0].playerId, 101);
     assert.equal(result.standings[0].exactHit, true);
     assert.equal(result.standings[0].score, 265);
+    assert.equal(result.standings[0].diff, 0, 'Perfect guess must have diff 0');
     assert.equal(result.standings[0].rank, 1);
+
+    assert.equal(result.standings[1].playerId, 102);
+    assert.equal(result.standings[1].exactHit, false);
+    assert.equal(result.standings[1].diff, Math.abs(35 - 28) + Math.abs(21 - 24)); // 7 + 3 = 10
+  });
+
+  it('should calculate weekly leaderboard accurately for away games with diff and exactHit', () => {
+    const games = [
+      { id: 204, home_team: "Colorado State", away_team: "BYU", home_score: 23, away_score: 41, game_finished: true }
+    ];
+    const guesses = [
+      { game_id: 204, player_id: 101, home: 41, away: 23 }, // Perfect prediction: BYU 41, CSU 23
+      { game_id: 204, player_id: 102, home: 35, away: 24 }  // Close prediction: diff 7
+    ];
+
+    const result = computeWeeklyLeaderboard(204, samplePlayers, games, guesses, sampleAccounts);
+    assert.equal(result.isCompleted, true);
+    assert.equal(result.standings[0].playerId, 101);
+    assert.equal(result.standings[0].exactHit, true);
+    assert.equal(result.standings[0].diff, 0);
+    assert.equal(result.standings[0].score, 265);
+
+    assert.equal(result.standings[1].playerId, 102);
+    assert.equal(result.standings[1].exactHit, false);
+    assert.equal(result.standings[1].diff, 7);
+    assert.ok(result.standings[1].score > 0);
   });
 
   it('should mark game as live when score exists but game is not finished', () => {
@@ -437,6 +501,7 @@ describe('computeWeeklyLeaderboard Function', () => {
     const result = computeWeeklyLeaderboard(202, samplePlayers, games, guesses, sampleAccounts);
     assert.equal(result.isLive, true);
     assert.equal(result.isCompleted, false);
+    assert.equal(result.standings[0].diff, 0);
   });
 
   it('should show Pending or No Guess for games that have not started', () => {
@@ -453,7 +518,9 @@ describe('computeWeeklyLeaderboard Function', () => {
     const julie = result.standings.find(s => s.playerId === 102);
 
     assert.equal(jared.score, 'Pending');
+    assert.equal(jared.diff, null);
     assert.equal(julie.score, 'No Guess');
+    assert.equal(julie.diff, null);
   });
 });
 

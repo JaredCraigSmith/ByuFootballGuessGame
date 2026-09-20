@@ -101,6 +101,29 @@ export function calculateExponentialScore(totalDiff, gameIndex = 0, options = {}
 }
 
 /**
+ * Calculates total absolute score difference for a guess against a game,
+ * taking into account whether BYU is the home or away team.
+ */
+export function calculateGuessDiff(guess, game) {
+  if (!game || !guess) return null;
+  const isFinished = isGameFinished(game) || (game.home_score !== null && game.away_score !== null);
+  if (!isFinished || game.home_score === null || game.away_score === null || guess.home === null || guess.away === null) {
+    return null;
+  }
+
+  // In this app, guess.home is always BYU's predicted score, and guess.away is the Opponent's predicted score.
+  // If BYU is the away team, game.away_score is BYU's actual score and game.home_score is Opponent's actual score.
+  const isAway = Boolean(game.away_team && /byu/i.test(game.away_team));
+  const actualByu = isAway ? game.away_score : game.home_score;
+  const actualOpp = isAway ? game.home_score : game.away_score;
+
+  const guessByu = guess.home;
+  const guessOpp = guess.away;
+
+  return Math.abs(actualByu - guessByu) + Math.abs(actualOpp - guessOpp);
+}
+
+/**
  * Calculates game points for a guess against actual score using exponential model
  */
 export function calculateGuessPoints(guess, game, gameIndex = 0) {
@@ -109,13 +132,20 @@ export function calculateGuessPoints(guess, game, gameIndex = 0) {
     return null;
   }
 
-  const diffHome = Math.abs(game.home_score - guess.home);
-  const diffAway = Math.abs(game.away_score - guess.away);
-  const totalDiff = diffHome + diffAway;
+  const isAway = Boolean(game.away_team && /byu/i.test(game.away_team));
+  const actualByu = isAway ? game.away_score : game.home_score;
+  const actualOpp = isAway ? game.home_score : game.away_score;
 
-  // Exact Winner Bonus
-  const actualWinner = game.home_score > game.away_score ? 'home' : (game.home_score < game.away_score ? 'away' : 'tie');
-  const guessWinner = guess.home > guess.away ? 'home' : (guess.home < guess.away ? 'away' : 'tie');
+  const guessByu = guess.home;
+  const guessOpp = guess.away;
+
+  const diffByu = Math.abs(actualByu - guessByu);
+  const diffOpp = Math.abs(actualOpp - guessOpp);
+  const totalDiff = diffByu + diffOpp;
+
+  // Exact Winner Bonus: check if user picked the correct winner
+  const actualWinner = actualByu > actualOpp ? 'byu' : (actualByu < actualOpp ? 'opp' : 'tie');
+  const guessWinner = guessByu > guessOpp ? 'byu' : (guessByu < guessOpp ? 'opp' : 'tie');
   const hasWinnerBonus = (actualWinner === guessWinner && actualWinner !== 'tie');
 
   return calculateExponentialScore(totalDiff, gameIndex, {
@@ -223,7 +253,10 @@ export function computeLeaderboard(players, games, guesses, accounts) {
         const pts = calculateGuessPoints(g, game, idx);
         if (pts !== null) {
           gameScores.push(pts);
-          if (g.home === game.home_score && g.away === game.away_score) {
+          const isAway = Boolean(game.away_team && /byu/i.test(game.away_team));
+          const actualByu = isAway ? game.away_score : game.home_score;
+          const actualOpp = isAway ? game.home_score : game.away_score;
+          if (g.home === actualByu && g.away === actualOpp) {
             exactHits++;
           }
         } else {
@@ -251,7 +284,10 @@ export function computeLeaderboard(players, games, guesses, accounts) {
         const livePts = calculateGuessPoints(liveGuess, liveGame, liveGameIndex >= 0 ? liveGameIndex : 0);
         if (livePts !== null) {
           liveGameScore = livePts;
-          if (liveGuess.home === liveGame.home_score && liveGuess.away === liveGame.away_score) {
+          const isAway = Boolean(liveGame.away_team && /byu/i.test(liveGame.away_team));
+          const actualByu = isAway ? liveGame.away_score : liveGame.home_score;
+          const actualOpp = isAway ? liveGame.home_score : liveGame.away_score;
+          if (liveGuess.home === actualByu && liveGuess.away === actualOpp) {
             liveExactHit = true;
           }
         }
@@ -301,16 +337,22 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
   const hasScores = game.home_score !== null && game.away_score !== null;
   const hasStarted = isFinished || hasScores;
 
+  const isAway = Boolean(game.away_team && /byu/i.test(game.away_team));
+  const actualByu = isAway ? game.away_score : game.home_score;
+  const actualOpp = isAway ? game.home_score : game.away_score;
+
   const standings = players.map(player => {
     const account = accounts.find(a => a.id === player.account_id);
     const guess = guesses.find(g => g.game_id === gameId && g.player_id === player.id);
 
     let score = null;
+    let diff = null;
     let exactHit = false;
 
     if (guess && hasStarted) {
       score = calculateGuessPoints(guess, game, gameIndex);
-      if (guess.home === game.home_score && guess.away === game.away_score) {
+      diff = calculateGuessDiff(guess, game);
+      if (guess.home === actualByu && guess.away === actualOpp) {
         exactHit = true;
       }
     }
@@ -324,13 +366,18 @@ export function computeWeeklyLeaderboard(gameId, players, games, guesses, accoun
       guessHome: guess ? guess.home : null,
       guessAway: guess ? guess.away : null,
       score: score !== null ? score : (guess ? 'Pending' : 'No Guess'),
+      diff: diff !== null ? diff : null,
       exactHit,
       hasGuess: !!guess
     };
   });
 
   standings.sort((a, b) => {
-    if (typeof a.score === 'number' && typeof b.score === 'number') return b.score - a.score;
+    if (typeof a.score === 'number' && typeof b.score === 'number') {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.diff !== null && b.diff !== null) return a.diff - b.diff;
+      return 0;
+    }
     if (typeof a.score === 'number') return -1;
     if (typeof b.score === 'number') return 1;
     return 0;

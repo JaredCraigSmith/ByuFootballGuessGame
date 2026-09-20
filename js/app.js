@@ -10,9 +10,11 @@ import {
   hexToRgba,
   calculatePointsFromDiff,
   calculateCumulativePoints,
+  calculateGuessPoints,
+  calculateGuessDiff,
   getDefaultFocusedGame,
   getGameStartTimestamp
-} from './scoring.js?v=4';
+} from './scoring.js?v=5';
 
 // Application State
 const state = {
@@ -2583,6 +2585,7 @@ function renderLeaderboard() {
       const topScore = standings[0].score;
       const winners = standings.filter(s => s.score === topScore);
       const winnerNames = winners.map(w => w.playerName).join(', ');
+      const bestDiff = standings[0].diff !== null ? ` (Diff: ${standings[0].diff})` : '';
       
       const winnerCard = document.createElement('div');
       winnerCard.className = 'card';
@@ -2594,21 +2597,31 @@ function renderLeaderboard() {
       winnerCard.innerHTML = `
         <div style="font-size: 1.1rem; font-weight:800; color:var(--byu-gold);">🥇 WEEKLY WINNER(S) 🥇</div>
         <div style="font-size: 1.2rem; font-weight: 900; color: white; margin-top: 4px;">${winnerNames}</div>
-        <div style="font-size: 0.85rem; color: var(--text-muted);">${topScore} points earned this week</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">${topScore} points earned this week${bestDiff}</div>
       `;
       elements.leaderboardList.appendChild(winnerCard);
     }
+
+    const isAway = game ? Boolean(game.away_team && /byu/i.test(game.away_team)) : false;
+    const oppTeam = game ? (isAway ? game.home_team : game.away_team) : 'Opponent';
 
     standings.forEach(player => {
       const item = document.createElement('div');
       item.className = 'leader-item';
       const rankClass = player.rank <= 3 ? `rank-${player.rank}` : '';
       const exactBadge = player.exactHit ? ' 🎯' : '';
-      const guessStr = player.hasGuess ? `${player.guessHome} - ${player.guessAway}` : 'No Guess';
+      const guessStr = player.hasGuess ? `BYU ${player.guessHome} - ${player.guessAway} ${oppTeam}` : 'No Guess';
       const scoreStr = typeof player.score === 'number' ? `${player.score} pts` : player.score;
       const playerColor = player.color || getPlayerColor(player.playerId);
       const bgStyle = `background: linear-gradient(135deg, ${hexToRgba(playerColor, 0.38)} 0%, ${hexToRgba(playerColor, 0.16)} 100%); border: 1px solid ${hexToRgba(playerColor, 0.65)}; box-shadow: 0 4px 16px ${hexToRgba(playerColor, 0.25)};`;
       item.setAttribute('style', bgStyle);
+
+      const diffRightHtml = player.diff !== null ? `
+        <div class="diff-tag" style="font-size:0.75rem; font-weight:700; color:rgba(241,245,249,0.85); margin-top:2px;">
+          Diff: <span style="color:var(--byu-gold); font-weight:800;">${player.diff}</span>
+        </div>
+      ` : '';
+      const diffSubHtml = player.diff !== null ? ` • Diff: <strong style="color:var(--byu-gold);">${player.diff}</strong>` : '';
 
       item.innerHTML = `
         <div class="leader-left">
@@ -2616,11 +2629,12 @@ function renderLeaderboard() {
           <div class="player-dot" style="background:${playerColor}; box-shadow: 0 0 10px ${playerColor}; border: 2px solid rgba(255,255,255,0.9);"></div>
           <div class="player-info">
             <div class="player-name">${player.playerName}${exactBadge}</div>
-            <div class="account-sub">Guess: <strong style="color:#FFF;">${guessStr}</strong> • ${player.accountName}</div>
+            <div class="account-sub">Guess: <strong style="color:#FFF;">${guessStr}</strong>${diffSubHtml} • ${player.accountName}</div>
           </div>
         </div>
-        <div class="leader-right">
+        <div class="leader-right" style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px;">
           <div class="score-tag">${scoreStr}</div>
+          ${diffRightHtml}
         </div>
       `;
       elements.leaderboardList.appendChild(item);
@@ -2730,14 +2744,21 @@ function renderPlayerGuesses() {
     const awayVal = existingGuess ? (existingGuess.away !== null ? existingGuess.away : '') : '';
     const currentColor = getPlayerColor(player.id);
 
+    const isAway = selectedGame ? Boolean(selectedGame.away_team && /byu/i.test(selectedGame.away_team)) : false;
+    const oppTeam = selectedGame ? (isAway ? selectedGame.home_team : selectedGame.away_team) : 'Opponent';
+    const byuLabel = isAway ? 'BYU (Away)' : 'BYU (Home)';
+    const oppLabel = isAway ? `${oppTeam} (Home)` : `${oppTeam} (Away)`;
+
     let pointsBadgeHtml = '';
     if ((isLive || isFinished) && existingGuess && existingGuess.home !== null && existingGuess.away !== null && selectedGame) {
       const pts = calculateGuessPoints(existingGuess, selectedGame, gameIndex);
+      const diff = calculateGuessDiff(existingGuess, selectedGame);
+      const diffText = diff !== null ? ` • Diff ${diff}` : '';
       if (pts !== null) {
         if (isFinished) {
-          pointsBadgeHtml = `<span style="font-size:0.75rem; font-weight:800; color:var(--byu-gold); background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:10px; border:1px solid rgba(255,199,44,0.4);">🏆 ${pts} pts earned</span>`;
+          pointsBadgeHtml = `<span style="font-size:0.75rem; font-weight:800; color:var(--byu-gold); background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:10px; border:1px solid rgba(255,199,44,0.4);">🏆 ${pts} pts earned${diffText}</span>`;
         } else {
-          pointsBadgeHtml = `<span style="font-size:0.75rem; font-weight:800; color:#F59E0B; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:10px; border:1px solid rgba(245,158,11,0.4);">🔴 ${pts} live pts</span>`;
+          pointsBadgeHtml = `<span style="font-size:0.75rem; font-weight:800; color:#F59E0B; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:10px; border:1px solid rgba(245,158,11,0.4);">🔴 ${pts} live pts${diffText}</span>`;
         }
       }
     }
@@ -2760,11 +2781,11 @@ function renderPlayerGuesses() {
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div>
-          <label style="font-size:0.75rem; color:rgba(241,245,249,0.85); display:block; margin-bottom:4px; font-weight:600;">BYU / Home</label>
+          <label style="font-size:0.75rem; color:rgba(241,245,249,0.85); display:block; margin-bottom:4px; font-weight:600;">${byuLabel}</label>
           <input type="number" class="form-control guess-home" data-player-id="${player.id}" value="${homeVal}" placeholder="Score" min="0" ${isLocked ? 'disabled' : ''} />
         </div>
         <div>
-          <label style="font-size:0.75rem; color:rgba(241,245,249,0.85); display:block; margin-bottom:4px; font-weight:600;">Opponent / Away</label>
+          <label style="font-size:0.75rem; color:rgba(241,245,249,0.85); display:block; margin-bottom:4px; font-weight:600;">${oppLabel}</label>
           <input type="number" class="form-control guess-away" data-player-id="${player.id}" value="${awayVal}" placeholder="Score" min="0" ${isLocked ? 'disabled' : ''} />
         </div>
       </div>

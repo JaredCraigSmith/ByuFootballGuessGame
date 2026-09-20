@@ -315,6 +315,7 @@
       isGameFinished,
       calculateExponentialScore,
       calculateGuessPoints,
+      calculateGuessDiff,
       calculateCumulativePoints,
       computeLeaderboard,
       computeWeeklyLeaderboard,
@@ -448,6 +449,16 @@
         const guessWithout = { home: 21, away: 24 };
         assert.ok(calculateGuessPoints(guessWith, game, 0) > calculateGuessPoints(guessWithout, game, 0));
       });
+      s4.test('calculates away game points correctly without backwards inversion', () => {
+        const awayGame = { home_team: 'Colorado State', away_team: 'BYU', home_score: 23, away_score: 41, game_finished: true };
+        assert.equal(calculateGuessPoints({ home: 41, away: 23 }, awayGame, 0), 265);
+        assert.ok(calculateGuessPoints({ home: 35, away: 24 }, awayGame, 0) > calculateGuessPoints({ home: 24, away: 35 }, awayGame, 0));
+      });
+      s4.test('calculates guess diff correctly via calculateGuessDiff', () => {
+        const awayGame = { home_team: 'Colorado State', away_team: 'BYU', home_score: 23, away_score: 41, game_finished: true };
+        assert.equal(calculateGuessDiff({ home: 41, away: 23 }, awayGame), 0);
+        assert.equal(calculateGuessDiff({ home: 35, away: 24 }, awayGame), 7);
+      });
       suites.push(s4);
 
       // Suite 5: Cumulative & Drop Rules
@@ -510,6 +521,31 @@
         assert.equal(res.standings[0].droppedScores.length, 1);
       });
       suites.push(s6);
+
+      // Suite 6B: Weekly Leaders Calculation & Diff
+      const s6b = new Suite('Weekly Leaders Calculation & Diff Tracking');
+      s6b.test('calculates weekly standings and diff for home and away games', () => {
+        const sampleAccounts = [{ id: 1, name: "J&J Smith's" }];
+        const samplePlayers = [
+          { id: 101, name: "Jared", account_id: 1 },
+          { id: 102, name: "Julie", account_id: 1 }
+        ];
+        const games = [
+          { id: 204, home_team: "Colorado State", away_team: "BYU", home_score: 23, away_score: 41, game_finished: true }
+        ];
+        const guesses = [
+          { game_id: 204, player_id: 101, home: 41, away: 23 }, // Exact hit
+          { game_id: 204, player_id: 102, home: 35, away: 24 }  // Diff 7
+        ];
+        const res = computeWeeklyLeaderboard(204, samplePlayers, games, guesses, sampleAccounts);
+        assert.equal(res.standings[0].playerId, 101);
+        assert.equal(res.standings[0].exactHit, true);
+        assert.equal(res.standings[0].diff, 0);
+        assert.equal(res.standings[0].score, 265);
+        assert.equal(res.standings[1].playerId, 102);
+        assert.equal(res.standings[1].diff, 7);
+      });
+      suites.push(s6b);
 
       // Suite 7: Timestamps & Game Focus
       const s7 = new Suite('Game Timestamps & Smart Focus');
