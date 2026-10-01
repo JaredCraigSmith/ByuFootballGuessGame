@@ -1499,7 +1499,7 @@ function connectTurbulenceAudioGain() {
     try {
       turbMediaSource = drumAudioCtx.createMediaElementSource(turbAudio);
       turbGainNode = drumAudioCtx.createGain();
-      turbGainNode.gain.value = 2.4; // 240% volume boost for soundtrack
+      turbGainNode.gain.value = 1.4; // Balanced music level so drums & claps punch through loud and clear
       turbMediaSource.connect(turbGainNode);
       turbGainNode.connect(drumAudioCtx.destination);
     } catch (e) {
@@ -1512,21 +1512,36 @@ function playSynthesizedDrumSound() {
   initDrumAudioCtx();
   if (!drumAudioCtx) return;
 
-  const osc = drumAudioCtx.createOscillator();
-  const oscGain = drumAudioCtx.createGain();
+  const now = drumAudioCtx.currentTime;
 
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(85, drumAudioCtx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(0.01, drumAudioCtx.currentTime + 0.3);
+  // 1. Deep Sub-Bass Thump (stadium kick body)
+  const subOsc = drumAudioCtx.createOscillator();
+  const subGain = drumAudioCtx.createGain();
+  subOsc.type = 'sine';
+  subOsc.frequency.setValueAtTime(95, now);
+  subOsc.frequency.exponentialRampToValueAtTime(28, now + 0.32);
 
-  // Balanced level so music stays loud and clear
-  oscGain.gain.setValueAtTime(0.38, drumAudioCtx.currentTime);
-  oscGain.gain.exponentialRampToValueAtTime(0.001, drumAudioCtx.currentTime + 0.3);
+  subGain.gain.setValueAtTime(0.95, now);
+  subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
 
-  osc.connect(oscGain);
-  oscGain.connect(drumAudioCtx.destination);
+  subOsc.connect(subGain);
+  subGain.connect(drumAudioCtx.destination);
 
-  const bufferSize = drumAudioCtx.sampleRate * 0.2;
+  // 2. Punchy Mid-Bass Attack (stadium chest thud presence)
+  const punchOsc = drumAudioCtx.createOscillator();
+  const punchGain = drumAudioCtx.createGain();
+  punchOsc.type = 'triangle';
+  punchOsc.frequency.setValueAtTime(140, now);
+  punchOsc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
+
+  punchGain.gain.setValueAtTime(0.65, now);
+  punchGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+  punchOsc.connect(punchGain);
+  punchGain.connect(drumAudioCtx.destination);
+
+  // 3. Crisp Mallet Strike Impact (drum skin attack)
+  const bufferSize = drumAudioCtx.sampleRate * 0.22;
   const buffer = drumAudioCtx.createBuffer(1, bufferSize, drumAudioCtx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
@@ -1538,20 +1553,23 @@ function playSynthesizedDrumSound() {
 
   const filter = drumAudioCtx.createBiquadFilter();
   filter.type = 'lowpass';
-  filter.frequency.value = 350;
+  filter.frequency.value = 450;
 
   const noiseGain = drumAudioCtx.createGain();
-  noiseGain.gain.setValueAtTime(0.18, drumAudioCtx.currentTime);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, drumAudioCtx.currentTime + 0.25);
+  noiseGain.gain.setValueAtTime(0.48, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
 
   noise.connect(filter);
   filter.connect(noiseGain);
   noiseGain.connect(drumAudioCtx.destination);
 
-  osc.start();
-  noise.start();
-  osc.stop(drumAudioCtx.currentTime + 0.3);
-  noise.stop(drumAudioCtx.currentTime + 0.25);
+  subOsc.start(now);
+  punchOsc.start(now);
+  noise.start(now);
+
+  subOsc.stop(now + 0.34);
+  punchOsc.stop(now + 0.14);
+  noise.stop(now + 0.24);
 }
 
 function playSynthesizedGroupClapSound(intensity = 1.0) {
@@ -1559,8 +1577,8 @@ function playSynthesizedGroupClapSound(intensity = 1.0) {
   if (!drumAudioCtx) return;
 
   const now = drumAudioCtx.currentTime;
-  // Intensity scales clapper density: 5 claps at start -> 24 layered clappers with crowd spread at top!
-  const clapperCount = Math.round(5 + intensity * 8);
+  // Intensity scales clapper density: 8 claps at start -> 30+ layered clappers with crowd spread at top!
+  const clapperCount = Math.round(8 + intensity * 10);
 
   for (let c = 0; c < clapperCount; c++) {
     // Micro-delay between crowd hands clapping (0ms to 55ms)
@@ -1579,25 +1597,26 @@ function playSynthesizedGroupClapSound(intensity = 1.0) {
 
     const filter = drumAudioCtx.createBiquadFilter();
     filter.type = 'bandpass';
-    // Varied center frequency across crowd members (800Hz to 1800Hz)
-    filter.frequency.value = 850 + Math.random() * 950;
+    // Varied center frequency across crowd members (800Hz to 1900Hz)
+    filter.frequency.value = 850 + Math.random() * 1050;
     filter.Q.value = 0.85 + Math.random() * 0.5;
 
     const gain = drumAudioCtx.createGain();
-    const clapperVol = (0.07 + Math.random() * 0.06) * Math.min(1.6, 0.8 + intensity * 0.4);
+    // Loud, crisp crowd slap
+    const clapperVol = (0.20 + Math.random() * 0.14) * Math.min(2.2, 1.1 + intensity * 0.5);
 
     gain.gain.setValueAtTime(0, clapTime);
-    gain.gain.setValueAtTime(clapperVol * 0.8, clapTime + 0.004);
-    gain.gain.setValueAtTime(clapperVol * 0.2, clapTime + 0.014);
-    gain.gain.setValueAtTime(clapperVol, clapTime + 0.024);
-    gain.gain.exponentialRampToValueAtTime(0.0001, clapTime + 0.16 + Math.random() * 0.06);
+    gain.gain.setValueAtTime(clapperVol * 1.2, clapTime + 0.004);
+    gain.gain.setValueAtTime(clapperVol * 0.35, clapTime + 0.012);
+    gain.gain.setValueAtTime(clapperVol * 1.4, clapTime + 0.022);
+    gain.gain.exponentialRampToValueAtTime(0.0001, clapTime + 0.18 + Math.random() * 0.06);
 
     noise.connect(filter);
     filter.connect(gain);
     gain.connect(drumAudioCtx.destination);
 
     noise.start(clapTime);
-    noise.stop(clapTime + 0.25);
+    noise.stop(clapTime + 0.26);
   }
 }
 
