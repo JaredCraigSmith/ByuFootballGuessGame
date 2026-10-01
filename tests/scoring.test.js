@@ -19,7 +19,9 @@ import {
   computeLeaderboard,
   computeWeeklyLeaderboard,
   getGameStartTimestamp,
-  getDefaultFocusedGame
+  getDefaultFocusedGame,
+  isBadgeTestMode,
+  setBadgeTestModeState
 } from '../js/scoring.js';
 
 describe('Player Color & Styling Helpers', () => {
@@ -581,3 +583,24 @@ describe('getGameStartTimestamp & getDefaultFocusedGame', () => {
     assert.equal(focused.id, 2, 'Should advance to Game 2 after buffer expired');
   });
 });
+
+describe('Admin Badge Testing Mode State Helpers', () => {
+  it('should default to false when localStorage is empty', () => {
+    localStorage.clear();
+    assert.equal(isBadgeTestMode(), false);
+  });
+
+  it('should toggle to true and persist in localStorage', () => {
+    localStorage.clear();
+    setBadgeTestModeState(true);
+    assert.equal(isBadgeTestMode(), true);
+    assert.equal(localStorage.getItem('byu_admin_test_badges_mode'), 'true');
+  });
+
+  it('should toggle to false and persist in localStorage', () => {
+    setBadgeTestModeState(false);
+    assert.equal(isBadgeTestMode(), false);
+    assert.equal(localStorage.getItem('byu_admin_test_badges_mode'), 'false');
+  });
+});
+

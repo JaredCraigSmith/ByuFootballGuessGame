@@ -288,21 +288,128 @@
 
       <!-- Admin Sub View 1: Games & Scores -->
       <div id="adminGamesSubView">
-        <!-- Admin Badge Dev Lab Promo Card -->
-        <div class="card" style="background: linear-gradient(135deg, rgba(0, 46, 93, 0.45) 0%, rgba(255, 199, 44, 0.12) 100%); border: 1px solid var(--byu-gold); margin-bottom: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div>
-              <h4 style="color: var(--byu-gold); font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
-                <span>🎖️</span>
-                <span>Admin Badge Dev & Testing Lab</span>
-              </h4>
+        <!-- Admin Badge Dev & Testing Lab Card -->
+        <div class="card admin-badge-card" style="background: linear-gradient(135deg, rgba(0, 46, 93, 0.55) 0%, rgba(255, 199, 44, 0.15) 100%); border: 1.5px solid var(--byu-gold); margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div style="flex: 1; min-width: 240px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span style="font-size: 1.3rem;">🎖️</span>
+                <h4 style="color: var(--byu-gold); font-size: 1.1rem; font-weight: 800; margin: 0;">
+                  Badge Dev & Testing Lab
+                </h4>
+                <span id="badgeTestStatusPill" class="badge-status-pill off">OFF</span>
+              </div>
               <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">
-                Test unlocked/locked states, run interactive animations, and toggle enabled badges for this device.
+                Toggle test mode to test and preview all 6 prize badges without requiring family points.
               </p>
             </div>
-            <a href="admin-badges.html" target="_blank" class="btn btn-gold" style="text-decoration: none; padding: 8px 18px; font-weight: 800; font-size: 0.85rem; white-space: nowrap;">
-              Open Badge Dev Lab ↗
-            </a>
+
+            <!-- The Toggle Switch & Full Lab link -->
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <label class="badge-toggle-label" for="adminTestBadgesToggle" title="Toggle Badge Testing Mode">
+                <span style="font-size: 0.85rem; font-weight: 700; color: #FFF;">Test Badges</span>
+                <div class="ios-switch">
+                  <input type="checkbox" id="adminTestBadgesToggle" />
+                  <span class="ios-slider"></span>
+                </div>
+              </label>
+              <a href="admin-badges.html" target="_blank" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 0.78rem; white-space: nowrap;" title="Open Standalone Desktop Badge Lab">
+                Full Lab ↗
+              </a>
+            </div>
+          </div>
+
+          <!-- Interactive Test Panel (Shown when toggle is ON) -->
+          <div id="adminBadgeTestPanel" style="display: none; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255, 199, 44, 0.25);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+              <div style="font-size: 0.85rem; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 6px;">
+                <span>🧪</span>
+                <span>Badge Testers (Click to Test):</span>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" id="btnAdminTestAllBadges" class="btn btn-gold" style="width: auto; padding: 5px 12px; font-size: 0.75rem; font-weight: 800;">
+                  🚀 Trigger All Celebrations
+                </button>
+                <button type="button" id="btnAdminGoToPrizes" class="btn btn-secondary" style="width: auto; padding: 5px 12px; font-size: 0.75rem;">
+                  🎁 Test in Vault Tab ↗
+                </button>
+              </div>
+            </div>
+
+            <!-- Grid of 6 Badges -->
+            <div class="admin-badge-grid">
+              <!-- Badge 1: Cosmo Dance -->
+              <div class="admin-badge-item">
+                <img src="assets/cosmo_head.jpg" class="admin-badge-thumb" alt="Cosmo Mascot" />
+                <div class="admin-badge-info">
+                  <div class="admin-badge-name">#1 Cosmo Mascot Dance</div>
+                  <div class="admin-badge-desc">Full-screen dance & confetti</div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm test-badge-btn" data-badge="1">
+                  ▶ Test Dance
+                </button>
+              </div>
+
+              <!-- Badge 2: Pump Up Song -->
+              <div class="admin-badge-item">
+                <img src="assets/music_badge.jpg" class="admin-badge-thumb" alt="Pump Up Song" />
+                <div class="admin-badge-info">
+                  <div class="admin-badge-name">#2 BYU Pump Up Song</div>
+                  <div class="admin-badge-desc">Stadium song + live equalizer</div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm test-badge-btn" data-badge="2">
+                  ▶ Test Music
+                </button>
+              </div>
+
+              <!-- Badge 3: Fire Knife Dancer -->
+              <div class="admin-badge-item">
+                <img src="assets/fire_spinner_badge.jpg" class="admin-badge-thumb" alt="Fire Knife" />
+                <div class="admin-badge-info">
+                  <div class="admin-badge-name">#3 Polynesian Fire Knife</div>
+                  <div class="admin-badge-desc">Flaming staff toss show</div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm test-badge-btn" data-badge="3">
+                  ▶ Test Fire Show
+                </button>
+              </div>
+
+              <!-- Badge 4: Stadium Cougar Wave -->
+              <div class="admin-badge-item">
+                <img src="assets/stadium_badge.jpg" class="admin-badge-thumb" alt="Cougar Wave" />
+                <div class="admin-badge-info">
+                  <div class="admin-badge-name">#4 Stadium Cougar Wave</div>
+                  <div class="admin-badge-desc">1,600+ fan stadium wave</div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm test-badge-btn" data-badge="4">
+                  ▶ Test Wave
+                </button>
+              </div>
+
+              <!-- Badge 5: Game Day Drums -->
+              <div class="admin-badge-item">
+                <img src="assets/drum_badge.jpg" class="admin-badge-thumb" alt="Game Day Drums" />
+                <div class="admin-badge-info">
+                  <div class="admin-badge-name">#5 Game Day Kickoff Drums</div>
+                  <div class="admin-badge-desc">Tempo drum & stadium hype meter</div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm test-badge-btn" data-badge="5">
+                  ▶ Test Drums
+                </button>
+              </div>
+
+              <!-- Badge 6: Victory Fireworks -->
+              <div class="admin-badge-item">
+                <img src="assets/fireworks_badge.jpg" class="admin-badge-thumb" alt="Victory Fireworks" />
+                <div class="admin-badge-info">
+                  <div class="admin-badge-name">#6 Victory Fireworks</div>
+                  <div class="admin-badge-desc">Cougar victory confetti barrage</div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm test-badge-btn" data-badge="6">
+                  ▶ Test Fireworks
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -477,6 +584,22 @@
 
     <!-- Prizes View -->
     <section id="prizesView" class="view">
+      <!-- Admin Badge Testing Mode Alert Banner (Shown when test toggle is ON) -->
+      <div id="prizesTestModeBanner" class="prizes-test-banner" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.4rem;">🧪</span>
+            <div>
+              <strong style="color: var(--byu-gold); font-size: 0.95rem; display: block;">Admin Badge Test Mode Active</strong>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Points bypassed — All 6 secret badges are unlocked! Tap any present below to test animations & audio.</span>
+            </div>
+          </div>
+          <button type="button" id="btnExitTestMode" class="btn btn-secondary" style="width: auto; padding: 5px 14px; font-size: 0.78rem; font-weight: 700;">
+            ✕ Exit Test Mode
+          </button>
+        </div>
+      </div>
+
       <!-- Account Average Score Banner -->
       <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(255, 199, 44, 0.2) 0%, rgba(0, 98, 184, 0.25) 100%); border: 1px solid var(--byu-gold);">
         <div style="font-size: 2.2rem; margin-bottom: 4px;">🎁</div>

@@ -135,5 +135,23 @@
     - Added `Diff` to live and final points badges on individual guess cards.
   - **Automated Test Coverage (`tests/scoring.test.js`, `test.html`)**:
     - Added tests for `calculateGuessDiff` across home and away games.
-    - Added test assertions for away game points, winner bonuses, exact hit awards, and diff tracking on weekly leaderboards.
+- [x] **Phase 12: Admin Badge Testing Mode & In-App Lab Controls**
+  - **Admin Tab Test Badges Toggle (`index.html`, `styles.css`, `js/app.js`)**:
+    - Added modern iOS-style toggle switch (`#adminTestBadgesToggle`) with animated glowing status pill (`#badgeTestStatusPill`) to the Admin view.
+    - When switched **ON**, an interactive testing showcase (`#adminBadgeTestPanel`) unfolds directly in the Admin tab with 1-tap tester buttons for all 6 badges:
+      - 🐾 **#1 Cosmo Mascot Dance**: Launches full-screen animated dancing Cosmo sprite with multi-burst celebratory confetti.
+      - 🎵 **#2 BYU Pump Up Song**: Plays/pauses the stadium pump-up track with live animated audio equalizer.
+      - 🔥 **#3 Polynesian Fire Knife**: Launches 4th-quarter Polynesian dancer performing spinning fire knife toss and spark burst.
+      - 🌊 **#4 Stadium Cougar Wave**: Launches 1,600+ fan synchronized Cougar stadium wave animation.
+      - 🥁 **#5 Game Day Kickoff Drums**: Launches tempo kickoff hype drum with stadium energy meter and crowd reaction gifs.
+      - 🎆 **#6 Victory Fireworks Celebration**: Launches full-screen Cougar victory confetti and fireworks barrage.
+    - Added quick-action buttons: `🚀 Trigger All Celebrations` and `🎁 Test in Vault Tab ↗`.
+  - **Full Family Prize Vault Integration (`prizesView`)**:
+    - When Test Mode is active, point threshold restrictions are bypassed across all prize cards in the Family Prize Vault tab (`prizesView`).
+    - All 6 mystery present boxes (including #6 Fireworks) are unlocked and unwrapped with official graphics, progress tracks set to 100%, and interactive click triggers.
+    - Added alert banner (`#prizesTestModeBanner`) at the top of the prize vault with a one-click `✕ Exit Test Mode` button.
+  - **Persistence & State Helpers (`js/scoring.js`)**:
+    - Exported `isBadgeTestMode()` and `setBadgeTestModeState(enable)` persisted via `localStorage` (`byu_admin_test_badges_mode`).
+  - **Automated Test Coverage (`tests/scoring.test.js`, `test.html`)**:
+    - Added dedicated test suite verifying default state, toggle persistence, and clean reset across CLI Node test runner and browser test suite (58 total tests passing).
 

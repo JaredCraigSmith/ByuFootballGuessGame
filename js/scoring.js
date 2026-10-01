@@ -479,3 +479,15 @@ export function getDefaultFocusedGame(games, now = Date.now()) {
 
   return sortedGames[0];
 }
+
+// Admin Badge Testing Mode State Helpers
+export function isBadgeTestMode() {
+  if (typeof localStorage === 'undefined') return false;
+  return localStorage.getItem('byu_admin_test_badges_mode') === 'true';
+}
+
+export function setBadgeTestModeState(enable) {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem('byu_admin_test_badges_mode', enable ? 'true' : 'false');
+}
+

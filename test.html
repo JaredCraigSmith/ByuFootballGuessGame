@@ -321,7 +321,9 @@
       computeWeeklyLeaderboard,
       getGameStartTimestamp,
       getDefaultFocusedGame,
-      getDecaySigma
+      getDecaySigma,
+      isBadgeTestMode,
+      setBadgeTestModeState
     } from './js/scoring.js';
     import { SupabaseAPI } from './js/supabase.js';
 
@@ -571,6 +573,25 @@
         assert.equal(getDefaultFocusedGame(games, now).id, 1);
       });
       suites.push(s7);
+
+      // Suite 7b: Admin Badge Testing Mode
+      const s7b = new Suite('Admin Badge Testing Mode State');
+      s7b.test('defaults to false when localStorage is clear', () => {
+        localStorage.clear();
+        assert.equal(isBadgeTestMode(), false);
+      });
+      s7b.test('toggles to true and persists state', () => {
+        localStorage.clear();
+        setBadgeTestModeState(true);
+        assert.equal(isBadgeTestMode(), true);
+        assert.equal(localStorage.getItem('byu_admin_test_badges_mode'), 'true');
+      });
+      s7b.test('toggles to false and persists state', () => {
+        setBadgeTestModeState(false);
+        assert.equal(isBadgeTestMode(), false);
+        assert.equal(localStorage.getItem('byu_admin_test_badges_mode'), 'false');
+      });
+      suites.push(s7b);
 
       // Suite 8: Supabase API Service (Strictly Mocked)
       const s8 = new Suite('Supabase API Client (Strict Mocked)');
