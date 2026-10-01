@@ -159,5 +159,6 @@
   - **Switch to MP3 (`assets/Turbulance.mp3`)**: Replaced `Turbulence.mp4` with `assets/Turbulance.mp3` across `index.html` and `admin-badges.html` for optimized audio playback.
   - **Calibrated Peak Timing to 12s**: Updated peak / drop timing threshold to 12.0s (`TURBULENCE_PEAK_TIME = 12.0`) across `js/app.js` (`updateUI`, `processTempo`, `handleTempoDrumHit`, and `drumHypeInterval`), holding energy at 95% ("⏳ DROP INCOMING...") until the 12s beat drop triggers 100% MAXIMUM HYPE and confetti.
   - **Amplified Drum & Clap Volume**: Boosted drum sub-bass gain to 0.95, added a 0.65 triangle punch attack layer for chest thud, increased mallet strike noise to 0.48, expanded crowd clappers up to 30 with ~3x volume boost, and balanced soundtrack gain to 1.4 so drumming cuts cleanly through the mix.
+  - **Smooth Music Fade-In**: Implemented 2.5-second Web Audio API linear gain ramp (`fadeTurbulenceMusicIn`) when drumming triggers soundtrack playback at 80% energy, smoothly swelling music volume from silence up to full level before the peak drop.
 
 

@@ -1491,6 +1491,8 @@ function initDrumAudioCtx() {
   }
 }
 
+const TURBULENCE_TARGET_GAIN = 1.4;
+
 function connectTurbulenceAudioGain() {
   const turbAudio = document.getElementById('turbulenceAudio');
   if (!turbAudio) return;
@@ -1499,12 +1501,35 @@ function connectTurbulenceAudioGain() {
     try {
       turbMediaSource = drumAudioCtx.createMediaElementSource(turbAudio);
       turbGainNode = drumAudioCtx.createGain();
-      turbGainNode.gain.value = 1.4; // Balanced music level so drums & claps punch through loud and clear
+      turbGainNode.gain.value = 0.001; // Start at 0 for smooth fade-in
       turbMediaSource.connect(turbGainNode);
       turbGainNode.connect(drumAudioCtx.destination);
     } catch (e) {
       console.log("MediaElementSource note:", e);
     }
+  }
+}
+
+function fadeTurbulenceMusicIn(durationSec = 2.5) {
+  const turbAudio = document.getElementById('turbulenceAudio');
+  if (!turbAudio) return;
+  connectTurbulenceAudioGain();
+
+  if (drumAudioCtx && turbGainNode) {
+    const now = drumAudioCtx.currentTime;
+    turbGainNode.gain.cancelScheduledValues(now);
+    turbGainNode.gain.setValueAtTime(0.001, now);
+    turbGainNode.gain.linearRampToValueAtTime(TURBULENCE_TARGET_GAIN, now + durationSec);
+  } else {
+    turbAudio.volume = 0;
+    let vol = 0;
+    const step = 0.05;
+    const intervalTime = (durationSec * 1000) / (1.0 / step);
+    const fadeTimer = setInterval(() => {
+      vol = Math.min(1.0, vol + step);
+      turbAudio.volume = vol;
+      if (vol >= 1.0) clearInterval(fadeTimer);
+    }, intervalTime);
   }
 }
 
@@ -1660,6 +1685,10 @@ function initDrumHypeEngine() {
     if (turbAudio) {
       turbAudio.currentTime = 0;
     }
+    if (drumAudioCtx && turbGainNode) {
+      turbGainNode.gain.cancelScheduledValues(drumAudioCtx.currentTime);
+      turbGainNode.gain.setValueAtTime(0.001, drumAudioCtx.currentTime);
+    }
     // Animate meter smoothly back down to 0
     let decayTimer = setInterval(() => {
       drumHypeEnergy = Math.max(0, drumHypeEnergy - 5);
@@ -1756,10 +1785,10 @@ function initDrumHypeEngine() {
       drumReachedMax = true;
     }
 
-    // Start music ONLY when close to max (energy >= 80)
+    // Start music ONLY when close to max (energy >= 80) with smooth fade-in
     if (drumHypeEnergy >= 80 && turbAudio && turbAudio.paused) {
-      connectTurbulenceAudioGain();
       turbAudio.currentTime = 0;
+      fadeTurbulenceMusicIn(2.5);
       turbAudio.play().catch(e => console.log("Audio play allowed on user action", e));
     }
 
@@ -1867,6 +1896,10 @@ function initDrumHypeEngine() {
         if (turbAudio && !turbAudio.paused && (now - drumLastHitTime > 1800 || drumHypeEnergy < 50)) {
           turbAudio.pause();
           turbAudio.currentTime = 0;
+          if (drumAudioCtx && turbGainNode) {
+            turbGainNode.gain.cancelScheduledValues(drumAudioCtx.currentTime);
+            turbGainNode.gain.setValueAtTime(0.001, drumAudioCtx.currentTime);
+          }
           drumConfettiFired = false;
         }
       }
@@ -1896,6 +1929,10 @@ function stopDrumHypeEngine() {
     turbAudio.pause();
     turbAudio.currentTime = 0;
     turbAudio.onended = null;
+  }
+  if (drumAudioCtx && turbGainNode) {
+    turbGainNode.gain.cancelScheduledValues(drumAudioCtx.currentTime);
+    turbGainNode.gain.setValueAtTime(0.001, drumAudioCtx.currentTime);
   }
 
   drumHypeEnergy = 0;

@@ -1726,8 +1726,22 @@
         });
 
         if (drumHypeEnergy >= 80 && turbAudio && turbAudio.paused) {
-          turbAudio.play().catch(() => {});
+          fadeAudioIn(turbAudio);
         }
+      };
+
+      const fadeAudioIn = (audio, durationMs = 2500) => {
+        if (!audio) return;
+        audio.volume = 0;
+        audio.play().catch(() => {});
+        let v = 0;
+        const interval = 50;
+        const step = interval / durationMs;
+        const timer = setInterval(() => {
+          v = Math.min(1.0, v + step);
+          audio.volume = v;
+          if (v >= 1.0) clearInterval(timer);
+        }, interval);
       };
 
       if (drum) drum.onclick = hitDrum;
@@ -1749,7 +1763,16 @@
       if (hypeBar) hypeBar.style.width = '100%';
       document.querySelectorAll('.hype-gif-card').forEach(card => card.classList.add('active'));
       const turbAudio = document.getElementById('turbulenceAudio');
-      if (turbAudio) turbAudio.play().catch(() => {});
+      if (turbAudio) {
+        turbAudio.volume = 0;
+        turbAudio.play().catch(() => {});
+        let v = 0;
+        const timer = setInterval(() => {
+          v = Math.min(1.0, v + 0.04);
+          turbAudio.volume = v;
+          if (v >= 1.0) clearInterval(timer);
+        }, 50);
+      }
     });
 
     document.getElementById('closeDrumBtn').addEventListener('click', () => {
