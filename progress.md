@@ -157,6 +157,6 @@
 
 - [x] **Phase 13: Drum Hype Soundtrack & Peak Calibration**
   - **Switch to MP3 (`assets/Turbulance.mp3`)**: Replaced `Turbulence.mp4` with `assets/Turbulance.mp3` across `index.html` and `admin-badges.html` for optimized audio playback.
-  - **Calibrated Peak Timing to 13s**: Updated peak / drop timing threshold to 13.0s across `js/app.js` (`updateUI`, `processTempo`, `handleTempoDrumHit`, and `drumHypeInterval`), holding energy at 95% ("⏳ DROP INCOMING...") until the 13s beat drop triggers 100% MAXIMUM HYPE and confetti.
+  - **Calibrated Peak Timing to 12s**: Updated peak / drop timing threshold to 12.0s (`TURBULENCE_PEAK_TIME = 12.0`) across `js/app.js` (`updateUI`, `processTempo`, `handleTempoDrumHit`, and `drumHypeInterval`), holding energy at 95% ("⏳ DROP INCOMING...") until the 12s beat drop triggers 100% MAXIMUM HYPE and confetti.
 
 

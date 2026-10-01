@@ -1480,6 +1480,7 @@ let drumCurrentBPM = 0;
 let isDrumHypeActive = false;
 let turbMediaSource = null;
 let turbGainNode = null;
+const TURBULENCE_PEAK_TIME = 12.0;
 
 function initDrumAudioCtx() {
   if (!drumAudioCtx) {
@@ -1664,7 +1665,7 @@ function initDrumHypeEngine() {
   const updateUI = () => {
     if (hypeBar) hypeBar.style.width = `${drumHypeEnergy}%`;
 
-    const isPeakPassed = turbAudio && (turbAudio.currentTime >= 13.0 || turbAudio.ended);
+    const isPeakPassed = turbAudio && (turbAudio.currentTime >= TURBULENCE_PEAK_TIME || turbAudio.ended);
 
     if (hypeFrame && hypeTitle) {
       if (drumHypeEnergy >= 100 || drumReachedMax) {
@@ -1727,7 +1728,7 @@ function initDrumHypeEngine() {
       gain = 3.5; // Lenient starting tempo (40-69 BPM)
     }
 
-    const isPeakPassed = turbAudio && (turbAudio.currentTime >= 13.0 || turbAudio.ended);
+    const isPeakPassed = turbAudio && (turbAudio.currentTime >= TURBULENCE_PEAK_TIME || turbAudio.ended);
     const maxAllowedEnergy = isPeakPassed ? 100 : 95;
 
     drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + gain);
@@ -1792,7 +1793,7 @@ function initDrumHypeEngine() {
       if (interval < 2500 && interval > 40) {
         processTempo(interval);
       } else {
-        const isPeakPassed = turbAudio && (turbAudio.currentTime >= 13.0 || turbAudio.ended);
+        const isPeakPassed = turbAudio && (turbAudio.currentTime >= TURBULENCE_PEAK_TIME || turbAudio.ended);
         const maxAllowedEnergy = isPeakPassed ? 100 : 95;
         drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + 3.5);
         if (drumHypeEnergy >= 100) drumReachedMax = true;
@@ -1851,8 +1852,8 @@ function initDrumHypeEngine() {
         }
       }
 
-      // Check 13s cap: hold off reaching 100% until audio reaches 13 seconds (peak)
-      const isPeakPassed = turbAudio && (turbAudio.currentTime >= 13.0 || turbAudio.ended);
+      // Check peak cap: hold off reaching 100% until audio reaches peak (TURBULENCE_PEAK_TIME)
+      const isPeakPassed = turbAudio && (turbAudio.currentTime >= TURBULENCE_PEAK_TIME || turbAudio.ended);
       if (!isPeakPassed && drumHypeEnergy > 95) {
         drumHypeEnergy = 95;
       }
