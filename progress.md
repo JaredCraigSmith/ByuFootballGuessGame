@@ -155,3 +155,8 @@
   - **Automated Test Coverage (`tests/scoring.test.js`, `test.html`)**:
     - Added dedicated test suite verifying default state, toggle persistence, and clean reset across CLI Node test runner and browser test suite (58 total tests passing).
 
+- [x] **Phase 13: Drum Hype Soundtrack & Peak Calibration**
+  - **Switch to MP3 (`assets/Turbulance.mp3`)**: Replaced `Turbulence.mp4` with `assets/Turbulance.mp3` across `index.html` and `admin-badges.html` for optimized audio playback.
+  - **Calibrated Peak Timing to 14s**: Updated peak / drop timing threshold from 6.0s to 14.0s across `js/app.js` (`updateUI`, `processTempo`, `handleTempoDrumHit`, and `drumHypeInterval`), holding energy at 95% ("⏳ DROP INCOMING...") until the 14s beat drop triggers 100% MAXIMUM HYPE and confetti.
+
+

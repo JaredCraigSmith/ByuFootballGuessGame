@@ -1664,7 +1664,7 @@ function initDrumHypeEngine() {
   const updateUI = () => {
     if (hypeBar) hypeBar.style.width = `${drumHypeEnergy}%`;
 
-    const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
+    const isPeakPassed = turbAudio && (turbAudio.currentTime >= 14.0 || turbAudio.ended);
 
     if (hypeFrame && hypeTitle) {
       if (drumHypeEnergy >= 100 || drumReachedMax) {
@@ -1677,7 +1677,7 @@ function initDrumHypeEngine() {
           drumConfettiFired = true;
           window.confetti({ particleCount: 160, spread: 100, origin: { y: 0.6 } });
         }
-      } else if (drumHypeEnergy >= 95 && !is6sPassed) {
+      } else if (drumHypeEnergy >= 95 && !isPeakPassed) {
         hypeFrame.classList.remove('flash-max');
         hypeFrame.classList.add('flash-medium');
         hypeTitle.textContent = "⏳ DROP INCOMING...";
@@ -1727,8 +1727,8 @@ function initDrumHypeEngine() {
       gain = 3.5; // Lenient starting tempo (40-69 BPM)
     }
 
-    const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
-    const maxAllowedEnergy = is6sPassed ? 100 : 95;
+    const isPeakPassed = turbAudio && (turbAudio.currentTime >= 14.0 || turbAudio.ended);
+    const maxAllowedEnergy = isPeakPassed ? 100 : 95;
 
     drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + gain);
 
@@ -1792,8 +1792,8 @@ function initDrumHypeEngine() {
       if (interval < 2500 && interval > 40) {
         processTempo(interval);
       } else {
-        const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
-        const maxAllowedEnergy = is6sPassed ? 100 : 95;
+        const isPeakPassed = turbAudio && (turbAudio.currentTime >= 14.0 || turbAudio.ended);
+        const maxAllowedEnergy = isPeakPassed ? 100 : 95;
         drumHypeEnergy = Math.min(maxAllowedEnergy, drumHypeEnergy + 3.5);
         if (drumHypeEnergy >= 100) drumReachedMax = true;
         updateUI();
@@ -1851,9 +1851,9 @@ function initDrumHypeEngine() {
         }
       }
 
-      // Check 6s cap: hold off reaching 100% until mp4 reaches 6 seconds
-      const is6sPassed = turbAudio && (turbAudio.currentTime >= 6.0 || turbAudio.ended);
-      if (!is6sPassed && drumHypeEnergy > 95) {
+      // Check 14s cap: hold off reaching 100% until audio reaches 14 seconds (peak)
+      const isPeakPassed = turbAudio && (turbAudio.currentTime >= 14.0 || turbAudio.ended);
+      if (!isPeakPassed && drumHypeEnergy > 95) {
         drumHypeEnergy = 95;
       }
 
