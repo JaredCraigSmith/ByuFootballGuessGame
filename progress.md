@@ -60,9 +60,9 @@
   - Added **Family Account Prize Vault Tab (`🎁 Prizes`)**: Added a dedicated Prizes view where families track their account average score toward mystery surprise unlocks!
     - **Secret Surprise #1 (1 Avg Pt)**: Unlocks the **Cosmo Mascot Dance Party** (`assets/cosmo_head.jpg`)! 🐾
     - **Secret Surprise #2 (300 Avg Pts)**: Unlocks the **BYU Pump Up Song** (`assets/music_badge.jpg`)! 🎵
-    - **Secret Surprise #3 (900 Avg Pts)**: Unlocks the **Polynesian Fire Knife Dancer Show** (`assets/fire_spinner_badge.jpg`), featuring the clean CSS Polynesian dancer from `fireDancer.html` who automatically tosses the flaming staff high into the air, catches it with a spark explosion, and smoothly fades away! 🔥
-    - **Secret Surprise #4 (1500 Avg Pts)**: Unlocks the **LaVell Edwards Stadium Cougar Wave** (`assets/stadium_badge.jpg`), integrated directly from `Wave.html` featuring BYU endzones, midfield Block Y, stadium concrete seating bowl, and 1,600+ animated fan wave sprites, dynamically scaled for mobile phone viewports! 🌊
-    - **Secret Surprise #5 (2500 Avg Pts)**: Unlocks the **BYU Game Day Drum Hype** (`assets/drum_badge.jpg`), featuring the interactive LaVell Edwards Stadium kick-off drum hype simulator! 🥁
+    - **Secret Surprise #3 (600 Avg Pts)**: Unlocks the **Polynesian Fire Knife Dancer Show** (`assets/fire_spinner_badge.jpg`), featuring the clean CSS Polynesian dancer from `fireDancer.html` who automatically tosses the flaming staff high into the air, catches it with a spark explosion, and smoothly fades away! 🔥
+    - **Secret Surprise #4 (1000 Avg Pts)**: Unlocks the **LaVell Edwards Stadium Cougar Wave** (`assets/stadium_badge.jpg`), integrated directly from `Wave.html` featuring BYU endzones, midfield Block Y, stadium concrete seating bowl, and 1,600+ animated fan wave sprites, dynamically scaled for mobile phone viewports! 🌊
+    - **Secret Surprise #5 (1200 Avg Pts)**: Unlocks the **BYU Game Day Drum Hype** (`assets/drum_badge.jpg`), featuring the interactive LaVell Edwards Stadium kick-off drum hype simulator! 🥁
 - [x] **Phase 6: Admin Point System Reference & Cumulative Score Matrix**
   - **Admin Sub-Tabs**: Added tab navigation between `🎮 Games & Live Scores` and `📊 Point System Tables`.
   - **Table 1: Single-Game Point Payouts**: 14 game index columns with multiplier badges (×1.00 to ×2.95) across score differences (0, 7, 14, 21, 28, 35+).

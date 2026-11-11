@@ -924,7 +924,7 @@ function stopFireDancerEngine() {
   if (dancer) dancer.classList.remove('throwing');
 }
 
-// Trigger 4th Quarter Fire Spinner Show (Secret Surprise #3 - Unlocked at 900 Avg Pts)
+// Trigger 4th Quarter Fire Spinner Show (Secret Surprise #3 - Unlocked at 600 Avg Pts)
 let isFireSpinnerActive = false;
 
 function triggerFireSpinner(bypass = false) {
@@ -932,7 +932,7 @@ function triggerFireSpinner(bypass = false) {
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
   const customThresholds = JSON.parse(localStorage.getItem('byu_badge_thresholds') || '{}');
-  const threshold3 = customThresholds['fire_knife'] !== undefined ? customThresholds['fire_knife'] : 900;
+  const threshold3 = customThresholds['fire_knife'] !== undefined ? customThresholds['fire_knife'] : 600;
   const isUnwrapped3 = isTest || localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true';
 
   if (!isTest && avgScore < threshold3) {
@@ -1041,13 +1041,13 @@ function triggerCosmoDance(bypass = false) {
   }, 4800);
 }
 
-// Trigger LaVell Edwards Stadium Cougar Wave (Secret Surprise #4 - Unlocked at 1500 Avg Pts)
+// Trigger LaVell Edwards Stadium Cougar Wave (Secret Surprise #4 - Unlocked at 1000 Avg Pts)
 function triggerStadiumWave(bypass = false) {
   const isTest = bypass || isBadgeTestMode();
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
   const customThresholds = JSON.parse(localStorage.getItem('byu_badge_thresholds') || '{}');
-  const threshold4 = customThresholds['stadium_wave'] !== undefined ? customThresholds['stadium_wave'] : 1500;
+  const threshold4 = customThresholds['stadium_wave'] !== undefined ? customThresholds['stadium_wave'] : 1000;
   const isUnwrapped4 = isTest || localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true';
 
   if (!isTest && avgScore < threshold4) {
@@ -1076,13 +1076,13 @@ function triggerStadiumWave(bypass = false) {
   initStadiumWaveEngine();
 }
 
-// Trigger BYU Game Day Drum Hype (Secret Surprise #5 - Unlocked at 2500 Avg Pts)
+// Trigger BYU Game Day Drum Hype (Secret Surprise #5 - Unlocked at 1200 Avg Pts)
 function triggerDrumHype(bypass = false) {
   const isTest = bypass || isBadgeTestMode();
   const { avgScore } = getAccountAverageScore();
   const accId = state.currentAccount ? state.currentAccount.id : 'guest';
   const customThresholds = JSON.parse(localStorage.getItem('byu_badge_thresholds') || '{}');
-  const threshold5 = customThresholds['drum_hype'] !== undefined ? customThresholds['drum_hype'] : 2500;
+  const threshold5 = customThresholds['drum_hype'] !== undefined ? customThresholds['drum_hype'] : 1200;
   const isUnwrapped5 = isTest || localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true';
 
   if (!isTest && avgScore < threshold5) {
@@ -2136,8 +2136,8 @@ function renderPrizesView() {
     }
   }
 
-  // Surprise #3 (900 Avg Pts)
-  const unlockThreshold3 = customThresholds['fire_knife'] !== undefined ? customThresholds['fire_knife'] : 900;
+  // Surprise #3 (600 Avg Pts)
+  const unlockThreshold3 = customThresholds['fire_knife'] !== undefined ? customThresholds['fire_knife'] : 600;
   const isUnlocked3 = isTestMode || avgScore >= unlockThreshold3;
   if (!isTestMode && !isUnlocked3 && localStorage.getItem(`byu_prize_unwrapped_3_${accId}`) === 'true') {
     localStorage.removeItem(`byu_prize_unwrapped_3_${accId}`);
@@ -2164,7 +2164,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText3) elements.prizeStatusText3.textContent = `Needs ${unlockThreshold3 - avgScore} more avg pts to unwrap`;
     if (badgeBox3) badgeBox3.className = 'prize-badge-box locked';
     if (badgeImg3) badgeImg3.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = `🔒 Locked Present (900 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = `🔒 Locked Present (${unlockThreshold3} Avg Pts Needed)`;
   } else if (!isUnwrapped3) {
     if (elements.prizeTitle3) elements.prizeTitle3.textContent = 'Secret Surprise #3';
     if (elements.prizeDesc3) {
@@ -2195,8 +2195,8 @@ function renderPrizesView() {
     if (elements.prizeBtnLabel3) elements.prizeBtnLabel3.textContent = '🔥 Fire Knife Dancer (Tap for Show!)';
   }
 
-  // Surprise #4 (1500 Avg Pts)
-  const unlockThreshold4 = customThresholds['stadium_wave'] !== undefined ? customThresholds['stadium_wave'] : 1500;
+  // Surprise #4 (1000 Avg Pts)
+  const unlockThreshold4 = customThresholds['stadium_wave'] !== undefined ? customThresholds['stadium_wave'] : 1000;
   const isUnlocked4 = isTestMode || avgScore >= unlockThreshold4;
   if (!isTestMode && !isUnlocked4 && localStorage.getItem(`byu_prize_unwrapped_4_${accId}`) === 'true') {
     localStorage.removeItem(`byu_prize_unwrapped_4_${accId}`);
@@ -2223,7 +2223,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText4) elements.prizeStatusText4.textContent = `Needs ${unlockThreshold4 - avgScore} more avg pts to unwrap`;
     if (badgeBox4) badgeBox4.className = 'prize-badge-box locked';
     if (badgeImg4) badgeImg4.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = `🔒 Locked Present (1500 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = `🔒 Locked Present (${unlockThreshold4.toLocaleString()} Avg Pts Needed)`;
   } else if (!isUnwrapped4) {
     if (elements.prizeTitle4) elements.prizeTitle4.textContent = 'Secret Surprise #4';
     if (elements.prizeDesc4) {
@@ -2254,8 +2254,8 @@ function renderPrizesView() {
     if (elements.prizeBtnLabel4) elements.prizeBtnLabel4.textContent = '🌊 Stadium Cougar Wave (Tap to Launch!)';
   }
 
-  // Surprise #5 (2500 Avg Pts)
-  const unlockThreshold5 = customThresholds['drum_hype'] !== undefined ? customThresholds['drum_hype'] : 2500;
+  // Surprise #5 (1200 Avg Pts)
+  const unlockThreshold5 = customThresholds['drum_hype'] !== undefined ? customThresholds['drum_hype'] : 1200;
   const isUnlocked5 = isTestMode || avgScore >= unlockThreshold5;
   if (!isTestMode && !isUnlocked5 && localStorage.getItem(`byu_prize_unwrapped_5_${accId}`) === 'true') {
     localStorage.removeItem(`byu_prize_unwrapped_5_${accId}`);
@@ -2282,7 +2282,7 @@ function renderPrizesView() {
     if (elements.prizeStatusText5) elements.prizeStatusText5.textContent = `Needs ${unlockThreshold5 - avgScore} more avg pts to unwrap`;
     if (badgeBox5) badgeBox5.className = 'prize-badge-box locked';
     if (badgeImg5) badgeImg5.src = 'assets/gift_box.jpg';
-    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = `🔒 Locked Present (2500 Avg Pts Needed)`;
+    if (elements.prizeBtnLabel5) elements.prizeBtnLabel5.textContent = `🔒 Locked Present (${unlockThreshold5.toLocaleString()} Avg Pts Needed)`;
   } else if (!isUnwrapped5) {
     if (elements.prizeTitle5) elements.prizeTitle5.textContent = 'Secret Surprise #5';
     if (elements.prizeDesc5) {
